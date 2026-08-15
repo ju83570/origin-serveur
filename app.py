@@ -190,8 +190,8 @@ def appeler_claude(offre, profils_txt):
     structures = {
         'solo': """
 1. LETTRE D'OUVERTURE (4-5 paragraphes, tutoiement, profond)
-2. PORTRAIT NUMÉROLOGIQUE (8-10 paragraphes narratifs)
-3. PORTRAIT ASTROLOGIQUE (8-10 paragraphes narratifs)
+2. PORTRAIT NUMÉROLOGIQUE (5-6 paragraphes narratifs)
+3. PORTRAIT ASTROLOGIQUE (5-6 paragraphes narratifs)
 4. FORCES NATURELLES (5 items en prose narrative)
 5. ZONES DE CROISSANCE (4 items en prose narrative)
 6. OMBRES → LUMIÈRES (3 transformations : situation concrète + lumière + phrase à dire)
@@ -200,17 +200,17 @@ def appeler_claude(offre, profils_txt):
         'couple': """
 1. LETTRE D'OUVERTURE (4-5 paragraphes, aux deux prénoms, tutoiement)
 2. SIGNATURES NUMÉRIQUES (2-3 paragraphes sur les nombres clés ensemble)
-3. PORTRAIT INDIVIDUEL 1 (10-12 paragraphes, numérologie + astrologie entremêlées)
-4. PORTRAIT INDIVIDUEL 2 (10-12 paragraphes)
-5. CE QUE VOUS CRÉEZ ENSEMBLE (7-8 paragraphes, résonances croisées précises)
+3. PORTRAIT INDIVIDUEL 1 (6-8 paragraphes, numérologie + astrologie entremêlées)
+4. PORTRAIT INDIVIDUEL 2 (4-5 paragraphes)
+5. CE QUE VOUS CRÉEZ ENSEMBLE (5-6 paragraphes, résonances croisées précises)
 6. CE QUE VOUS VOUS APPORTEZ (4 paragraphes, dons mutuels)
 7. OMBRES → LUMIÈRES (4 tensions avec situation + lumière + phrase à dire)
 8. MANTRAS (3 : un par personne + un commun, avec note)
 9. MESSAGE FINAL (4 paragraphes)""",
         'famille': """
 1. LETTRE D'OUVERTURE (4-5 paragraphes)
-2. PORTRAIT DE CHAQUE MEMBRE (6-8 paragraphes chacun)
-3. DYNAMIQUE FAMILIALE (6-8 paragraphes)
+2. PORTRAIT DE CHAQUE MEMBRE (4-5 paragraphes chacun)
+3. DYNAMIQUE FAMILIALE (4-5 paragraphes)
 4. HÉRITAGES TRANSMIS (4 paragraphes)
 5. OMBRES → LUMIÈRES (4 tensions familiales)
 6. MANTRAS (un par membre + un commun)
