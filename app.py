@@ -7,18 +7,13 @@ Reçoit les données Formspree → génère le livret → envoie par email
 
 from flask import Flask, request, jsonify
 import threading
-from functools import wraps
-import os, json, re, requests, smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
+import os, json, re, requests
 from datetime import datetime, date
 import ephem as sw
 import pytz, math
-from pathlib import Path
+import base64
 
-# Timezones par pays (évite timezonefinder qui ne compile pas sur Render)
+# Timezones par pays
 TIMEZONE_MAP = {
     'france': 'Europe/Paris', 'fr': 'Europe/Paris',
     'belgique': 'Europe/Brussels', 'suisse': 'Europe/Zurich',
@@ -32,16 +27,15 @@ def get_timezone(ville):
     for k, v in TIMEZONE_MAP.items():
         if k in ville_lower:
             return v
-    return 'Europe/Paris'  # défaut France
+    return 'Europe/Paris'
 
 app = Flask(__name__)
 
-# ── CONFIG (variables d'environnement Render)
-ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY", "")
-BREVO_SMTP_LOGIN   = os.environ.get("BREVO_SMTP_LOGIN", "")
-BREVO_SMTP_KEY     = os.environ.get("BREVO_SMTP_KEY", "")
-EMAIL_DEST         = os.environ.get("EMAIL_DEST", "")
-FORMSPREE_SECRET   = os.environ.get("FORMSPREE_SECRET", "")
+# ── CONFIG
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+BREVO_SMTP_LOGIN  = os.environ.get("BREVO_SMTP_LOGIN", "")
+BREVO_SMTP_KEY    = os.environ.get("BREVO_SMTP_KEY", "")
+EMAIL_DEST        = os.environ.get("EMAIL_DEST", "")
 
 # ════════════════════════════════════════════════════
 # NUMÉROLOGIE
@@ -104,7 +98,7 @@ def get_coords(ville):
     for k, v in VILLES_FR.items():
         if k in key or key in k:
             return v
-    return 43.2965, 5.3698  # fallback Marseille
+    return 43.2965, 5.3698
 
 # ════════════════════════════════════════════════════
 # ASTROLOGIE
@@ -260,11 +254,9 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     raw = r.json()['content'][0]['text']
     raw = re.sub(r'^```json\s*','',raw.strip())
     raw = re.sub(r'```$','',raw.strip())
-    # Tentative de parsing direct
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
-        # Tronqué — compléter le JSON manuellement
         print(f"JSON tronqué, tentative de réparation...")
         for end in [raw.rfind('"}'), raw.rfind('"}')+1]:
             if end > 0:
@@ -470,19 +462,14 @@ sections.forEach(s=>{{if(s)obs.observe(s);}});
 </body></html>"""
 
 # ════════════════════════════════════════════════════
-# ENVOI EMAIL
+# ENVOI EMAIL via API Brevo (HTTP — pas SMTP)
 # ════════════════════════════════════════════════════
 
 def envoyer_email(html_content, clients, offre, email_client):
     prenoms = " & ".join(c['prenom'] for c in clients)
     filename = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date.today().strftime('%Y%m%d')}.html"
 
-    msg = MIMEMultipart()
-    msg['From'] = "contact@origin-famille.fr"
-    msg['To'] = EMAIL_DEST
-    msg['Subject'] = f"✦ ORIGIN — Nouveau livret {offre} — {prenoms}"
-
-    body = f"""Nouveau livret ORIGIN généré automatiquement.
+    body_txt = f"""Nouveau livret ORIGIN généré automatiquement.
 
 Client(s) : {prenoms}
 Offre : {offre.upper()}
@@ -491,20 +478,27 @@ Date : {date.today().strftime('%d/%m/%Y')}
 
 Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transfère au client.
 """
-    msg.attach(MIMEText(body, 'plain'))
 
-    part = MIMEBase('application', 'octet-stream')
-    part.set_payload(html_content.encode('utf-8'))
-    encoders.encode_base64(part)
-    part.add_header('Content-Disposition', f'attachment; filename="{filename}"')
-    msg.attach(part)
+    attachment_b64 = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
 
-    with smtplib.SMTP("smtp-relay.brevo.com", 587) as serveur:
-        serveur.starttls()
-        serveur.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
-        serveur.send_message(msg)
+    payload = {
+        "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
+        "to": [{"email": EMAIL_DEST}],
+        "subject": f"✦ ORIGIN — Nouveau livret {offre} — {prenoms}",
+        "textContent": body_txt,
+        "attachment": [{"content": attachment_b64, "name": filename}]
+    }
 
-    print(f"Email envoyé à {EMAIL_DEST}")
+    r = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={"api-key": BREVO_SMTP_KEY, "content-type": "application/json"},
+        json=payload,
+        timeout=30
+    )
+
+    print(f"Brevo API response: {r.status_code} — {r.text[:200]}")
+    r.raise_for_status()
+    print(f"✅ Email envoyé à {EMAIL_DEST}")
 
 # ════════════════════════════════════════════════════
 # ROUTES FLASK
@@ -521,7 +515,6 @@ def add_cors(response):
 def webhook_preflight():
     return jsonify({}), 200
 
-
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'ok', 'service': 'ORIGIN Generator'})
@@ -535,7 +528,6 @@ def webhook():
         offre = data.get('offre', 'solo').lower()
         email_client = data.get('email', '')
 
-        # Parser les clients selon l'offre
         clients = []
         if offre == 'solo':
             clients = [{
@@ -550,7 +542,6 @@ def webhook():
                 'asc_force': data.get('asc1') or None,
             }]
         elif offre in ('couple', 'famille', 'prestige'):
-            # Personne 1
             clients.append({
                 'prenom': data.get('prenom1',''),
                 'nom':    data.get('nom1',''),
@@ -562,7 +553,6 @@ def webhook():
                 'minute': int(data.get('minute1',0)),
                 'asc_force': data.get('asc1') or None,
             })
-            # Personne 2
             clients.append({
                 'prenom': data.get('prenom2',''),
                 'nom':    data.get('nom2',''),
@@ -574,7 +564,6 @@ def webhook():
                 'minute': int(data.get('minute2',0)),
                 'asc_force': data.get('asc2') or None,
             })
-            # Enfants si famille/prestige
             for i in range(3, 7):
                 if data.get(f'prenom{i}'):
                     clients.append({
@@ -589,14 +578,12 @@ def webhook():
                         'asc_force': data.get(f'asc{i}') or None,
                     })
 
-        # Calcul profils (rapide)
         profils_txt_parts = []
         for c in clients:
             txt, _, _ = fmt_profil(c)
             profils_txt_parts.append(txt)
         profils_txt = "\n\n".join(profils_txt_parts)
 
-        # Lancer la génération en arrière-plan (évite le timeout 30s)
         def generer():
             try:
                 narratif = appeler_claude(offre, profils_txt)
