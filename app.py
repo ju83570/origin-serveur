@@ -6,6 +6,7 @@ Reçoit les données Formspree → génère le livret → envoie par email
 """
 
 from flask import Flask, request, jsonify
+import threading
 from functools import wraps
 import os, json, re, requests, smtplib
 from email.mime.multipart import MIMEMultipart
@@ -565,23 +566,28 @@ def webhook():
                         'asc_force': data.get(f'asc{i}') or None,
                     })
 
-        # Calcul + prompt
+        # Calcul profils (rapide)
         profils_txt_parts = []
         for c in clients:
             txt, _, _ = fmt_profil(c)
             profils_txt_parts.append(txt)
         profils_txt = "\n\n".join(profils_txt_parts)
 
-        # Appel Claude
-        narratif = appeler_claude(offre, profils_txt)
+        # Lancer la génération en arrière-plan (évite le timeout 30s)
+        def generer():
+            try:
+                narratif = appeler_claude(offre, profils_txt)
+                html = generer_html(offre, clients, narratif)
+                envoyer_email(html, clients, offre, email_client)
+                print(f"✅ Livret {offre} envoyé à {email_client}")
+            except Exception as ex:
+                print(f"ERREUR génération : {ex}")
+                import traceback; traceback.print_exc()
 
-        # Génération HTML
-        html = generer_html(offre, clients, narratif)
+        t = threading.Thread(target=generer, daemon=True)
+        t.start()
 
-        # Envoi email
-        envoyer_email(html, clients, offre, email_client)
-
-        return jsonify({'status': 'success', 'message': 'Livret généré et envoyé'}), 200
+        return jsonify({'status': 'accepted', 'message': 'Livret en cours de génération'}), 200
 
     except Exception as e:
         print(f"ERREUR : {e}")
