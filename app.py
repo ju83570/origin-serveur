@@ -6,6 +6,7 @@ Reçoit les données Formspree → génère le livret → envoie par email
 """
 
 from flask import Flask, request, jsonify
+from functools import wraps
 import os, json, re, requests, smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -484,6 +485,18 @@ Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transf
 # ════════════════════════════════════════════════════
 # ROUTES FLASK
 # ════════════════════════════════════════════════════
+
+@app.after_request
+def add_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+@app.route("/webhook", methods=["OPTIONS"])
+def webhook_preflight():
+    return jsonify({}), 200
+
 
 @app.route('/health', methods=['GET'])
 def health():
