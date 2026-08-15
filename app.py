@@ -37,11 +37,11 @@ def get_timezone(ville):
 app = Flask(__name__)
 
 # ── CONFIG (variables d'environnement Render)
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-GMAIL_USER        = os.environ.get("GMAIL_USER", "")
-GMAIL_PASS        = os.environ.get("GMAIL_PASS", "")
-EMAIL_DEST        = os.environ.get("EMAIL_DEST", "")
-FORMSPREE_SECRET  = os.environ.get("FORMSPREE_SECRET", "")
+ANTHROPIC_API_KEY  = os.environ.get("ANTHROPIC_API_KEY", "")
+BREVO_SMTP_LOGIN   = os.environ.get("BREVO_SMTP_LOGIN", "")
+BREVO_SMTP_KEY     = os.environ.get("BREVO_SMTP_KEY", "")
+EMAIL_DEST         = os.environ.get("EMAIL_DEST", "")
+FORMSPREE_SECRET   = os.environ.get("FORMSPREE_SECRET", "")
 
 # ════════════════════════════════════════════════════
 # NUMÉROLOGIE
@@ -249,14 +249,13 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p>"
 }}"""
 
-    r=requests.post(
-    "https://api.anthropic.com/v1/messages",
- headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-    json={"model": "claude-sonnet-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
-    timeout=300
-)
-       
-    
+    r = requests.post(
+        "https://api.anthropic.com/v1/messages",
+        headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+        json={"model": "claude-sonnet-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
+        timeout=300
+    )
+
     r.raise_for_status()
     raw = r.json()['content'][0]['text']
     raw = re.sub(r'^```json\s*','',raw.strip())
@@ -267,11 +266,9 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     except json.JSONDecodeError:
         # Tronqué — compléter le JSON manuellement
         print(f"JSON tronqué, tentative de réparation...")
-        # Trouver la dernière clé complète
         for end in [raw.rfind('"}'), raw.rfind('"}')+1]:
             if end > 0:
                 candidate = raw[:end+1]
-                # Fermer les structures ouvertes
                 opens_curl = candidate.count('{') - candidate.count('}')
                 opens_bracket = candidate.count('[') - candidate.count(']')
                 candidate += ']' * opens_bracket + '}' * opens_curl
@@ -279,7 +276,6 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
                     return json.loads(candidate)
                 except:
                     pass
-        # Dernier recours — retourner structure minimale
         return {
             "lettre": "<p>Une erreur technique est survenue. Nous vous recontactons sous 24h.</p>",
             "sections": [],
@@ -482,7 +478,7 @@ def envoyer_email(html_content, clients, offre, email_client):
     filename = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date.today().strftime('%Y%m%d')}.html"
 
     msg = MIMEMultipart()
-    msg['From'] = GMAIL_USER
+    msg['From'] = "contact@origin-famille.fr"
     msg['To'] = EMAIL_DEST
     msg['Subject'] = f"✦ ORIGIN — Nouveau livret {offre} — {prenoms}"
 
@@ -504,11 +500,10 @@ Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transf
     msg.attach(part)
 
     with smtplib.SMTP("smtp-relay.brevo.com", 587) as serveur:
-    serveur.starttls()
-    serveur.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
-    serveur.send_message(MSG)
-        
-       
+        serveur.starttls()
+        serveur.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
+        serveur.send_message(msg)
+
     print(f"Email envoyé à {EMAIL_DEST}")
 
 # ════════════════════════════════════════════════════
