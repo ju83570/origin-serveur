@@ -501,7 +501,9 @@ Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transf
     part.add_header('Content-Disposition', f'attachment; filename="{filename}"')
     msg.attach(part)
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+    with smtplib.SMTP('smtp-relay.brevo.com', 587) as server:
+        server.ehlo()
+        server.starttls()
         server.login(GMAIL_USER, GMAIL_PASS)
         server.send_message(msg)
 
