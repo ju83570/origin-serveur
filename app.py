@@ -12,21 +12,19 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from datetime import datetime, date
-import swisseph as swe
+import ephem as sw
 from timezonefinder import TimezoneFinder
-import pytz
+import pytz, math
 from pathlib import Path
 
 app = Flask(__name__)
 
 # ── CONFIG (variables d'environnement Render)
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-GMAIL_USER        = os.environ.get("GMAIL_USER", "")      # ton gmail expéditeur
-GMAIL_PASS        = os.environ.get("GMAIL_PASS", "")      # mot de passe application Gmail
-EMAIL_DEST        = os.environ.get("EMAIL_DEST", "")      # contact@origin-famille.fr
-FORMSPREE_SECRET  = os.environ.get("FORMSPREE_SECRET", "") # optionnel
-
-swe.set_ephe_path('/usr/share/ephe')
+GMAIL_USER        = os.environ.get("GMAIL_USER", "")
+GMAIL_PASS        = os.environ.get("GMAIL_PASS", "")
+EMAIL_DEST        = os.environ.get("EMAIL_DEST", "")
+FORMSPREE_SECRET  = os.environ.get("FORMSPREE_SECRET", "")
 
 # ════════════════════════════════════════════════════
 # NUMÉROLOGIE
@@ -95,10 +93,10 @@ def get_coords(ville):
 # ASTROLOGIE
 # ════════════════════════════════════════════════════
 
-PLANETES = {
-    'Soleil':swe.SUN,'Lune':swe.MOON,'Mercure':swe.MERCURY,
-    'Vénus':swe.VENUS,'Mars':swe.MARS,'Jupiter':swe.JUPITER,
-    'Saturne':swe.SATURN,'Uranus':swe.URANUS,'Neptune':swe.NEPTUNE,'Pluton':swe.PLUTO
+CORPS_EPHEM = {
+    'Soleil': sw.Sun, 'Lune': sw.Moon, 'Mercure': sw.Mercury,
+    'Vénus': sw.Venus, 'Mars': sw.Mars, 'Jupiter': sw.Jupiter,
+    'Saturne': sw.Saturn, 'Uranus': sw.Uranus, 'Neptune': sw.Neptune,
 }
 
 def deg_signe(deg):
@@ -116,20 +114,23 @@ def calc_theme(j, m, a, ville, heure=None, minute=0, asc_force=None):
     except Exception:
         offset = 1.0
     heure_utc = h + minute/60 - offset
-    jd = swe.julday(a, m, j, heure_utc)
+    obs = sw.Observer()
+    obs.lat = str(lat); obs.lon = str(lon)
+    obs.date = f"{a}/{m}/{j} {heure_utc:.4f}"
     planetes = {}
-    for nom, pid in PLANETES.items():
-        pos, _ = swe.calc_ut(jd, pid)
-        s, d = deg_signe(pos[0])
-        planetes[nom] = {'signe':s,'degre':d}
-    asc_data = None
-    if heure is not None:
-        cusps, ascmc = swe.houses(jd, lat, lon, b'P')
-        s, d = deg_signe(ascmc[0])
-        ms, md = deg_signe(ascmc[1])
-        asc_data = {'signe':s,'degre':d,'mc_signe':ms,'mc_degre':md}
-    elif asc_force:
-        asc_data = {'signe':asc_force,'degre':None}
+    for nom, cls in CORPS_EPHEM.items():
+        try:
+            p = cls(obs)
+            lon_deg = math.degrees(float(p.hlong))
+            if nom == 'Soleil':
+                lon_deg = (lon_deg + 180) % 360
+            else:
+                lon_deg = lon_deg % 360
+            s, d = deg_signe(lon_deg)
+            planetes[nom] = {'signe':s,'degre':d}
+        except Exception:
+            planetes[nom] = {'signe':'?','degre':0}
+    asc_data = {'signe': asc_force, 'degre': None} if asc_force else None
     return {'planetes':planetes,'ascendant':asc_data}
 
 def fmt_profil(p):
