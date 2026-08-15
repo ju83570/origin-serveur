@@ -249,12 +249,13 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p>"
 }}"""
 
-    r = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-        json={"model": "claude-sonnet-4-6", "max_tokens": 16000, "messages": [{"role":"user","content":prompt}]},
-        timeout=180
-    )
+    r=requests.post(
+    "https://api.anthropic.com/v1/messages",
+    ...
+    timeout=300
+)
+       
+    
     r.raise_for_status()
     raw = r.json()['content'][0]['text']
     raw = re.sub(r'^```json\s*','',raw.strip())
@@ -501,12 +502,12 @@ Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transf
     part.add_header('Content-Disposition', f'attachment; filename="{filename}"')
     msg.attach(part)
 
-    with smtplib.SMTP('smtp-relay.brevo.com', 587) as server:
-        server.ehlo()
-        server.starttls()
-        server.login(GMAIL_USER, GMAIL_PASS)
-        server.send_message(msg)
-
+    with smtplib.SMTP("smtp-relay.brevo.com", 587) as serveur:
+    serveur.starttls()
+    serveur.login(BREVO_SMTP_LOGIN, BREVO_SMTP_KEY)
+    serveur.send_message(MSG)
+        
+       
     print(f"Email envoyé à {EMAIL_DEST}")
 
 # ════════════════════════════════════════════════════
