@@ -13,9 +13,24 @@ from email.mime.base import MIMEBase
 from email import encoders
 from datetime import datetime, date
 import ephem as sw
-from timezonefinder import TimezoneFinder
 import pytz, math
 from pathlib import Path
+
+# Timezones par pays (évite timezonefinder qui ne compile pas sur Render)
+TIMEZONE_MAP = {
+    'france': 'Europe/Paris', 'fr': 'Europe/Paris',
+    'belgique': 'Europe/Brussels', 'suisse': 'Europe/Zurich',
+    'canada': 'America/Montreal', 'maroc': 'Africa/Casablanca',
+    'espagne': 'Europe/Madrid', 'italie': 'Europe/Rome',
+    'default': 'Europe/Paris'
+}
+
+def get_timezone(ville):
+    ville_lower = ville.lower()
+    for k, v in TIMEZONE_MAP.items():
+        if k in ville_lower:
+            return v
+    return 'Europe/Paris'  # défaut France
 
 app = Flask(__name__)
 
@@ -108,8 +123,7 @@ def calc_theme(j, m, a, ville, heure=None, minute=0, asc_force=None):
     h = heure if heure is not None else 12
     try:
         dt = datetime(a, m, j, h, minute)
-        tf = TimezoneFinder()
-        tz_name = tf.timezone_at(lat=lat, lng=lon) or 'Europe/Paris'
+        tz_name = get_timezone(ville)
         offset = pytz.timezone(tz_name).localize(dt).utcoffset().total_seconds()/3600
     except Exception:
         offset = 1.0
