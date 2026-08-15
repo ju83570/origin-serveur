@@ -252,14 +252,38 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     r = requests.post(
         "https://api.anthropic.com/v1/messages",
         headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-        json={"model": "claude-sonnet-4-6", "max_tokens": 8000, "messages": [{"role":"user","content":prompt}]},
+        json={"model": "claude-sonnet-4-6", "max_tokens": 16000, "messages": [{"role":"user","content":prompt}]},
         timeout=180
     )
     r.raise_for_status()
     raw = r.json()['content'][0]['text']
     raw = re.sub(r'^```json\s*','',raw.strip())
     raw = re.sub(r'```$','',raw.strip())
-    return json.loads(raw)
+    # Tentative de parsing direct
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        # Tronqué — compléter le JSON manuellement
+        print(f"JSON tronqué, tentative de réparation...")
+        # Trouver la dernière clé complète
+        for end in [raw.rfind('"}'), raw.rfind('"}')+1]:
+            if end > 0:
+                candidate = raw[:end+1]
+                # Fermer les structures ouvertes
+                opens_curl = candidate.count('{') - candidate.count('}')
+                opens_bracket = candidate.count('[') - candidate.count(']')
+                candidate += ']' * opens_bracket + '}' * opens_curl
+                try:
+                    return json.loads(candidate)
+                except:
+                    pass
+        # Dernier recours — retourner structure minimale
+        return {
+            "lettre": "<p>Une erreur technique est survenue. Nous vous recontactons sous 24h.</p>",
+            "sections": [],
+            "mantras": [{"prenom": "Vous", "texte": "Votre lecture est en cours de préparation.", "note": ""}],
+            "message_final": "<p>Nous avons bien reçu vos informations et préparons votre livret. Il vous sera envoyé sous 24h.</p>"
+        }
 
 # ════════════════════════════════════════════════════
 # GÉNÉRATION HTML
