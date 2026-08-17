@@ -352,13 +352,16 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .final-origin{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.55em;color:var(--cuivre);position:relative;z-index:1;}
 .final-seed{width:80px;height:80px;margin:0 auto 2rem;opacity:.6;animation:sr 30s linear infinite;}
 
-/* RÉVÉLATION AU SCROLL */
-.reveal{opacity:0;transform:translateY(40px);transition:opacity 1s ease,transform 1s ease;}
-.reveal.visible{opacity:1;transform:translateY(0);}
-.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity 1s ease,transform 1s ease;}
-.reveal-left.visible{opacity:1;transform:translateX(0);}
-.reveal-scale{opacity:0;transform:scale(0.92);transition:opacity 1s ease,transform 1s ease;}
-.reveal-scale.visible{opacity:1;transform:scale(1);}
+/* RÉVÉLATION AU SCROLL — Safari + Android compatible */
+.reveal{opacity:1;transform:translateY(0);transition:opacity 1s ease,transform 1s ease;}
+.js-loaded .reveal{opacity:0;transform:translateY(40px);}
+.reveal.visible{opacity:1 !important;transform:translateY(0) !important;}
+.reveal-left{opacity:1;transform:translateX(0);transition:opacity 1s ease,transform 1s ease;}
+.js-loaded .reveal-left{opacity:0;transform:translateX(-40px);}
+.reveal-left.visible{opacity:1 !important;transform:translateX(0) !important;}
+.reveal-scale{opacity:1;transform:scale(1);transition:opacity 1s ease,transform 1s ease;}
+.js-loaded .reveal-scale{opacity:0;transform:scale(0.92);}
+.reveal-scale.visible{opacity:1 !important;transform:scale(1) !important;}
 
 /* LIGNE LUMINEUSE */
 .light-line{width:0;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:2rem auto;transition:width 1.5s ease;}
@@ -502,6 +505,9 @@ def generer_html(offre, clients, narratif):
 <footer>ORIGIN · Analyse personnalisée · {annee} · Confidentiel</footer>
 
 <script>
+// Activation progressive — Safari safe
+document.body.classList.add('js-loaded');
+
 // Particules dorées
 const pc = document.getElementById('particles');
 for(let i=0;i<60;i++){{
@@ -538,7 +544,7 @@ const revealObs = new IntersectionObserver(entries => {{
       }}
     }}
   }});
-}}, {{threshold: 0.1}});
+}}, {{threshold: 0.05, rootMargin: '0px 0px -50px 0px'}});
 sections.forEach(s => {{ if(s) revealObs.observe(s); }});
 
 // Effet parallaxe léger sur la cover
@@ -551,6 +557,7 @@ window.addEventListener('scroll', () => {{
 }});
 </script>
 </body></html>"""
+
 
 CSS_PRINT = """
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap');
@@ -598,7 +605,6 @@ body {
 .page { page-break-after: always; }
 .page:last-child { page-break-after: avoid; }
 
-/* COVER */
 .cover {
   display: flex;
   flex-direction: column;
@@ -610,157 +616,42 @@ body {
   background: #0A0A08;
   color: var(--creme);
 }
-.cover-symbol {
-  font-size: 22pt;
-  color: var(--or);
-  margin-bottom: 1.5cm;
-}
-.cover-eyebrow {
-  font-family: 'Jost', sans-serif;
-  font-size: 7pt;
-  letter-spacing: .5em;
-  text-transform: uppercase;
-  color: var(--cuivre);
-  margin-bottom: 1cm;
-}
-.cover-origin {
-  font-family: 'Cinzel', serif;
-  font-size: 42pt;
-  letter-spacing: .22em;
-  color: var(--or);
-  margin-bottom: .5cm;
-}
-.cover-tagline {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 13pt;
-  font-style: italic;
-  color: rgba(245,237,216,.75);
-  margin-bottom: 1.5cm;
-}
-.cover-ligne {
-  width: 60px;
-  height: 1px;
-  background: var(--or);
-  margin: 0 auto 1cm;
-  opacity: .5;
-}
-.cover-names {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22pt;
-  font-style: italic;
-  color: var(--creme);
-  margin-bottom: .4cm;
-}
-.cover-meta {
-  font-family: 'Jost', sans-serif;
-  font-size: 7pt;
-  letter-spacing: .3em;
-  text-transform: uppercase;
-  color: rgba(245,237,216,.4);
-  margin-top: 1.5cm;
-}
+.cover-symbol { font-size: 22pt; color: var(--or); margin-bottom: 1.5cm; }
+.cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: 1cm; }
+.cover-origin { font-family: 'Cinzel', serif; font-size: 42pt; letter-spacing: .22em; color: var(--or); margin-bottom: .5cm; }
+.cover-tagline { font-family: 'Cormorant Garamond', serif; font-size: 13pt; font-style: italic; color: rgba(245,237,216,.75); margin-bottom: 1.5cm; }
+.cover-ligne { width: 60px; height: 1px; background: var(--or); margin: 0 auto 1cm; opacity: .5; }
+.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 22pt; font-style: italic; color: var(--creme); margin-bottom: .4cm; }
+.cover-meta { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .3em; text-transform: uppercase; color: rgba(245,237,216,.4); margin-top: 1.5cm; }
 
-/* SECTIONS */
 .section { padding: 1.5cm 2cm; }
 .section + .section { border-top: 1px solid rgba(201,168,76,.18); }
 
-.eyebrow {
-  font-family: 'Jost', sans-serif;
-  font-size: 6.5pt;
-  letter-spacing: .45em;
-  text-transform: uppercase;
-  color: var(--cuivre);
-  margin-bottom: .4cm;
-  display: block;
-}
-.section-title {
-  font-family: 'Cinzel', serif;
-  font-size: 16pt;
-  font-weight: 400;
-  color: var(--or);
-  margin-bottom: .35cm;
-  letter-spacing: .08em;
-  line-height: 1.3;
-}
-.light-line {
-  width: 50px;
-  height: 1px;
-  background: var(--or);
-  margin: .4cm 0 .8cm;
-  opacity: .5;
-}
+.eyebrow { font-family: 'Jost', sans-serif; font-size: 6.5pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .4cm; display: block; }
+.section-title { font-family: 'Cinzel', serif; font-size: 16pt; font-weight: 400; color: var(--or); margin-bottom: .35cm; letter-spacing: .08em; line-height: 1.3; }
+.light-line { width: 50px; height: 1px; background: var(--or); margin: .4cm 0 .8cm; opacity: .5; }
 
-/* PROSE */
 .prose { font-size: 11pt; line-height: 1.9; color: var(--encre); }
 .prose p { margin-bottom: .55cm; }
 .prose em { color: var(--cuivre); font-style: italic; }
 
-/* LETTRE */
-.lettre {
-  background: rgba(201,168,76,.04);
-  border: 1px solid rgba(201,168,76,.2);
-  border-left: 3px solid var(--cuivre);
-  padding: 1cm 1.4cm;
-  margin-bottom: .5cm;
-}
-.lettre-signature {
-  font-family: 'Cinzel', serif;
-  font-size: 7.5pt;
-  letter-spacing: .2em;
-  color: var(--cuivre);
-  margin-top: .5cm;
-}
+.lettre { background: rgba(201,168,76,.04); border: 1px solid rgba(201,168,76,.2); border-left: 3px solid var(--cuivre); padding: 1cm 1.4cm; margin-bottom: .5cm; }
+.lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .5cm; }
 
-/* MANTRAS */
-.mantra-block {
-  text-align: center;
-  padding: 1cm 1.5cm;
-  border: 1px solid rgba(201,168,76,.15);
-  margin-bottom: .5cm;
-  background: rgba(201,168,76,.02);
-}
-.mantra-prenom {
-  font-family: 'Cinzel', serif;
-  font-size: 7pt;
-  letter-spacing: .45em;
-  text-transform: uppercase;
-  color: var(--cuivre);
-  margin-bottom: .35cm;
-}
-.mantra-txt {
-  font-family: 'Cinzel', serif;
-  font-size: 13pt;
-  color: var(--or);
-  line-height: 1.6;
-  margin-bottom: .25cm;
-}
+.mantra-block { text-align: center; padding: 1cm 1.5cm; border: 1px solid rgba(201,168,76,.15); margin-bottom: .5cm; background: rgba(201,168,76,.02); }
+.mantra-prenom { font-family: 'Cinzel', serif; font-size: 7pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .35cm; }
+.mantra-txt { font-family: 'Cinzel', serif; font-size: 13pt; color: var(--or); line-height: 1.6; margin-bottom: .25cm; }
 .mantra-note { font-size: 9.5pt; font-style: italic; color: var(--muted); }
 
-.ornament {
-  display: flex;
-  align-items: center;
-  gap: 1cm;
-  margin: .6cm 0;
-  opacity: .4;
-}
+.ornament { display: flex; align-items: center; gap: 1cm; margin: .6cm 0; opacity: .4; }
 .ornament-line { flex: 1; height: 1px; background: var(--or); }
 .ornament-symbol { color: var(--or); font-size: 10pt; }
 
-/* FINAL */
-.final-section {
-  padding: 1.5cm 2cm;
-  text-align: center;
-  border-top: 1px solid rgba(201,168,76,.18);
-}
+.final-section { padding: 1.5cm 2cm; text-align: center; border-top: 1px solid rgba(201,168,76,.18); }
 .final-prose { font-size: 11pt; line-height: 1.9; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
 .final-prose p { margin-bottom: .55cm; }
 .final-prose em { color: var(--cuivre); font-style: italic; }
-.final-origin {
-  font-family: 'Cinzel', serif;
-  font-size: 7.5pt;
-  letter-spacing: .55em;
-  color: var(--cuivre);
-}
+.final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 """
 
 def generer_pdf_imprimable(offre, clients, narratif):
