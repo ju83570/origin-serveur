@@ -860,7 +860,7 @@ Date : {date.today().strftime('%d/%m/%Y')}
 Pièces jointes :
 - {filename_html} → livret interactif (ouvrir dans un navigateur)
 - {filename_pdf}  → version imprimable A4
-{"- Les_Heritages_Invisibles.pdf → ebook bonus inclus" if offre in ('famille','prestige') else ""}
+{"- heritages_invisibles.pdf → ebook bonus inclus" if offre in ('famille','prestige') else ""}
 
 Valide le contenu puis transfère au client.
 """
@@ -871,21 +871,52 @@ Valide le contenu puis transfère au client.
     ]
 
     if offre in ('famille', 'prestige'):
-        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statique', 'Les_Heritages_Invisibles.pdf')
-        print(f"DEBUG ebook_path: {ebook_path}")
-        print(f"DEBUG exists: {os.path.exists(ebook_path)}")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        statique_dir = os.path.join(base_dir, 'statique')
+
+        # Nom canonique attendu (sans accent pour éviter les soucis Unicode/Linux)
+        ebook_path = os.path.join(statique_dir, 'heritages_invisibles.pdf')
+
+        # Si le nom exact n'existe pas, on cherche automatiquement un PDF "heritage(s)...invisible(s)"
+        if not os.path.exists(ebook_path):
+            import glob, unicodedata
+
+            def _norm_nom(path):
+                nom = os.path.basename(path).lower()
+                nom = ''.join(
+                    c for c in unicodedata.normalize('NFD', nom)
+                    if unicodedata.category(c) != 'Mn'
+                )
+                return nom.replace(' ', '_')
+
+            candidats = glob.glob(os.path.join(statique_dir, '*.pdf'))
+            for candidat in candidats:
+                nom = _norm_nom(candidat)
+                if 'heritage' in nom and 'invisible' in nom:
+                    ebook_path = candidat
+                    break
+
+        print(f"DEBUG ebook_path: {ebook_path}", flush=True)
+        print(f"DEBUG exists: {os.path.exists(ebook_path)}", flush=True)
+
         import glob
-        print(f"DEBUG statique: {glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statique', '*'))}")
+        print(
+            f"DEBUG statique: {glob.glob(os.path.join(statique_dir, '*'))}",
+            flush=True
+        )
+
         if os.path.exists(ebook_path):
             with open(ebook_path, 'rb') as f:
                 ebook_data = f.read()
-                print(f"DEBUG ebook size: {len(ebook_data)} bytes")
-                attachments.append({
-                    "content": base64.b64encode(ebook_data).decode('utf-8'),
-                    "name": "Les_Heritages_Invisibles.pdf"
-                })
+
+            print(f"DEBUG ebook size: {len(ebook_data)} bytes", flush=True)
+
+            attachments.append({
+                "content": base64.b64encode(ebook_data).decode('utf-8'),
+                "name": "heritages_invisibles.pdf"
+            })
         else:
-            print(f"⚠ Ebook introuvable : {ebook_path}")
+            print(f"⚠ Ebook introuvable : {ebook_path}", flush=True)
 
     payload = {
         "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
@@ -987,14 +1018,29 @@ def webhook():
 
         def generer():
             try:
+                print(f"▶ Début génération — offre={offre} — email={email_client}", flush=True)
+
+                print("▶ Appel Claude...", flush=True)
                 narratif = appeler_claude(offre, profils_txt)
+                print("✅ Réponse Claude reçue", flush=True)
+
+                print("▶ Génération HTML...", flush=True)
                 html = generer_html(offre, clients, narratif)
+                print(f"✅ HTML OK — {len(html.encode('utf-8'))} octets", flush=True)
+
+                print("▶ Génération PDF imprimable...", flush=True)
                 pdf = generer_pdf_imprimable(offre, clients, narratif)
+                print(f"✅ PDF imprimable OK — {len(pdf)} octets", flush=True)
+
+                print("▶ Préparation des pièces jointes + envoi Brevo...", flush=True)
                 envoyer_email(html, pdf, clients, offre, email_client)
-                print(f"✅ Livret {offre} envoyé à {email_client}")
+
+                print(f"✅ Livret {offre} envoyé à {email_client}", flush=True)
+
             except Exception as ex:
-                print(f"ERREUR génération : {ex}")
-                import traceback; traceback.print_exc()
+                print(f"❌ ERREUR génération : {type(ex).__name__}: {ex}", flush=True)
+                import traceback
+                traceback.print_exc()
 
         t = threading.Thread(target=generer, daemon=True)
         t.start()
