@@ -871,17 +871,11 @@ Valide le contenu puis transfère au client.
     ]
 
     if offre in ('famille', 'prestige'):
-        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statique', 'Les_Heritages_Invisibles.pdf')
-        print(f"DEBUG ebook_path: {ebook_path}")
-        print(f"DEBUG exists: {os.path.exists(ebook_path)}")
-        import glob
-        print(f"DEBUG statique: {glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statique', '*'))}")
+        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'heritages_invisibles.pdf')
         if os.path.exists(ebook_path):
             with open(ebook_path, 'rb') as f:
-                ebook_data = f.read()
-                print(f"DEBUG ebook size: {len(ebook_data)} bytes")
                 attachments.append({
-                    "content": base64.b64encode(ebook_data).decode('utf-8'),
+                    "content": base64.b64encode(f.read()).decode('utf-8'),
                     "name": "Les_Heritages_Invisibles.pdf"
                 })
         else:
