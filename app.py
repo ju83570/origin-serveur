@@ -871,7 +871,7 @@ Valide le contenu puis transfère au client.
     ]
 
     if offre in ('famille', 'prestige'):
-        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statique', 'Les_Héritages_Invisibles.pdf')
+        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statique', 'Les_Heritages_Invisibles.pdf')
         print(f"DEBUG ebook_path: {ebook_path}")
         print(f"DEBUG exists: {os.path.exists(ebook_path)}")
         import glob
