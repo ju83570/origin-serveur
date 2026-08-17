@@ -12,6 +12,7 @@ from datetime import datetime, date
 import ephem as sw
 import pytz, math
 import base64
+from weasyprint import HTML as WeasyprintHTML
 
 TIMEZONE_MAP = {
     'france': 'Europe/Paris', 'fr': 'Europe/Paris',
@@ -551,9 +552,303 @@ window.addEventListener('scroll', () => {{
 </script>
 </body></html>"""
 
-def envoyer_email(html_content, clients, offre, email_client):
+CSS_PRINT = """
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap');
+
+:root {
+  --or: #C9A84C;
+  --or-clair: #E8C97A;
+  --cuivre: #B97333;
+  --creme: #F5EDD8;
+  --encre: #2A2318;
+  --muted: #7A6E58;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  background: var(--creme);
+  color: var(--encre);
+  font-size: 11pt;
+  line-height: 1.85;
+}
+
+@page {
+  size: A4;
+  margin: 1.5cm 1.8cm;
+  @bottom-center {
+    content: "ORIGIN · Lecture personnalisée · Confidentiel";
+    font-family: 'Jost', sans-serif;
+    font-size: 6.5pt;
+    letter-spacing: .2em;
+    color: #9E9478;
+  }
+  @bottom-right {
+    content: counter(page);
+    font-family: 'Jost', sans-serif;
+    font-size: 7pt;
+    color: #C9A84C;
+  }
+}
+@page cover { margin: 0; }
+.cover { page: cover; }
+
+.page { page-break-after: always; }
+.page:last-child { page-break-after: avoid; }
+
+/* COVER */
+.cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 4cm 2cm;
+  background: #0A0A08;
+  color: var(--creme);
+}
+.cover-symbol {
+  font-size: 22pt;
+  color: var(--or);
+  margin-bottom: 1.5cm;
+}
+.cover-eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 7pt;
+  letter-spacing: .5em;
+  text-transform: uppercase;
+  color: var(--cuivre);
+  margin-bottom: 1cm;
+}
+.cover-origin {
+  font-family: 'Cinzel', serif;
+  font-size: 42pt;
+  letter-spacing: .22em;
+  color: var(--or);
+  margin-bottom: .5cm;
+}
+.cover-tagline {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13pt;
+  font-style: italic;
+  color: rgba(245,237,216,.75);
+  margin-bottom: 1.5cm;
+}
+.cover-ligne {
+  width: 60px;
+  height: 1px;
+  background: var(--or);
+  margin: 0 auto 1cm;
+  opacity: .5;
+}
+.cover-names {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22pt;
+  font-style: italic;
+  color: var(--creme);
+  margin-bottom: .4cm;
+}
+.cover-meta {
+  font-family: 'Jost', sans-serif;
+  font-size: 7pt;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: rgba(245,237,216,.4);
+  margin-top: 1.5cm;
+}
+
+/* SECTIONS */
+.section { padding: 1.5cm 2cm; }
+.section + .section { border-top: 1px solid rgba(201,168,76,.18); }
+
+.eyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 6.5pt;
+  letter-spacing: .45em;
+  text-transform: uppercase;
+  color: var(--cuivre);
+  margin-bottom: .4cm;
+  display: block;
+}
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 16pt;
+  font-weight: 400;
+  color: var(--or);
+  margin-bottom: .35cm;
+  letter-spacing: .08em;
+  line-height: 1.3;
+}
+.light-line {
+  width: 50px;
+  height: 1px;
+  background: var(--or);
+  margin: .4cm 0 .8cm;
+  opacity: .5;
+}
+
+/* PROSE */
+.prose { font-size: 11pt; line-height: 1.9; color: var(--encre); }
+.prose p { margin-bottom: .55cm; }
+.prose em { color: var(--cuivre); font-style: italic; }
+
+/* LETTRE */
+.lettre {
+  background: rgba(201,168,76,.04);
+  border: 1px solid rgba(201,168,76,.2);
+  border-left: 3px solid var(--cuivre);
+  padding: 1cm 1.4cm;
+  margin-bottom: .5cm;
+}
+.lettre-signature {
+  font-family: 'Cinzel', serif;
+  font-size: 7.5pt;
+  letter-spacing: .2em;
+  color: var(--cuivre);
+  margin-top: .5cm;
+}
+
+/* MANTRAS */
+.mantra-block {
+  text-align: center;
+  padding: 1cm 1.5cm;
+  border: 1px solid rgba(201,168,76,.15);
+  margin-bottom: .5cm;
+  background: rgba(201,168,76,.02);
+}
+.mantra-prenom {
+  font-family: 'Cinzel', serif;
+  font-size: 7pt;
+  letter-spacing: .45em;
+  text-transform: uppercase;
+  color: var(--cuivre);
+  margin-bottom: .35cm;
+}
+.mantra-txt {
+  font-family: 'Cinzel', serif;
+  font-size: 13pt;
+  color: var(--or);
+  line-height: 1.6;
+  margin-bottom: .25cm;
+}
+.mantra-note { font-size: 9.5pt; font-style: italic; color: var(--muted); }
+
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: 1cm;
+  margin: .6cm 0;
+  opacity: .4;
+}
+.ornament-line { flex: 1; height: 1px; background: var(--or); }
+.ornament-symbol { color: var(--or); font-size: 10pt; }
+
+/* FINAL */
+.final-section {
+  padding: 1.5cm 2cm;
+  text-align: center;
+  border-top: 1px solid rgba(201,168,76,.18);
+}
+.final-prose { font-size: 11pt; line-height: 1.9; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
+.final-prose p { margin-bottom: .55cm; }
+.final-prose em { color: var(--cuivre); font-style: italic; }
+.final-origin {
+  font-family: 'Cinzel', serif;
+  font-size: 7.5pt;
+  letter-spacing: .55em;
+  color: var(--cuivre);
+}
+"""
+
+def generer_pdf_imprimable(offre, clients, narratif):
+    annee = date.today().year
+
+    if offre == 'solo':
+        noms_display = f"{clients[0]['prenom']} {clients[0].get('nom','')}"
+        tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
+    elif offre == 'couple':
+        noms_display = f"{clients[0]['prenom']} & {clients[1]['prenom']}"
+        tagline = "Ce que vos deux lignées ont traversé pour que vous vous retrouviez."
+    else:
+        noms_display = " · ".join(c['prenom'] for c in clients)
+        tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
+
+    sections_html = ""
+    for sec in narratif.get('sections', []):
+        sections_html += f"""
+<div class="section">
+  <span class="eyebrow">{sec.get('eyebrow','')}</span>
+  <h2 class="section-title">{sec.get('titre','')}</h2>
+  <div class="light-line"></div>
+  <div class="prose">{sec.get('contenu','')}</div>
+</div>"""
+
+    mantras_html = ""
+    for i, m in enumerate(narratif.get('mantras', [])):
+        sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
+        mantras_html += f"""{sep}
+<div class="mantra-block">
+  <p class="mantra-prenom">{m.get('prenom','').upper()}</p>
+  <p class="mantra-txt">{m.get('texte','')}</p>
+  <p class="mantra-note">{m.get('note','')}</p>
+</div>"""
+
+    html_print = f"""<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>{CSS_PRINT}</style>
+</head>
+<body>
+
+<div class="cover page">
+  <p class="cover-symbol">✦</p>
+  <p class="cover-eyebrow">Lecture personnalisée · {offre.capitalize()} · {annee}</p>
+  <h1 class="cover-origin">ORIGIN</h1>
+  <p class="cover-tagline">{tagline}</p>
+  <div class="cover-ligne"></div>
+  <p class="cover-names">{noms_display}</p>
+  <p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>
+</div>
+
+<div class="section page">
+  <span class="eyebrow">Avant tout</span>
+  <h2 class="section-title">Une lettre pour toi</h2>
+  <div class="light-line"></div>
+  <div class="lettre">
+    <div class="prose">{narratif.get('lettre','')}</div>
+    <p class="lettre-signature">ORIGIN · Lecture personnalisée {annee}</p>
+  </div>
+</div>
+
+{sections_html}
+
+<div class="section page">
+  <span class="eyebrow">Mots pour avancer</span>
+  <h2 class="section-title" style="text-align:center">Tes mantras personnalisés</h2>
+  <div class="light-line" style="margin:.4cm auto .8cm;"></div>
+  {mantras_html}
+</div>
+
+<div class="final-section">
+  <div class="final-prose">{narratif.get('message_final','')}</div>
+  <p class="final-origin">ORIGIN · origin-famille.fr</p>
+</div>
+
+</body>
+</html>"""
+
+    return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf()
+
+
+def envoyer_email(html_content, pdf_bytes, clients, offre, email_client):
     prenoms = " & ".join(c['prenom'] for c in clients)
-    filename = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date.today().strftime('%Y%m%d')}.html"
+    date_str = date.today().strftime('%Y%m%d')
+    filename_html = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}.html"
+    filename_pdf  = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"
 
     body_txt = f"""Nouveau livret ORIGIN généré automatiquement.
 
@@ -562,16 +857,36 @@ Offre : {offre.upper()}
 Email client : {email_client}
 Date : {date.today().strftime('%d/%m/%Y')}
 
-Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transfère au client.
+Pièces jointes :
+- {filename_html} → livret interactif (ouvrir dans un navigateur)
+- {filename_pdf}  → version imprimable A4
+{"- Les_Heritages_Invisibles.pdf → ebook bonus inclus" if offre in ('famille','prestige') else ""}
+
+Valide le contenu puis transfère au client.
 """
-    attachment_b64 = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
+
+    attachments = [
+        {"content": base64.b64encode(html_content.encode('utf-8')).decode('utf-8'), "name": filename_html},
+        {"content": base64.b64encode(pdf_bytes).decode('utf-8'), "name": filename_pdf},
+    ]
+
+    if offre in ('famille', 'prestige'):
+        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'Les_Heritages_Invisibles.pdf')
+        if os.path.exists(ebook_path):
+            with open(ebook_path, 'rb') as f:
+                attachments.append({
+                    "content": base64.b64encode(f.read()).decode('utf-8'),
+                    "name": "Les_Heritages_Invisibles.pdf"
+                })
+        else:
+            print(f"⚠ Ebook introuvable : {ebook_path}")
 
     payload = {
         "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
         "to": [{"email": EMAIL_DEST}],
         "subject": f"✦ ORIGIN — Nouveau livret {offre} — {prenoms}",
         "textContent": body_txt,
-        "attachment": [{"content": attachment_b64, "name": filename}]
+        "attachment": attachments
     }
 
     r = requests.post(
@@ -668,7 +983,8 @@ def webhook():
             try:
                 narratif = appeler_claude(offre, profils_txt)
                 html = generer_html(offre, clients, narratif)
-                envoyer_email(html, clients, offre, email_client)
+                pdf = generer_pdf_imprimable(offre, clients, narratif)
+                envoyer_email(html, pdf, clients, offre, email_client)
                 print(f"✅ Livret {offre} envoyé à {email_client}")
             except Exception as ex:
                 print(f"ERREUR génération : {ex}")
