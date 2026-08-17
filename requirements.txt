@@ -3,4 +3,4 @@ requests==2.32.3
 ephem==4.1.5
 pytz==2024.1
 gunicorn==22.0.0
-
+weasyprint
