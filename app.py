@@ -13,13 +13,11 @@ import ephem as sw
 import pytz, math
 import base64
 
-# Timezones par pays
 TIMEZONE_MAP = {
     'france': 'Europe/Paris', 'fr': 'Europe/Paris',
     'belgique': 'Europe/Brussels', 'suisse': 'Europe/Zurich',
     'canada': 'America/Montreal', 'maroc': 'Africa/Casablanca',
     'espagne': 'Europe/Madrid', 'italie': 'Europe/Rome',
-    'default': 'Europe/Paris'
 }
 
 def get_timezone(ville):
@@ -31,15 +29,10 @@ def get_timezone(ville):
 
 app = Flask(__name__)
 
-# ── CONFIG
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 BREVO_SMTP_LOGIN  = os.environ.get("BREVO_SMTP_LOGIN", "")
 BREVO_SMTP_KEY    = os.environ.get("BREVO_SMTP_KEY", "")
 EMAIL_DEST        = os.environ.get("EMAIL_DEST", "")
-
-# ════════════════════════════════════════════════════
-# NUMÉROLOGIE
-# ════════════════════════════════════════════════════
 
 MAITRES = {11, 22, 33}
 SIGNES = ['Bélier','Taureau','Gémeaux','Cancer','Lion','Vierge',
@@ -76,10 +69,6 @@ def label_nombre(n):
     noms = {11:"Maître Inspirateur", 22:"Maître Bâtisseur", 33:"Maître Enseignant"}
     return f"{n} ({noms[n]})" if n in noms else str(n)
 
-# ════════════════════════════════════════════════════
-# COORDONNÉES VILLES
-# ════════════════════════════════════════════════════
-
 VILLES_FR = {
     "paris":(48.8566,2.3522),"marseille":(43.2965,5.3698),"lyon":(45.7640,4.8357),
     "nice":(43.7102,7.2620),"toulouse":(43.6047,1.4442),"bordeaux":(44.8378,-0.5792),
@@ -99,10 +88,6 @@ def get_coords(ville):
         if k in key or key in k:
             return v
     return 43.2965, 5.3698
-
-# ════════════════════════════════════════════════════
-# ASTROLOGIE
-# ════════════════════════════════════════════════════
 
 CORPS_EPHEM = {
     'Soleil': sw.Sun, 'Lune': sw.Moon, 'Mercure': sw.Mercury,
@@ -176,10 +161,6 @@ def fmt_profil(p):
         lines.append(f"  Ascendant  : {asc['signe']}{deg_str}")
     return "\n".join(lines), num, astro
 
-# ════════════════════════════════════════════════════
-# APPEL CLAUDE
-# ════════════════════════════════════════════════════
-
 def appeler_claude(offre, profils_txt):
     structures = {
         'solo': """
@@ -249,7 +230,6 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
         json={"model": "claude-sonnet-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
         timeout=300
     )
-
     r.raise_for_status()
     raw = r.json()['content'][0]['text']
     raw = re.sub(r'^```json\s*','',raw.strip())
@@ -275,71 +255,119 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
             "message_final": "<p>Nous avons bien reçu vos informations et préparons votre livret. Il vous sera envoyé sous 24h.</p>"
         }
 
-# ════════════════════════════════════════════════════
-# GÉNÉRATION HTML
-# ════════════════════════════════════════════════════
-
 CSS = """
 :root{--noir:#090907;--encre:#111109;--or:#C9A84C;--or-clair:#E8C97A;--cuivre:#B97333;--creme:#F2ECD8;--muted:#9E9478;--dim:#5A5340;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',serif;font-weight:300;overflow-x:hidden;}
+
+/* COVER */
 .cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:4rem 2rem;text-align:center;}
-.cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(185,115,51,.12) 0%,transparent 65%);}
-.particles{position:absolute;inset:0;pointer-events:none;}
-.particle{position:absolute;width:2px;height:2px;background:var(--or);border-radius:50%;opacity:0;animation:pf var(--dur) var(--delay) ease-in-out infinite;}
-@keyframes pf{0%{opacity:0;transform:translateY(0) scale(0)}20%{opacity:.8}80%{opacity:.4}100%{opacity:0;transform:translateY(-120px) scale(1.5)}}
-.cover-content{position:relative;z-index:2;max-width:680px;margin:0 auto;}
-.cover-eyebrow{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.55em;text-transform:uppercase;color:var(--cuivre);margin-bottom:2.5rem;}
-.seed-wrap{width:130px;height:130px;margin:0 auto 2.5rem;position:relative;}
+.cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(185,115,51,.15) 0%,transparent 65%);}
+.cover-bg-pulse{position:absolute;inset:0;background:radial-gradient(ellipse 40% 40% at 50% 50%,rgba(201,168,76,.08) 0%,transparent 60%);animation:bgp 8s ease-in-out infinite;}
+@keyframes bgp{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+
+/* PARTICULES */
+.particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;opacity:0;animation:pf var(--dur) var(--delay) ease-in-out infinite;}
+@keyframes pf{0%{opacity:0;transform:translateY(0) scale(0)}15%{opacity:.9}70%{opacity:.3}100%{opacity:0;transform:translateY(-150px) scale(2)}}
+.star{position:absolute;width:1px;height:1px;background:var(--or-clair);border-radius:50%;animation:twinkle var(--dur) var(--delay) ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(1)}50%{opacity:.8;transform:scale(1.5)}}
+
+/* LOGO MAIN */
+.logo-main-wrap{position:relative;width:220px;height:220px;margin:0 auto 1.5rem;animation:logofade 2s ease-out forwards;}
+@keyframes logofade{from{opacity:0;transform:translateY(-20px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.logo-main-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 30px rgba(185,115,51,.5));animation:logoglow 6s ease-in-out infinite;}
+@keyframes logoglow{0%,100%{filter:drop-shadow(0 0 20px rgba(185,115,51,.4))}50%{filter:drop-shadow(0 0 50px rgba(232,201,122,.7))}}
+
+/* GRAINE DE VIE */
+.cover-content{position:relative;z-index:2;max-width:720px;margin:0 auto;}
+.cover-eyebrow{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.55em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1.5rem;animation:fadein 1.5s ease-out forwards;}
+.seed-wrap{width:110px;height:110px;margin:0 auto 2rem;position:relative;}
 .seed-svg{width:100%;height:100%;animation:sr 60s linear infinite;filter:drop-shadow(0 0 18px rgba(201,168,76,.45));}
 @keyframes sr{to{transform:rotate(360deg)}}
 .seed-pulse{position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(201,168,76,.15);animation:pr 3s ease-in-out infinite;}
 .seed-pulse:nth-child(2){inset:-32px;animation-delay:1s;border-color:rgba(201,168,76,.08);}
 @keyframes pr{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.5}}
-.cover-title{font-family:'Cinzel',serif;font-size:clamp(2.2rem,6vw,3.8rem);font-weight:400;letter-spacing:.12em;color:var(--or-clair);margin-bottom:1rem;animation:tg 6s ease-in-out infinite;}
-@keyframes tg{0%,100%{text-shadow:0 0 40px rgba(232,201,122,.2)}50%{text-shadow:0 0 80px rgba(232,201,122,.5)}}
-.cover-names{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,4vw,2.2rem);font-style:italic;color:var(--creme);margin-bottom:.6rem;}
+
+.cover-title{font-family:'Cinzel',serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:400;letter-spacing:.12em;color:var(--or-clair);margin-bottom:.8rem;animation:tg 6s ease-in-out infinite,fadein 2s ease-out forwards;}
+@keyframes tg{0%,100%{text-shadow:0 0 40px rgba(232,201,122,.2)}50%{text-shadow:0 0 80px rgba(232,201,122,.6),0 0 120px rgba(201,168,76,.3)}}
+@keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.cover-names{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-style:italic;color:var(--creme);margin-bottom:.6rem;}
 .cover-amp{color:var(--or);font-style:normal;margin:0 .5rem;}
-.cover-tagline{font-size:1rem;color:var(--muted);font-style:italic;margin-bottom:3rem;line-height:1.65;}
+.cover-tagline{font-size:1.05rem;color:var(--muted);font-style:italic;margin-bottom:2.5rem;line-height:1.7;}
 .cover-ligne{width:80px;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:0 auto 1.8rem;}
 .cover-meta{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);}
+
+/* SCROLL INDICATOR */
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:.4;animation:bounce 2s ease-in-out infinite;}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+.scroll-hint span{font-family:'Jost',sans-serif;font-size:.55rem;letter-spacing:.3em;color:var(--or);}
+.scroll-arrow{width:20px;height:20px;border-right:1px solid var(--or);border-bottom:1px solid var(--or);transform:rotate(45deg);}
+
+/* NAV DOTS */
 .nav-dots{position:fixed;right:1.8rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.7rem;z-index:100;}
-.nav-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.25);cursor:pointer;transition:all .3s;}
-.nav-dot.active,.nav-dot:hover{background:var(--or);box-shadow:0 0 8px rgba(201,168,76,.6);transform:scale(1.4);}
-.section{max-width:820px;margin:0 auto;padding:6rem 2.5rem;}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.25);cursor:pointer;transition:all .4s;position:relative;}
+.nav-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(201,168,76,.0);transition:all .4s;}
+.nav-dot.active,.nav-dot:hover{background:var(--or);box-shadow:0 0 12px rgba(201,168,76,.7);transform:scale(1.5);}
+.nav-dot.active::after{border-color:rgba(201,168,76,.3);}
+
+/* SECTIONS */
+.section{max-width:820px;margin:0 auto;padding:7rem 2.5rem;}
 .section-sep{border-top:1px solid rgba(201,168,76,.08);}
 .s-eyebrow{font-family:'Jost',sans-serif;font-size:.58rem;letter-spacing:.5em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1rem;display:block;}
 .s-title{font-family:'Cinzel',serif;font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:400;color:var(--or-clair);margin-bottom:2.5rem;letter-spacing:.06em;line-height:1.3;}
 .s-title-center{text-align:center;}
-.prose{font-size:clamp(1rem,1.8vw,1.12rem);line-height:1.95;color:var(--creme);font-weight:300;}
-.prose p{margin-bottom:1.7rem;}
+.prose{font-size:clamp(1rem,1.8vw,1.12rem);line-height:2;color:var(--creme);font-weight:300;}
+.prose p{margin-bottom:1.8rem;}
 .prose em{color:var(--or-clair);font-style:italic;}
-.lettre{background:rgba(201,168,76,.03);border:1px solid rgba(201,168,76,.12);border-left:3px solid var(--cuivre);padding:2.8rem 3rem;position:relative;}
+
+/* LETTRE */
+.lettre{background:rgba(201,168,76,.03);border:1px solid rgba(201,168,76,.12);border-left:3px solid var(--cuivre);padding:2.8rem 3rem;position:relative;overflow:hidden;}
+.lettre::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,var(--cuivre),transparent);}
 .lettre-signature{margin-top:2rem;font-size:.85rem;letter-spacing:.2em;color:var(--cuivre);font-family:'Cinzel',serif;}
+
+/* ORNEMENTS */
 .ornament{display:flex;align-items:center;gap:1.2rem;margin:3rem 0;opacity:.4;}
 .ornament-line{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--or));}
 .ornament-line:last-child{background:linear-gradient(to left,transparent,var(--or));}
 .ornament-symbol{color:var(--or);font-size:1rem;}
-.mantra-wrap{text-align:center;padding:3.5rem 2rem;position:relative;}
-.mantra-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(185,115,51,.07) 0%,transparent 70%);pointer-events:none;}
+
+/* MANTRAS */
+.mantra-wrap{text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;}
+.mantra-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(185,115,51,.08) 0%,transparent 70%);pointer-events:none;animation:mb 5s ease-in-out infinite;}
+@keyframes mb{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .mantra-prenom{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.45em;color:var(--cuivre);margin-bottom:1.5rem;position:relative;z-index:1;}
-.mantra-txt{font-family:'Cinzel',serif;font-size:clamp(1.1rem,2.5vw,1.5rem);font-weight:400;color:var(--or-clair);line-height:1.7;position:relative;z-index:1;}
-.mantra-note{margin-top:1rem;font-size:.9rem;color:var(--dim);font-style:italic;position:relative;z-index:1;}
-.final-wrap{min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;position:relative;}
-.final-glow{position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(185,115,51,.1) 0%,transparent 70%);animation:fb 6s ease-in-out infinite;}
-@keyframes fb{0%,100%{opacity:.6}50%{opacity:1}}
-.final-prose{font-size:clamp(1rem,1.8vw,1.1rem);line-height:1.95;color:var(--creme);max-width:680px;position:relative;z-index:1;margin-bottom:2.5rem;}
+.mantra-txt{font-family:'Cinzel',serif;font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:400;color:var(--or-clair);line-height:1.7;position:relative;z-index:1;}
+.mantra-note{margin-top:1rem;font-size:.95rem;color:var(--dim);font-style:italic;position:relative;z-index:1;}
+
+/* FINAL */
+.final-wrap{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;position:relative;}
+.final-glow{position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(185,115,51,.12) 0%,transparent 70%);animation:fb 6s ease-in-out infinite;}
+@keyframes fb{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+.final-prose{font-size:clamp(1rem,1.8vw,1.1rem);line-height:2;color:var(--creme);max-width:680px;position:relative;z-index:1;margin-bottom:2.5rem;}
 .final-prose p{margin-bottom:1.5rem;}
 .final-prose em{color:var(--or-clair);font-style:italic;}
 .final-origin{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.55em;color:var(--cuivre);position:relative;z-index:1;}
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease;}
+.final-seed{width:80px;height:80px;margin:0 auto 2rem;opacity:.6;animation:sr 30s linear infinite;}
+
+/* RÉVÉLATION AU SCROLL */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 1s ease,transform 1s ease;}
 .reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity 1s ease,transform 1s ease;}
+.reveal-left.visible{opacity:1;transform:translateX(0);}
+.reveal-scale{opacity:0;transform:scale(0.92);transition:opacity 1s ease,transform 1s ease;}
+.reveal-scale.visible{opacity:1;transform:scale(1);}
+
+/* LIGNE LUMINEUSE */
+.light-line{width:0;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:2rem auto;transition:width 1.5s ease;}
+.light-line.visible{width:120px;}
+
 footer{border-top:1px solid rgba(201,168,76,.08);padding:2.5rem;text-align:center;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.25em;color:var(--dim);}
-@media(max-width:768px){.section{padding:4rem 1.4rem;}.lettre{padding:2rem 1.6rem;}}
+@media(max-width:768px){.section{padding:4rem 1.4rem;}.lettre{padding:2rem 1.6rem;}.logo-main-wrap{width:180px;height:180px;}}
 """
 
-SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none">
+SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs><radialGradient id="sg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#E8C97A" stop-opacity=".9"/><stop offset="100%" stop-color="#B97333" stop-opacity=".5"/></radialGradient></defs>
 <circle cx="100" cy="100" r="28" stroke="url(#sg)" stroke-width="1.2" fill="none"/>
 <circle cx="100" cy="72" r="28" stroke="url(#sg)" stroke-width="1.2" fill="none" opacity=".85"/>
@@ -372,11 +400,13 @@ def generer_html(offre, clients, narratif):
 
     sections_html = ""
     for i, sec in enumerate(narratif.get('sections',[])):
+        delay = i * 0.1
         sections_html += f"""
 <section class="section section-sep" id="s{i+2}">
-  <div class="reveal">
+  <div class="reveal" style="transition-delay:{delay}s">
     <span class="s-eyebrow">{sec.get('eyebrow','')}</span>
     <h2 class="s-title">{sec['titre']}</h2>
+    <div class="light-line"></div>
     <div class="prose">{sec['contenu']}</div>
   </div>
 </section>"""
@@ -385,7 +415,7 @@ def generer_html(offre, clients, narratif):
     for i, m in enumerate(narratif.get('mantras',[])):
         sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
         mantras_html += f"""{sep}
-<div class="mantra-wrap">
+<div class="mantra-wrap reveal-scale">
   <div class="mantra-bg"></div>
   <p class="mantra-prenom">{m['prenom'].upper()}</p>
   <p class="mantra-txt">{m['texte']}</p>
@@ -407,63 +437,119 @@ def generer_html(offre, clients, narratif):
 </head>
 <body>
 <nav class="nav-dots" id="navDots">{nav}</nav>
+
 <section class="cover" id="s0">
   <div class="cover-bg"></div>
+  <div class="cover-bg-pulse"></div>
   <div class="particles" id="particles"></div>
   <div class="cover-content">
     <p class="cover-eyebrow">Analyse personnalisée · {offre.capitalize()} · {annee}</p>
-    <div class="seed-wrap"><div class="seed-pulse"></div><div class="seed-pulse"></div>{SEED_SVG}</div>
-    <h1 class="cover-title">ORIGIN</h1>
+    <div class="logo-main-wrap">
+      <img class="logo-main-img" src="https://origin-famille.fr/logo-main.png" alt="ORIGIN" />
+    </div>
+    <div class="seed-wrap">
+      <div class="seed-pulse"></div>
+      <div class="seed-pulse"></div>
+      {SEED_SVG}
+    </div>
     <p class="cover-names">{noms}</p>
     <p class="cover-tagline">{tagline}</p>
     <div class="cover-ligne"></div>
     <p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>
   </div>
+  <div class="scroll-hint">
+    <span>Découvrir</span>
+    <div class="scroll-arrow"></div>
+  </div>
 </section>
+
 <section class="section section-sep" id="s1">
   <div class="reveal">
     <span class="s-eyebrow">Avant tout</span>
     <h2 class="s-title">Une lettre pour toi</h2>
+    <div class="light-line"></div>
     <div class="lettre">
       <div class="prose">{narratif.get('lettre','')}</div>
       <p class="lettre-signature">ORIGIN · Lecture personnalisée {annee}</p>
     </div>
   </div>
 </section>
+
 {sections_html}
+
 <section class="section section-sep" id="s{sm}">
   <div class="reveal">
     <span class="s-eyebrow">Mots pour avancer</span>
     <h2 class="s-title s-title-center">Tes mantras personnalisés</h2>
+    <div class="light-line" style="margin:0 auto 3rem;"></div>
     {mantras_html}
   </div>
 </section>
+
 <section class="section section-sep" id="s{sf}">
   <div class="reveal">
     <div class="final-wrap">
       <div class="final-glow"></div>
+      <svg class="final-seed" viewBox="0 0 200 200" fill="none">{SEED_SVG}</svg>
       <div class="final-prose">{narratif.get('message_final','')}</div>
       <div class="cover-ligne" style="margin-bottom:2rem;"></div>
       <p class="final-origin">ORIGIN · origin-famille.fr</p>
     </div>
   </div>
 </section>
+
 <footer>ORIGIN · Analyse personnalisée · {annee} · Confidentiel</footer>
+
 <script>
-const c=document.getElementById('particles');
-for(let i=0;i<45;i++){{const p=document.createElement('div');p.className='particle';p.style.cssText=`left:${{Math.random()*100}}%;top:${{50+Math.random()*50}}%;--dur:${{4+Math.random()*7}}s;--delay:${{Math.random()*10}}s;`;c.appendChild(p);}}
-const dots=document.querySelectorAll('.nav-dot');
-const sIds={sid_list};
-const sections=sIds.map(id=>document.getElementById(id));
-dots.forEach((d,i)=>d.addEventListener('click',()=>{{if(sections[i])sections[i].scrollIntoView({{behavior:'smooth'}})}}));
-const obs=new IntersectionObserver(e=>{{e.forEach(en=>{{if(en.isIntersecting){{en.target.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'));const idx=sections.indexOf(en.target);if(idx>=0){{dots.forEach(d=>d.classList.remove('active'));if(dots[idx])dots[idx].classList.add('active');}}}}}});}},{{threshold:0.12}});
-sections.forEach(s=>{{if(s)obs.observe(s);}});
+// Particules dorées
+const pc = document.getElementById('particles');
+for(let i=0;i<60;i++){{
+  const p = document.createElement('div');
+  const isSmall = Math.random() > 0.5;
+  if(isSmall){{
+    p.className='star';
+    p.style.cssText=`left:${{Math.random()*100}}%;top:${{Math.random()*100}}%;--dur:${{3+Math.random()*5}}s;--delay:${{Math.random()*8}}s;`;
+  }}else{{
+    p.className='particle';
+    const size = Math.random()*3+1;
+    p.style.cssText=`left:${{Math.random()*100}}%;top:${{60+Math.random()*40}}%;width:${{size}}px;height:${{size}}px;background:${{Math.random()>0.5?'#E8C97A':'#B97333'}};--dur:${{5+Math.random()*8}}s;--delay:${{Math.random()*12}}s;`;
+  }}
+  pc.appendChild(p);
+}}
+
+// Navigation dots
+const dots = document.querySelectorAll('.nav-dot');
+const sIds = {sid_list};
+const sections = sIds.map(id => document.getElementById(id));
+dots.forEach((d,i) => d.addEventListener('click', () => {{
+  if(sections[i]) sections[i].scrollIntoView({{behavior:'smooth'}});
+}}));
+
+// Intersection Observer — révélations + nav active
+const revealObs = new IntersectionObserver(entries => {{
+  entries.forEach(en => {{
+    if(en.isIntersecting){{
+      en.target.querySelectorAll('.reveal,.reveal-left,.reveal-scale,.light-line').forEach(el => el.classList.add('visible'));
+      const idx = sections.indexOf(en.target);
+      if(idx >= 0){{
+        dots.forEach(d => d.classList.remove('active'));
+        if(dots[idx]) dots[idx].classList.add('active');
+      }}
+    }}
+  }});
+}}, {{threshold: 0.1}});
+sections.forEach(s => {{ if(s) revealObs.observe(s); }});
+
+// Effet parallaxe léger sur la cover
+window.addEventListener('scroll', () => {{
+  const sy = window.scrollY;
+  const coverContent = document.querySelector('.cover-content');
+  if(coverContent) coverContent.style.transform = `translateY(${{sy * 0.3}}px)`;
+  const logo = document.querySelector('.logo-main-wrap');
+  if(logo) logo.style.transform = `translateY(${{sy * 0.15}}px)`;
+}});
 </script>
 </body></html>"""
-
-# ════════════════════════════════════════════════════
-# ENVOI EMAIL via API Brevo (HTTP — pas SMTP)
-# ════════════════════════════════════════════════════
 
 def envoyer_email(html_content, clients, offre, email_client):
     prenoms = " & ".join(c['prenom'] for c in clients)
@@ -478,7 +564,6 @@ Date : {date.today().strftime('%d/%m/%Y')}
 
 Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transfère au client.
 """
-
     attachment_b64 = base64.b64encode(html_content.encode('utf-8')).decode('utf-8')
 
     payload = {
@@ -495,14 +580,9 @@ Le livret est en pièce jointe. Ouvre-le dans un navigateur, valide, puis transf
         json=payload,
         timeout=30
     )
-
     print(f"Brevo API response: {r.status_code} — {r.text[:200]}")
     r.raise_for_status()
     print(f"✅ Email envoyé à {EMAIL_DEST}")
-
-# ════════════════════════════════════════════════════
-# ROUTES FLASK
-# ════════════════════════════════════════════════════
 
 @app.after_request
 def add_cors(response):
