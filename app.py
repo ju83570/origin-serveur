@@ -871,7 +871,7 @@ Valide le contenu puis transfère au client.
     ]
 
     if offre in ('famille', 'prestige'):
-        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'Les_Heritages_Invisibles.pdf')
+        ebook_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'statique', 'Les_Héritages_Invisibles.pdf')
         if os.path.exists(ebook_path):
             with open(ebook_path, 'rb') as f:
                 attachments.append({
