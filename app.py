@@ -141,9 +141,11 @@ def fmt_profil(p):
     }
     astro = calc_theme(j,m,a,p.get('ville','Marseille'),p.get('heure'),p.get('minute',0),p.get('asc_force'))
     heure_str = f"{p['heure']:02d}h{p.get('minute',0):02d}" if p.get('heure') is not None else "heure inconnue"
+    filiation = p.get('filiation', '')
+    filiation_str = f"\n  Filiation     : {filiation}" if filiation else ""
     lines = [
         f"PROFIL : {pr} {nm}",
-        f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str})",
+        f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}",
         "",
         "NUMÉROLOGIE",
         f"  Chemin de vie : {label_nombre(num['cdv'])}",
@@ -862,6 +864,7 @@ def webhook():
                         'heure':  int(data[f'heure{i}']) if data.get(f'heure{i}') else None,
                         'minute': int(data.get(f'minute{i}',0)),
                         'asc_force': data.get(f'asc{i}') or None,
+                        'filiation': data.get(f'filiation{i}',''),
                     })
 
         profils_txt_parts = []
