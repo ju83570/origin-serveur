@@ -335,11 +335,17 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     r = requests.post(
         "https://api.anthropic.com/v1/messages",
         headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-        json={"model": "claude-opus-4-6", "max_tokens": 12000, "messages": [{"role": "user", "content": prompt}]},
+        json={"model": "claude-opus-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
         timeout=300
     )
     r.raise_for_status()
-    raw = r.json()['content'][0]['text']
+    resp_json = r.json()
+    stop_reason = resp_json.get('stop_reason', '?')
+    usage = resp_json.get('usage', {})
+    print(f"[Claude] stop_reason={stop_reason} | input_tokens={usage.get('input_tokens','?')} | output_tokens={usage.get('output_tokens','?')}")
+    if stop_reason == 'max_tokens':
+        print("⚠️ ATTENTION : réponse tronquée (max_tokens atteint) — le JSON sera probablement invalide")
+    raw = resp_json['content'][0]['text']
     # Nettoyage robuste markdown
     raw = raw.strip()
     raw = re.sub(r'^```(?:json)?\s*', '', raw)
@@ -1018,6 +1024,10 @@ def webhook():
         def generer():
             try:
                 narratif = appeler_claude(offre, profils_txt)
+                # Vérification que le narratif n'est pas le fallback d'erreur
+                lettre = narratif.get("lettre", "")
+                if "erreur technique" in lettre.lower() or "en cours de préparation" in lettre.lower():
+                    raise ValueError("Narratif invalide — fallback d'erreur détecté après parsing JSON")
                 html = generer_html(offre, clients, narratif)
                 pdf = generer_pdf_imprimable(offre, clients, narratif)
                 envoyer_email(html, pdf, clients, offre, email_client)
@@ -1025,6 +1035,24 @@ def webhook():
             except Exception as ex:
                 print(f"ERREUR génération : {ex}")
                 import traceback; traceback.print_exc()
+                # Alerte email interne
+                try:
+                    prenoms = " & ".join(c['prenom'] for c in clients)
+                    payload_alerte = {
+                        "sender": {"name": "ORIGIN — Alerte", "email": "contact@origin-famille.fr"},
+                        "to": [{"email": EMAIL_DEST}],
+                        "subject": f"🚨 ORIGIN — ERREUR livret {offre} — {prenoms}",
+                        "textContent": f"Une erreur est survenue lors de la génération du livret.\n\nOffre : {offre}\nClients : {prenoms}\nEmail client : {email_client}\n\nErreur :\n{ex}\n\nRelance manuelle nécessaire."
+                    }
+                    requests.post(
+                        "https://api.brevo.com/v3/smtp/email",
+                        headers={"api-key": BREVO_SMTP_KEY, "content-type": "application/json"},
+                        json=payload_alerte,
+                        timeout=15
+                    )
+                    print("📧 Alerte erreur envoyée")
+                except Exception as mail_ex:
+                    print(f"Impossible d'envoyer l'alerte : {mail_ex}")
 
         t = threading.Thread(target=generer, daemon=True)
         t.start()
