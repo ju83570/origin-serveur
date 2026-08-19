@@ -341,13 +341,20 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     r = requests.post(
         "https://api.anthropic.com/v1/messages",
         headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-        json={"model": "claude-sonnet-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
+        json={"model": "claude-opus-4-6", "max_tokens": 8000, "messages": [{"role": "user", "content": prompt}]},
         timeout=300
     )
     r.raise_for_status()
     raw = r.json()['content'][0]['text']
-    raw = re.sub(r'^```json\s*','',raw.strip())
-    raw = re.sub(r'```$','',raw.strip())
+    # Nettoyage robuste markdown
+    raw = raw.strip()
+    raw = re.sub(r'^```(?:json)?\s*', '', raw)
+    raw = re.sub(r'\s*```$', '', raw)
+    raw = raw.strip()
+    # Extraire le JSON si du texte précède
+    match = re.search(r'\{[\s\S]*\}', raw)
+    if match:
+        raw = match.group(0)
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
