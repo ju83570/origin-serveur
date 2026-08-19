@@ -254,40 +254,40 @@ def appeler_claude(offre, profils_txt):
     annee_courante = date.today().year
     structures = {
         'solo': """
-1. LETTRE D'OUVERTURE (4 paragraphes, tutoiement, chaleureux, profond — accroche sur ce qui rend cette personne unique)
-2. PORTRAIT NUMÉROLOGIQUE (5 paragraphes — chemin de vie, expression, intime, réalisation, croise les nombres entre eux)
-3. PORTRAIT ASTROLOGIQUE (5 paragraphes — Soleil, Lune, Ascendant, planètes dominantes, aspects clés narrativisés)
-4. TON ANNÉE EN COURS (3 paragraphes — thème de l'année, énergie, focus, relie au pinnacle actuel et aux transits)
-5. FORCES ET CROISSANCE (3 paragraphes — dominants comme forces célébrées, manquants comme zones d'invitation bienveillante)
-6. OMBRES → LUMIÈRES (3 transformations : situation concrète vécue + lumière + phrase à dire à voix haute)
-7. MANTRA PERSONNEL (1 mantra fort, ancré dans les données numérologique et astrologique)
-8. MESSAGE FINAL (3 paragraphes, élan vers l'avenir, chaleureux et concret)""",
+1. LETTRE D'OUVERTURE (4 paragraphes longs — accroche sur ce qui rend cette personne absolument unique, reference precise aux nombres et planetes, chaleur et profondeur)
+2. PORTRAIT NUMEROLOGIQUE (5 paragraphes denses — 1 par nombre : chemin de vie, expression, intime, realisation, annee perso/pinnacle — croise les nombres entre eux dans chaque paragraphe)
+3. PORTRAIT ASTROLOGIQUE (5 paragraphes denses — Soleil avec aspects, Lune avec aspects, Ascendant si connu, planetes personnelles Mercure+Venus+Mars, synthese du theme natal global)
+4. TON ANNEE EN COURS (3 paragraphes denses — theme de l'annee perso, energie et focus concrets, resonance avec le pinnacle et les transits actuels en 2026)
+5. FORCES ET CROISSANCE (3 paragraphes denses — dominants comme forces celebrees avec exemples de vie, manquants comme zones d'invitation avec exemples concrets de ce que ca genere)
+6. OMBRES VERS LUMIERES (3 transformations completes, 1 paragraphe dense chacune : situation concrete vecue + bascule + lumiere + phrase a dire a voix haute)
+7. MANTRA PERSONNEL (1 mantra fort — texte du mantra + note explicative de 3-4 lignes ancree dans les donnees)
+8. MESSAGE FINAL (3 paragraphes longs — elan vers l'avenir, ce que cette personne est venue accomplir, chaleureux et concret)""",
         'couple': """
-1. LETTRE D'OUVERTURE (4 paragraphes, aux deux prénoms, ce qui rend leur rencontre unique)
-2. PORTRAIT INDIVIDUEL 1 (4 paragraphes — numérologie + astrologie + année en cours + pinnacle)
-3. PORTRAIT INDIVIDUEL 2 (4 paragraphes — idem, avec ses spécificités)
-4. CE QUE VOUS CRÉEZ ENSEMBLE (4 paragraphes — résonances croisées, dynamique de couple, chiffres en miroir)
-5. VOS ANNÉES EN RÉSONANCE (2 paragraphes — croiser les années personnelles des deux)
-6. OMBRES → LUMIÈRES (3 tensions : situation concrète + lumière + phrase)
-7. MANTRAS (un par personne + un commun)
-8. MESSAGE FINAL (3 paragraphes)""",
+1. LETTRE D'OUVERTURE (4 paragraphes longs — ce qui rend cette rencontre unique, resonances entre leurs deux themes, chaleur et profondeur)
+2. PORTRAIT INDIVIDUEL PERSONNE 1 (5 paragraphes denses — numerologie complete, astrologie, annee perso, pinnacle, ce qui la/le caracterise profondement)
+3. PORTRAIT INDIVIDUEL PERSONNE 2 (5 paragraphes denses — idem, avec ses specificites propres, sans copier la structure de P1)
+4. CE QUE VOUS CREEZ ENSEMBLE (4 paragraphes denses — resonances des chiffres croises, dynamique de couple, zones de friction et de complementarite, ce que leur union cree comme energie tierce)
+5. VOS ANNEES EN RESONANCE (3 paragraphes denses — croiser les annees personnelles, les pinnacles, les transits communs en 2026)
+6. OMBRES VERS LUMIERES (3 tensions de couple, 1 paragraphe dense chacune : situation concrete + bascule + lumiere + phrase commune)
+7. MANTRAS (un par personne ancre dans son profil + un mantra commun ancre dans leur dynamique)
+8. MESSAGE FINAL (3 paragraphes longs)""",
         'famille': """
-1. LETTRE D'OUVERTURE (4 paragraphes, au foyer entier, ce qui rend cette famille unique)
-2. PORTRAIT DE CHAQUE MEMBRE (3-4 paragraphes chacun — numérologie + astrologie + année + pinnacle)
-3. DYNAMIQUE FAMILIALE (4 paragraphes — ce que chacun apporte, les tensions créatrices, les complémentarités)
-4. HÉRITAGES ET TRANSMISSION (3 paragraphes — patterns, loyautés invisibles, ce qui peut se dénouer)
-5. OMBRES → LUMIÈRES (3 tensions familiales avec situation + lumière + phrase)
-6. MANTRAS (un par membre + un commun)
-7. MESSAGE FINAL (3 paragraphes)""",
+1. LETTRE D'OUVERTURE (4 paragraphes longs — ce qui rend ce foyer unique, les resonances entre membres, ce que cette famille porte comme mission collective)
+2. PORTRAIT DE CHAQUE MEMBRE (4 paragraphes denses par personne — numerologie + astrologie + annee perso + pinnacle — chaque membre traite avec la meme profondeur)
+3. DYNAMIQUE FAMILIALE (4 paragraphes denses — ce que chacun apporte au collectif, les tensions creatives, les complementarites, les roles non dits)
+4. HERITAGES ET TRANSMISSION (4 paragraphes denses — patterns qui se repetent, loyautes invisibles, ce qui a ete transmis sans le vouloir, ce qui cherche a se liberer)
+5. OMBRES VERS LUMIERES (3 tensions familiales, 1 paragraphe dense chacune : situation concrete + bascule + lumiere + phrase)
+6. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de foyer commun)
+7. MESSAGE FINAL (3 paragraphes longs — vision de ce que ce foyer peut devenir, chaleureux et porteur d'espoir)""",
         'prestige': """
-1. LETTRE D'OUVERTURE (4 paragraphes, à la lignée entière)
-2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (3-4 paragraphes chacun — numérologie + astrologie + année)
-3. LES RACINES — LECTURE DES PARENTS DES DEUX ADULTES (4 paragraphes — ce que chaque lignée a transmis, les schémas)
-4. L'HÉRITAGE INVISIBLE (4 paragraphes — répétitions sur 3 générations, silences, loyautés, ce qui cherche à se libérer)
-5. CE QUI PEUT SE DÉNOUER (3 paragraphes — pistes concrètes de libération pour le foyer)
-6. OMBRES → LUMIÈRES (3 tensions transgénérationnelles avec situation + lumière + phrase)
-7. MANTRAS (un par membre du foyer + un commun de lignée)
-8. MESSAGE FINAL (3 paragraphes, ancré dans l'espoir et la transmission)""",
+1. LETTRE D'OUVERTURE (4 paragraphes longs — a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission)
+2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (4 paragraphes denses par personne — numerologie + astrologie + annee perso — chaque membre traite avec la meme profondeur)
+3. LES RACINES — LECTURE DES PARENTS DES DEUX ADULTES (5 paragraphes denses — profil de chaque parent, ce que chaque lignee a transmis, les schemas dominants de chaque branche familiale)
+4. L'HERITAGE INVISIBLE (4 paragraphes denses — repetitions sur 3 generations, silences familiaux, loyautes inconscientes, blessures transmises, ce qui cherche a se liberer a travers le foyer actuel)
+5. CE QUI PEUT SE DENOUER (3 paragraphes denses — pistes concretes de liberation pour chaque membre et pour le foyer, ce que cette generation peut transformer pour les suivantes)
+6. OMBRES VERS LUMIERES (3 tensions transgenationnelles, 1 paragraphe dense chacune : pattern concret observe sur plusieurs generations + bascule + lumiere + phrase de liberation)
+7. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de lignee commun qui honore les racines et ouvre vers l'avenir)
+8. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)""",
     }
     structure = structures.get(offre, structures['famille'])
 
@@ -296,21 +296,29 @@ def appeler_claude(offre, profils_txt):
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
+LONGUEUR IMPERATIVE — REGLE ABSOLUE PRIORITAIRE :
+- Chaque paragraphe = MINIMUM 6-8 lignes de prose dense. Un paragraphe court est un paragraphe raté.
+- Respecte EXACTEMENT le nombre de paragraphes indiqué. Si la structure dit 5 paragraphes, ecris 5 paragraphes complets, jamais 3.
+- Le livret complet doit atteindre entre 9 000 et 12 000 mots. Ne condense pas, ne resume pas.
+- Si tu as l'impression d'avoir dit l'essentiel, c'est le signal pour creuser encore : ajoute un exemple concret, une image, une connexion entre donnees, une nuance supplementaire.
+- Chaque section doit etre aussi longue et dense que les autres. Aucune section light.
+
 STYLE OBLIGATOIRE :
-- Tutoiement systématique, chaleureux, direct
-- Tout en prose narrative — zéro liste à puces dans le contenu
-- Profond, immersif, le client doit sentir qu'on a passé des heures sur son cas
-- Utilise les prénoms régulièrement
-- Chaque paragraphe apporte quelque chose de nouveau
-- Nomme des situations concrètes et vécues
+- Tutoiement systematique, chaleureux, direct
+- Tout en prose narrative — zero liste a puces dans le contenu
+- Profond, immersif, le client doit sentir qu'on a passe des heures sur son cas
+- Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
+- Chaque paragraphe apporte quelque chose de nouveau — jamais de redite
+- Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
 - Ton bienveillant mais direct sur les zones d'ombre
 
-UTILISATION DES DONNÉES ENRICHIES :
-- L'année personnelle, son thème et son focus sont déjà calculés — développe-les narrativement en 3-4 paragraphes
-- Les chiffres dominants = forces naturelles à nommer et célébrer
-- Les chiffres manquants = zones de croissance à aborder avec bienveillance (jamais comme des manques honteux)
-- Le pinnacle actuel = le grand cycle de vie traversé — relie-le à ce que la personne vit concrètement
-- Croise toujours numérologie + astrologie pour une analyse vraiment unique et personnalisée
+UTILISATION DES DONNEES ENRICHIES :
+- L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement sur 3 paragraphes denses
+- Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer par des situations de vie concretes
+- Les chiffres manquants = zones de croissance a explorer avec bienveillance — donne des exemples precis de ce que ca genere dans la vie quotidienne
+- Le pinnacle actuel = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
+- Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
+- Pour l'astrologie : developpe Soleil, Lune, Ascendant (si connu), puis Mercure, Venus, Mars avec leurs aspects significatifs
 
 DONNÉES :
 {profils_txt}
