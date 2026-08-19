@@ -534,9 +534,9 @@ def generer_html(offre, clients, narratif):
 <section class="section section-sep" id="s{i+2}">
   <div class="reveal" style="transition-delay:{delay}s">
     <span class="s-eyebrow">{sec.get('eyebrow','')}</span>
-    <h2 class="s-title">{sec['titre']}</h2>
+    <h2 class="s-title">{sec.get('titre','')}</h2>
     <div class="light-line"></div>
-    <div class="prose">{sec['contenu']}</div>
+    <div class="prose">{sec.get('contenu','')}</div>
   </div>
 </section>"""
 
