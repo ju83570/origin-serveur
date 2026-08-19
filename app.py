@@ -993,15 +993,18 @@ def webhook():
             })
             for i in range(3, 7):
                 if data.get(f'prenom{i}'):
+                    def safe_int(val, default):
+                        try: return int(val) if val is not None and val != '' else default
+                        except: return default
                     clients.append({
                         'prenom': data.get(f'prenom{i}',''),
                         'nom':    data.get(f'nom{i}',''),
-                        'jour':   int(data.get(f'jour{i}',1)),
-                        'mois':   int(data.get(f'mois{i}',1)),
-                        'annee':  int(data.get(f'annee{i}',2010)),
+                        'jour':   safe_int(data.get(f'jour{i}'), 1),
+                        'mois':   safe_int(data.get(f'mois{i}'), 1),
+                        'annee':  safe_int(data.get(f'annee{i}'), 2000),
                         'ville':  data.get(f'ville{i}',''),
                         'heure':  int(data[f'heure{i}']) if data.get(f'heure{i}') else None,
-                        'minute': int(data.get(f'minute{i}',0)),
+                        'minute': safe_int(data.get(f'minute{i}'), 0),
                         'asc_force': data.get(f'asc{i}') or None,
                         'filiation': data.get(f'filiation{i}',''),
                     })
