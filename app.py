@@ -859,11 +859,6 @@ def generer_pdf_imprimable(offre, clients, narratif):
   {mantras_html}
 </div>
 
-<div class="final-section">
-  <div class="final-prose">{narratif.get('message_final','')}</div>
-  <p class="final-origin">ORIGIN · origin-famille.fr</p>
-</div>
-
 <!-- CARNET D'INTÉGRATION -->
 <div class="carnet-cover page">
   <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
@@ -876,7 +871,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
 {"".join([f'''
 <div class="carnet-page page">
   <p class="carnet-header">Réflexion {i+1} · ORIGIN</p>
-  {"".join([f'<p class="carnet-question">{"q"}</p>' + '<div class="carnet-line"></div>' * 6 for q in [
+  {"".join([f'<p class="carnet-question">{q}</p>' + '<div class="carnet-line"></div>' * 6 for q in [
     ["Qu'est-ce qui t'a le plus touché dans ta lecture ?",
      "Quelle phrase résonne encore en toi ?",
      "Qu'as-tu envie de changer à partir d'aujourd'hui ?"][i % 3]
