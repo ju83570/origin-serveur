@@ -387,10 +387,6 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 @keyframes twinkle{0%,100%{opacity:0;transform:scale(1)}50%{opacity:.8;transform:scale(1.5)}}
 
 /* LOGO MAIN */
-.logo-main-wrap{position:relative;width:220px;height:220px;margin:0 auto 1.5rem;animation:logofade 2s ease-out forwards;}
-@keyframes logofade{from{opacity:0;transform:translateY(-20px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
-.logo-main-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 30px rgba(185,115,51,.5));animation:logoglow 6s ease-in-out infinite;}
-@keyframes logoglow{0%,100%{filter:drop-shadow(0 0 20px rgba(185,115,51,.4))}50%{filter:drop-shadow(0 0 50px rgba(232,201,122,.7))}}
 
 /* GRAINE DE VIE */
 .cover-content{position:relative;z-index:2;max-width:720px;margin:0 auto;}
@@ -409,6 +405,7 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .cover-amp{color:var(--or);font-style:normal;margin:0 .5rem;}
 .cover-tagline{font-size:1.05rem;color:var(--muted);font-style:italic;margin-bottom:2.5rem;line-height:1.7;}
 .cover-ligne{width:80px;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:0 auto 1.8rem;}
+.cover-title{font-family:'Cinzel',serif;font-size:clamp(2.8rem,8vw,5rem);font-weight:400;letter-spacing:.28em;color:var(--or-clair);margin-bottom:1.5rem;text-shadow:0 0 60px rgba(201,168,76,.5);animation:tg 6s ease-in-out infinite,fadein 2s ease-out forwards;}
 .cover-meta{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);}
 
 /* SCROLL INDICATOR */
@@ -479,7 +476,7 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .light-line.visible{width:120px;}
 
 footer{border-top:1px solid rgba(201,168,76,.08);padding:2.5rem;text-align:center;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.25em;color:var(--dim);}
-@media(max-width:768px){.section{padding:4rem 1.4rem;}.lettre{padding:2rem 1.6rem;}.logo-main-wrap{width:180px;height:180px;}}
+@media(max-width:768px){.section{padding:4rem 1.4rem;}.lettre{padding:2rem 1.6rem;}}
 """
 
 SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -559,9 +556,7 @@ def generer_html(offre, clients, narratif):
   <div class="particles" id="particles"></div>
   <div class="cover-content">
     <p class="cover-eyebrow">Analyse personnalisée · {offre.capitalize()} · {annee}</p>
-    <div class="logo-main-wrap">
-      <img class="logo-main-img" src="https://origin-famille.fr/logo-main.png" alt="ORIGIN" />
-    </div>
+    <h1 class="cover-title">ORIGIN</h1>
     <div class="seed-wrap">
       <div class="seed-pulse"></div>
       <div class="seed-pulse"></div>
