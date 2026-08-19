@@ -740,6 +740,9 @@ body {
 .prose { font-size: 12pt; line-height: 2; color: var(--encre); }
 .prose p { margin-bottom: .65cm; }
 .prose em { color: var(--cuivre); font-style: italic; }
+.prose * { color: var(--encre) !important; }
+.prose em, .prose em * { color: var(--cuivre) !important; }
+.lettre .prose * { color: var(--encre) !important; }
 
 .lettre { background: rgba(201,168,76,.04); border: 1px solid rgba(201,168,76,.2); border-left: 3px solid var(--cuivre); padding: 1cm 1.4cm; margin-bottom: .5cm; }
 .lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .5cm; }
@@ -1029,3 +1032,4 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
+
