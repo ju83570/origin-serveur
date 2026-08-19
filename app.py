@@ -254,37 +254,40 @@ def appeler_claude(offre, profils_txt):
     annee_courante = date.today().year
     structures = {
         'solo': """
-1. LETTRE D'OUVERTURE (3 paragraphes, tutoiement, chaleureux)
-2. PORTRAIT NUMÉROLOGIQUE (3 paragraphes — chemin de vie, expression, intime)
-3. PORTRAIT ASTROLOGIQUE (3 paragraphes — Soleil, Lune, Ascendant)
-4. TON ANNÉE EN COURS (2 paragraphes — thème de l'année, pinnacle actuel)
-5. FORCES ET CROISSANCE (2 paragraphes — dominants comme forces, manquants comme défis)
-6. OMBRES → LUMIÈRES (2 transformations : situation concrète + lumière + phrase)
-7. MANTRA PERSONNEL (1 mantra ancré dans les données)
-8. MESSAGE FINAL (2 paragraphes)""",
+1. LETTRE D'OUVERTURE (4 paragraphes, tutoiement, chaleureux, profond — accroche sur ce qui rend cette personne unique)
+2. PORTRAIT NUMÉROLOGIQUE (5 paragraphes — chemin de vie, expression, intime, réalisation, croise les nombres entre eux)
+3. PORTRAIT ASTROLOGIQUE (5 paragraphes — Soleil, Lune, Ascendant, planètes dominantes, aspects clés narrativisés)
+4. TON ANNÉE EN COURS (3 paragraphes — thème de l'année, énergie, focus, relie au pinnacle actuel et aux transits)
+5. FORCES ET CROISSANCE (3 paragraphes — dominants comme forces célébrées, manquants comme zones d'invitation bienveillante)
+6. OMBRES → LUMIÈRES (3 transformations : situation concrète vécue + lumière + phrase à dire à voix haute)
+7. MANTRA PERSONNEL (1 mantra fort, ancré dans les données numérologique et astrologique)
+8. MESSAGE FINAL (3 paragraphes, élan vers l'avenir, chaleureux et concret)""",
         'couple': """
-1. LETTRE D'OUVERTURE (3 paragraphes, aux deux prénoms)
-2. PORTRAIT INDIVIDUEL 1 (3 paragraphes — numérologie + astrologie + année)
-3. PORTRAIT INDIVIDUEL 2 (3 paragraphes — numérologie + astrologie + année)
-4. CE QUE VOUS CRÉEZ ENSEMBLE (3 paragraphes — résonances croisées)
-5. OMBRES → LUMIÈRES (2 tensions : situation + lumière + phrase)
-6. MANTRAS (un par personne + un commun)
-7. MESSAGE FINAL (2 paragraphes)""",
+1. LETTRE D'OUVERTURE (4 paragraphes, aux deux prénoms, ce qui rend leur rencontre unique)
+2. PORTRAIT INDIVIDUEL 1 (4 paragraphes — numérologie + astrologie + année en cours + pinnacle)
+3. PORTRAIT INDIVIDUEL 2 (4 paragraphes — idem, avec ses spécificités)
+4. CE QUE VOUS CRÉEZ ENSEMBLE (4 paragraphes — résonances croisées, dynamique de couple, chiffres en miroir)
+5. VOS ANNÉES EN RÉSONANCE (2 paragraphes — croiser les années personnelles des deux)
+6. OMBRES → LUMIÈRES (3 tensions : situation concrète + lumière + phrase)
+7. MANTRAS (un par personne + un commun)
+8. MESSAGE FINAL (3 paragraphes)""",
         'famille': """
-1. LETTRE D'OUVERTURE (3 paragraphes, au foyer)
-2. PORTRAIT DE CHAQUE MEMBRE (2 paragraphes chacun — numérologie + astrologie)
-3. DYNAMIQUE ET HÉRITAGE (3 paragraphes — tensions, loyautés, ce qui peut se dénouer)
-4. OMBRES → LUMIÈRES (2 tensions avec situation + lumière + phrase)
-5. MANTRAS (un par membre + un commun)
-6. MESSAGE FINAL (2 paragraphes)""",
+1. LETTRE D'OUVERTURE (4 paragraphes, au foyer entier, ce qui rend cette famille unique)
+2. PORTRAIT DE CHAQUE MEMBRE (3-4 paragraphes chacun — numérologie + astrologie + année + pinnacle)
+3. DYNAMIQUE FAMILIALE (4 paragraphes — ce que chacun apporte, les tensions créatrices, les complémentarités)
+4. HÉRITAGES ET TRANSMISSION (3 paragraphes — patterns, loyautés invisibles, ce qui peut se dénouer)
+5. OMBRES → LUMIÈRES (3 tensions familiales avec situation + lumière + phrase)
+6. MANTRAS (un par membre + un commun)
+7. MESSAGE FINAL (3 paragraphes)""",
         'prestige': """
-1. LETTRE D'OUVERTURE (3 paragraphes, à la lignée)
-2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (2 paragraphes chacun)
-3. LES RACINES (3 paragraphes — ce que chaque lignée a transmis)
-4. L'HÉRITAGE INVISIBLE (3 paragraphes — répétitions, silences, loyautés)
-5. OMBRES → LUMIÈRES (2 tensions transgénérationnelles)
-6. MANTRAS (un par membre du foyer + un commun de lignée)
-7. MESSAGE FINAL (2 paragraphes)""",
+1. LETTRE D'OUVERTURE (4 paragraphes, à la lignée entière)
+2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (3-4 paragraphes chacun — numérologie + astrologie + année)
+3. LES RACINES — LECTURE DES PARENTS DES DEUX ADULTES (4 paragraphes — ce que chaque lignée a transmis, les schémas)
+4. L'HÉRITAGE INVISIBLE (4 paragraphes — répétitions sur 3 générations, silences, loyautés, ce qui cherche à se libérer)
+5. CE QUI PEUT SE DÉNOUER (3 paragraphes — pistes concrètes de libération pour le foyer)
+6. OMBRES → LUMIÈRES (3 tensions transgénérationnelles avec situation + lumière + phrase)
+7. MANTRAS (un par membre du foyer + un commun de lignée)
+8. MESSAGE FINAL (3 paragraphes, ancré dans l'espoir et la transmission)""",
     }
     structure = structures.get(offre, structures['famille'])
 
@@ -332,7 +335,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     r = requests.post(
         "https://api.anthropic.com/v1/messages",
         headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-        json={"model": "claude-opus-4-6", "max_tokens": 8000, "messages": [{"role": "user", "content": prompt}]},
+        json={"model": "claude-opus-4-6", "max_tokens": 12000, "messages": [{"role": "user", "content": prompt}]},
         timeout=300
     )
     r.raise_for_status()
