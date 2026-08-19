@@ -405,7 +405,7 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .cover-amp{color:var(--or);font-style:normal;margin:0 .5rem;}
 .cover-tagline{font-size:1.05rem;color:var(--muted);font-style:italic;margin-bottom:2.5rem;line-height:1.7;}
 .cover-ligne{width:80px;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:0 auto 1.8rem;}
-.cover-title{font-family:'Cinzel',serif;font-size:clamp(2.8rem,8vw,5rem);font-weight:400;letter-spacing:.28em;color:var(--or-clair);margin-bottom:1.5rem;text-shadow:0 0 60px rgba(201,168,76,.5);animation:tg 6s ease-in-out infinite,fadein 2s ease-out forwards;}
+.cover-title{font-family:'Cinzel',serif;font-size:clamp(2.8rem,8vw,5rem);font-weight:400;letter-spacing:.28em;text-indent:.28em;color:var(--or-clair);margin-bottom:1.5rem;text-align:center;width:100%;text-shadow:0 0 60px rgba(201,168,76,.5);animation:tg 6s ease-in-out infinite,fadein 2s ease-out forwards;}
 .cover-meta{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);}
 
 /* SCROLL INDICATOR */
@@ -1032,4 +1032,3 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
-
