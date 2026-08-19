@@ -70,6 +70,70 @@ def label_nombre(n):
     noms = {11:"Maître Inspirateur", 22:"Maître Bâtisseur", 33:"Maître Enseignant"}
     return f"{n} ({noms[n]})" if n in noms else str(n)
 
+# ── Significations des chiffres ──────────────────────────────────────────────
+SIGNIF_CHIFFRES = {
+    1: "leadership, indépendance, initiative, volonté",
+    2: "harmonie, sensibilité, coopération, diplomatie",
+    3: "créativité, expression, joie de vivre, communication",
+    4: "structure, travail, stabilité, sens pratique",
+    5: "liberté, changement, aventure, adaptabilité",
+    6: "responsabilité, amour, famille, service",
+    7: "introspection, spiritualité, analyse, quête de sens",
+    8: "puissance, ambition, réussite matérielle, autorité",
+    9: "sagesse, universalité, compassion, accomplissement",
+    11: "inspiration, intuition élevée, mission spirituelle",
+    22: "vision grandiose, réalisation concrète, bâtisseur",
+    33: "amour universel, guérison, enseignement sacré",
+}
+
+THEMES_ANNEE = {
+    1: ("Nouveau départ", "Énergie pionnière, semences plantées", "Oser commencer, affirmer sa direction"),
+    2: ("Patience & Alliance", "Sensibilité accrue, partenariats", "Écouter, tisser des liens, laisser mûrir"),
+    3: ("Expression & Créativité", "Légèreté, expansion sociale", "Créer, communiquer, célébrer la vie"),
+    4: ("Construction & Travail", "Effort, ancrage, mise en ordre", "Poser des fondations solides, s'organiser"),
+    5: ("Changement & Liberté", "Mouvement, imprévus, renouveau", "Accueillir le changement, ne pas résister"),
+    6: ("Amour & Responsabilité", "Foyer, famille, service aux autres", "Prendre soin, équilibrer donner/recevoir"),
+    7: ("Introspection & Quête", "Retraite intérieure, analyse, foi", "Se retrouver, chercher le sens profond"),
+    8: ("Pouvoir & Abondance", "Ambition, récolte, autorité", "Prendre sa place, gérer ressources et pouvoir"),
+    9: ("Clôture & Lâcher-prise", "Fin de cycle, bilan, libération", "Terminer, pardonner, se préparer au renouveau"),
+    11: ("Éveil Spirituel", "Haute vibration, révélations, mission", "Faire confiance à l'intuition, rayonner"),
+    22: ("Réalisation Majeure", "Projets d'envergure, impact collectif", "Concrétiser la vision avec méthode"),
+    33: ("Service Sacré", "Amour inconditionnel, guérison, enseignement", "Se mettre au service avec le cœur ouvert"),
+}
+
+def analyse_chiffres(j, m, a):
+    chiffres_date = [int(d) for d in f"{j:02d}{m:02d}{a}" if d != '0']
+    comptage = {i: chiffres_date.count(i) for i in range(1, 10)}
+    dominants = [k for k, v in comptage.items() if v >= 3]
+    manquants  = [k for k, v in comptage.items() if v == 0]
+    return {
+        'dominants': [(d, SIGNIF_CHIFFRES.get(d,'')) for d in dominants],
+        'manquants':  [(mn, SIGNIF_CHIFFRES.get(mn,'')) for mn in manquants],
+    }
+
+def pinnacles(j, m, a):
+    cdv = chemin_de_vie(j, m, a)
+    p1 = reduire(j + m)
+    p2 = reduire(m + sum(int(d) for d in str(a)))
+    p3 = reduire(p1 + p2)
+    p4 = reduire(j + sum(int(d) for d in str(a)))
+    age = date.today().year - a
+    fin_p1 = 36 - cdv
+    if age < fin_p1:
+        return 1, p1, fin_p1 - age
+    elif age < fin_p1 + 9:
+        return 2, p2, (fin_p1 + 9) - age
+    elif age < fin_p1 + 18:
+        return 3, p3, (fin_p1 + 18) - age
+    else:
+        return 4, p4, None
+
+def annee_perso_detaillee(j, m):
+    ap = reduire(sum(int(d) for d in f"{j:02d}{m:02d}{date.today().year}"))
+    theme, energie, focus = THEMES_ANNEE.get(ap, ("Transition", "Énergie de passage", "Rester à l'écoute"))
+    return ap, theme, energie, focus
+
+
 VILLES_FR = {
     "paris":(48.8566,2.3522),"marseille":(43.2965,5.3698),"lyon":(45.7640,4.8357),
     "nice":(43.7102,7.2620),"toulouse":(43.6047,1.4442),"bordeaux":(44.8378,-0.5792),
@@ -143,6 +207,23 @@ def fmt_profil(p):
     heure_str = f"{p['heure']:02d}h{p.get('minute',0):02d}" if p.get('heure') is not None else "heure inconnue"
     filiation = p.get('filiation', '')
     filiation_str = f"\n  Filiation     : {filiation}" if filiation else ""
+
+    # Enrichissements
+    chiffres = analyse_chiffres(j, m, a)
+    num_pin, val_pin, reste_pin = pinnacles(j, m, a)
+    ap, theme_ap, energie_ap, focus_ap = annee_perso_detaillee(j, m)
+
+    # Chiffres dominants / manquants
+    dom_str = ", ".join(f"{d} ({sig})" for d, sig in chiffres['dominants']) or "aucun"
+    man_str = ", ".join(f"{mn} ({sig})" for mn, sig in chiffres['manquants']) or "aucun"
+
+    # Pinnacle
+    pin_str = f"Pinnacle {num_pin} — valeur {val_pin}"
+    if reste_pin:
+        pin_str += f" (encore {reste_pin} ans dans ce cycle)"
+    else:
+        pin_str += " (dernier cycle, permanent)"
+
     lines = [
         f"PROFIL : {pr} {nm}",
         f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}",
@@ -152,7 +233,12 @@ def fmt_profil(p):
         f"  Expression    : {label_nombre(num['expr'])}",
         f"  Intime        : {label_nombre(num['intime'])}",
         f"  Réalisation   : {label_nombre(num['real'])}",
-        f"  Année perso   : {num['ap']} (calculée sur {date.today().year})",
+        f"  Année perso   : {ap} — {theme_ap}",
+        f"  Énergie       : {energie_ap}",
+        f"  Focus         : {focus_ap}",
+        f"  Cycle de vie  : {pin_str}",
+        f"  Dominants     : {dom_str}",
+        f"  Manquants     : {man_str}",
         "",
         "ASTROLOGIE",
     ]
@@ -168,39 +254,53 @@ def appeler_claude(offre, profils_txt):
     annee_courante = date.today().year
     structures = {
         'solo': """
-1. LETTRE D'OUVERTURE (4-5 paragraphes, tutoiement, profond)
-2. PORTRAIT NUMÉROLOGIQUE (5-6 paragraphes narratifs)
-3. PORTRAIT ASTROLOGIQUE (5-6 paragraphes narratifs)
-4. FORCES NATURELLES (5 items en prose narrative)
-5. ZONES DE CROISSANCE (4 items en prose narrative)
-6. OMBRES → LUMIÈRES (3 transformations : situation concrète + lumière + phrase à dire)
-7. MANTRA PERSONNEL
-8. MESSAGE FINAL (3-4 paragraphes)""",
+1. LETTRE D'OUVERTURE (4-5 paragraphes, tutoiement, chaleureux, profond)
+2. PORTRAIT NUMÉROLOGIQUE (5-6 paragraphes — chemin de vie, expression, intime, réalisation entremêlés)
+3. PORTRAIT ASTROLOGIQUE (5-6 paragraphes — Soleil, Lune, Ascendant, planètes clés narrativisés)
+4. TON ANNÉE EN COURS (3-4 paragraphes — développe le thème, l'énergie et le focus de l'année personnelle, relie au pinnacle actuel)
+5. FORCES NATURELLES (5 items en prose — s'appuyer sur les dominants et les forces natales)
+6. ZONES DE CROISSANCE (4 items en prose — partir des chiffres manquants, formuler avec bienveillance)
+7. OMBRES → LUMIÈRES (3 transformations : situation concrète vécue + lumière + phrase à dire à voix haute)
+8. MANTRA PERSONNEL (1 mantra fort, ancré dans les données)
+9. MESSAGE FINAL (3-4 paragraphes, élan vers l'avenir)""",
         'couple': """
 1. LETTRE D'OUVERTURE (4-5 paragraphes, aux deux prénoms, tutoiement)
-2. SIGNATURES NUMÉRIQUES (2-3 paragraphes sur les nombres clés ensemble)
-3. PORTRAIT INDIVIDUEL 1 (6-8 paragraphes, numérologie + astrologie entremêlées)
-4. PORTRAIT INDIVIDUEL 2 (4-5 paragraphes)
-5. CE QUE VOUS CRÉEZ ENSEMBLE (5-6 paragraphes, résonances croisées précises)
-6. CE QUE VOUS VOUS APPORTEZ (4 paragraphes, dons mutuels)
-7. OMBRES → LUMIÈRES (4 tensions avec situation + lumière + phrase à dire)
-8. MANTRAS (3 : un par personne + un commun, avec note)
-9. MESSAGE FINAL (4 paragraphes)""",
+2. SIGNATURES NUMÉRIQUES (3-4 paragraphes — nombres clés croisés, ce qu'ils disent de leur rencontre)
+3. PORTRAIT INDIVIDUEL 1 (6-8 paragraphes — numérologie + astrologie entremêlées, cycle de vie actuel)
+4. PORTRAIT INDIVIDUEL 2 (5-6 paragraphes — idem, avec son année en cours)
+5. VOS ANNÉES EN RÉSONANCE (2-3 paragraphes — croiser les années personnelles des deux, ce que ça crée ensemble)
+6. CE QUE VOUS CRÉEZ ENSEMBLE (5-6 paragraphes — résonances croisées précises, dynamique vivante)
+7. CE QUE VOUS VOUS APPORTEZ (4 paragraphes — dons mutuels, ce que chacun éveille chez l'autre)
+8. OMBRES → LUMIÈRES (4 tensions : situation concrète + lumière + phrase à dire)
+9. MANTRAS (3 : un par personne + un commun)
+10. MESSAGE FINAL (4 paragraphes)""",
         'famille': """
-1. LETTRE D'OUVERTURE (4-5 paragraphes)
-2. PORTRAIT DE CHAQUE MEMBRE (4-5 paragraphes chacun)
-3. DYNAMIQUE FAMILIALE (4-5 paragraphes)
-4. HÉRITAGES TRANSMIS (4 paragraphes)
-5. OMBRES → LUMIÈRES (4 tensions familiales)
-6. MANTRAS (un par membre + un commun)
-7. MESSAGE FINAL (4 paragraphes)""",
+1. LETTRE D'OUVERTURE (4-5 paragraphes, au foyer entier)
+2. PORTRAIT DE CHAQUE MEMBRE (5-6 paragraphes chacun — numérologie + astrologie + cycle de vie actuel)
+3. VOS ANNÉES EN RÉSONANCE (2-3 paragraphes — croiser les années personnelles de tous les membres)
+4. DYNAMIQUE FAMILIALE (5-6 paragraphes — ce que chacun apporte, les tensions créatrices)
+5. HÉRITAGES TRANSMIS (4-5 paragraphes — patterns, loyautés invisibles, ce qui peut se dénouer)
+6. OMBRES → LUMIÈRES (4 tensions familiales avec situation + lumière + phrase)
+7. MANTRAS (un par membre + un commun)
+8. MESSAGE FINAL (4 paragraphes)""",
+        'prestige': """
+1. LETTRE D'OUVERTURE (5-6 paragraphes, à la lignée entière)
+2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (5-6 paragraphes chacun)
+3. VOS ANNÉES EN RÉSONANCE (3-4 paragraphes — croiser toutes les années personnelles)
+4. DYNAMIQUE FAMILIALE (5-6 paragraphes)
+5. LES RACINES — LECTURE DES GRANDS-PARENTS / PARENTS DES DEUX ADULTES (4-5 paragraphes — ce que chaque lignée a transmis)
+6. L'HÉRITAGE INVISIBLE (5-6 paragraphes — répétitions, silences, loyautés sur 3 générations)
+7. CE QUI PEUT SE DÉNOUER (4 paragraphes — pistes de libération concrètes)
+8. OMBRES → LUMIÈRES (5 tensions transgénérationnelles)
+9. MANTRAS (un par membre du foyer + un commun de lignée)
+10. MESSAGE FINAL (5 paragraphes, ancré dans l'espoir et la transmission)""",
     }
-    structure = structures.get(offre, structures['couple'])
+    structure = structures.get(offre, structures['famille'])
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
 ANNÉE EN COURS : {annee_courante}
-Important : toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante} et non sur une autre année.
+Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
 STYLE OBLIGATOIRE :
 - Tutoiement systématique, chaleureux, direct
@@ -210,6 +310,13 @@ STYLE OBLIGATOIRE :
 - Chaque paragraphe apporte quelque chose de nouveau
 - Nomme des situations concrètes et vécues
 - Ton bienveillant mais direct sur les zones d'ombre
+
+UTILISATION DES DONNÉES ENRICHIES :
+- L'année personnelle, son thème et son focus sont déjà calculés — développe-les narrativement en 3-4 paragraphes
+- Les chiffres dominants = forces naturelles à nommer et célébrer
+- Les chiffres manquants = zones de croissance à aborder avec bienveillance (jamais comme des manques honteux)
+- Le pinnacle actuel = le grand cycle de vie traversé — relie-le à ce que la personne vit concrètement
+- Croise toujours numérologie + astrologie pour une analyse vraiment unique et personnalisée
 
 DONNÉES :
 {profils_txt}
@@ -262,14 +369,11 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
             "message_final": "<p>Nous avons bien reçu vos informations et préparons votre livret. Il vous sera envoyé sous 24h.</p>"
         }
 
-# ─────────────────────────────────────────────
-# CSS LIVRET INTERACTIF — police et lisibilité améliorées
-# ─────────────────────────────────────────────
 CSS = """
-:root{--noir:#090907;--encre:#111109;--or:#C9A84C;--or-clair:#E8C97A;--cuivre:#B97333;--creme:#F5EDE0;--muted:#A89E82;--dim:#5A5340;}
+:root{--noir:#090907;--encre:#111109;--or:#C9A84C;--or-clair:#E8C97A;--cuivre:#B97333;--creme:#F2ECD8;--muted:#9E9478;--dim:#5A5340;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
-body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',serif;font-weight:300;overflow-x:hidden;font-size:1.05rem;}
+body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',serif;font-weight:300;overflow-x:hidden;}
 
 /* COVER */
 .cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:4rem 2rem;text-align:center;}
@@ -292,7 +396,7 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 
 /* GRAINE DE VIE */
 .cover-content{position:relative;z-index:2;max-width:720px;margin:0 auto;}
-.cover-eyebrow{font-family:'Jost',sans-serif;font-size:.65rem;letter-spacing:.55em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1.5rem;animation:fadein 1.5s ease-out forwards;}
+.cover-eyebrow{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.55em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1.5rem;animation:fadein 1.5s ease-out forwards;}
 .seed-wrap{width:110px;height:110px;margin:0 auto 2rem;position:relative;}
 .seed-svg{width:100%;height:100%;animation:sr 60s linear infinite;filter:drop-shadow(0 0 18px rgba(201,168,76,.45));}
 @keyframes sr{to{transform:rotate(360deg)}}
@@ -305,14 +409,14 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .cover-names{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-style:italic;color:var(--creme);margin-bottom:.6rem;}
 .cover-amp{color:var(--or);font-style:normal;margin:0 .5rem;}
-.cover-tagline{font-size:1.1rem;color:var(--muted);font-style:italic;margin-bottom:2.5rem;line-height:1.7;}
+.cover-tagline{font-size:1.05rem;color:var(--muted);font-style:italic;margin-bottom:2.5rem;line-height:1.7;}
 .cover-ligne{width:80px;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:0 auto 1.8rem;}
-.cover-meta{font-family:'Jost',sans-serif;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);}
+.cover-meta{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);}
 
 /* SCROLL INDICATOR */
 .scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:.4;animation:bounce 2s ease-in-out infinite;}
 @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
-.scroll-hint span{font-family:'Jost',sans-serif;font-size:.58rem;letter-spacing:.3em;color:var(--or);}
+.scroll-hint span{font-family:'Jost',sans-serif;font-size:.55rem;letter-spacing:.3em;color:var(--or);}
 .scroll-arrow{width:20px;height:20px;border-right:1px solid var(--or);border-bottom:1px solid var(--or);transform:rotate(45deg);}
 
 /* NAV DOTS */
@@ -325,19 +429,17 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 /* SECTIONS */
 .section{max-width:820px;margin:0 auto;padding:7rem 2.5rem;}
 .section-sep{border-top:1px solid rgba(201,168,76,.08);}
-.s-eyebrow{font-family:'Jost',sans-serif;font-size:.65rem;letter-spacing:.5em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1rem;display:block;}
+.s-eyebrow{font-family:'Jost',sans-serif;font-size:.58rem;letter-spacing:.5em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1rem;display:block;}
 .s-title{font-family:'Cinzel',serif;font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:400;color:var(--or-clair);margin-bottom:2.5rem;letter-spacing:.06em;line-height:1.3;}
 .s-title-center{text-align:center;}
-
-/* PROSE — lisibilité améliorée */
-.prose{font-size:clamp(1.1rem,2vw,1.25rem);line-height:2.05;color:#F0E8D2;font-weight:300;}
-.prose p{margin-bottom:2rem;}
+.prose{font-size:clamp(1rem,1.8vw,1.12rem);line-height:2;color:var(--creme);font-weight:300;}
+.prose p{margin-bottom:1.8rem;}
 .prose em{color:var(--or-clair);font-style:italic;}
 
 /* LETTRE */
 .lettre{background:rgba(201,168,76,.03);border:1px solid rgba(201,168,76,.12);border-left:3px solid var(--cuivre);padding:2.8rem 3rem;position:relative;overflow:hidden;}
 .lettre::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,var(--cuivre),transparent);}
-.lettre-signature{margin-top:2rem;font-size:.88rem;letter-spacing:.2em;color:var(--cuivre);font-family:'Cinzel',serif;}
+.lettre-signature{margin-top:2rem;font-size:.85rem;letter-spacing:.2em;color:var(--cuivre);font-family:'Cinzel',serif;}
 
 /* ORNEMENTS */
 .ornament{display:flex;align-items:center;gap:1.2rem;margin:3rem 0;opacity:.4;}
@@ -349,18 +451,18 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .mantra-wrap{text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;}
 .mantra-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(185,115,51,.08) 0%,transparent 70%);pointer-events:none;animation:mb 5s ease-in-out infinite;}
 @keyframes mb{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-.mantra-prenom{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.45em;color:var(--cuivre);margin-bottom:1.5rem;position:relative;z-index:1;}
+.mantra-prenom{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.45em;color:var(--cuivre);margin-bottom:1.5rem;position:relative;z-index:1;}
 .mantra-txt{font-family:'Cinzel',serif;font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:400;color:var(--or-clair);line-height:1.7;position:relative;z-index:1;}
-.mantra-note{margin-top:1rem;font-size:1rem;color:var(--muted);font-style:italic;position:relative;z-index:1;}
+.mantra-note{margin-top:1rem;font-size:.95rem;color:var(--dim);font-style:italic;position:relative;z-index:1;}
 
 /* FINAL */
 .final-wrap{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;position:relative;}
 .final-glow{position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(185,115,51,.12) 0%,transparent 70%);animation:fb 6s ease-in-out infinite;}
 @keyframes fb{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
-.final-prose{font-size:clamp(1.05rem,1.8vw,1.15rem);line-height:2.05;color:#F0E8D2;max-width:680px;position:relative;z-index:1;margin-bottom:2.5rem;}
+.final-prose{font-size:clamp(1rem,1.8vw,1.1rem);line-height:2;color:var(--creme);max-width:680px;position:relative;z-index:1;margin-bottom:2.5rem;}
 .final-prose p{margin-bottom:1.5rem;}
 .final-prose em{color:var(--or-clair);font-style:italic;}
-.final-origin{font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.55em;color:var(--cuivre);position:relative;z-index:1;}
+.final-origin{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.55em;color:var(--cuivre);position:relative;z-index:1;}
 .final-seed{width:80px;height:80px;margin:0 auto 2rem;opacity:.6;animation:sr 30s linear infinite;}
 
 /* RÉVÉLATION AU SCROLL — Safari + Android compatible */
@@ -378,7 +480,7 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .light-line{width:0;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:2rem auto;transition:width 1.5s ease;}
 .light-line.visible{width:120px;}
 
-footer{border-top:1px solid rgba(201,168,76,.08);padding:2.5rem;text-align:center;font-family:'Jost',sans-serif;font-size:.65rem;letter-spacing:.25em;color:var(--dim);}
+footer{border-top:1px solid rgba(201,168,76,.08);padding:2.5rem;text-align:center;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.25em;color:var(--dim);}
 @media(max-width:768px){.section{padding:4rem 1.4rem;}.lettre{padding:2rem 1.6rem;}.logo-main-wrap{width:180px;height:180px;}}
 """
 
@@ -570,20 +672,16 @@ window.addEventListener('scroll', () => {{
 </body></html>"""
 
 
-# ─────────────────────────────────────────────
-# CSS PDF IMPRIMABLE — refonte esthétique complète
-# ─────────────────────────────────────────────
 CSS_PRINT = """
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap');
 
 :root {
   --or: #C9A84C;
-  --or-clair: #D4A843;
-  --cuivre: #A0622A;
-  --creme: #F7F0E3;
+  --or-clair: #E8C97A;
+  --cuivre: #B97333;
+  --creme: #F5EDD8;
   --encre: #1C1409;
-  --muted: #6B6050;
-  --bordure: rgba(180,140,60,.22);
+  --muted: #7A6E58;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -594,24 +692,24 @@ body {
   background: var(--creme);
   color: var(--encre);
   font-size: 12pt;
-  line-height: 1.9;
+  line-height: 2;
 }
 
 @page {
   size: A4;
-  margin: 1.8cm 2.2cm 2cm;
+  margin: 2cm 2.2cm;
   @bottom-center {
     content: "ORIGIN · Lecture personnalisée · Confidentiel";
     font-family: 'Jost', sans-serif;
     font-size: 6.5pt;
-    letter-spacing: .22em;
-    color: #9E8E70;
+    letter-spacing: .2em;
+    color: #9E9478;
   }
   @bottom-right {
     content: counter(page);
     font-family: 'Jost', sans-serif;
-    font-size: 7.5pt;
-    color: var(--or);
+    font-size: 7pt;
+    color: #C9A84C;
   }
 }
 @page cover { margin: 0; }
@@ -620,7 +718,6 @@ body {
 .page { page-break-after: always; }
 .page:last-child { page-break-after: avoid; }
 
-/* ── COUVERTURE ── */
 .cover {
   display: flex;
   flex-direction: column;
@@ -628,336 +725,56 @@ body {
   justify-content: center;
   min-height: 100vh;
   text-align: center;
-  padding: 4cm 2.5cm;
-  background: #0C0B08;
+  padding: 4cm 2cm;
+  background: #0A0A08;
   color: var(--creme);
 }
-.cover-symbol {
-  font-size: 28pt;
-  color: var(--or);
-  margin-bottom: 1.8cm;
-  opacity: .8;
-}
-.cover-eyebrow {
-  font-family: 'Jost', sans-serif;
-  font-size: 7.5pt;
-  letter-spacing: .55em;
-  text-transform: uppercase;
-  color: var(--cuivre);
-  margin-bottom: 1.2cm;
-}
-.cover-origin {
-  font-family: 'Cinzel', serif;
-  font-size: 48pt;
-  letter-spacing: .25em;
-  color: var(--or);
-  margin-bottom: .6cm;
-  line-height: 1;
-}
-.cover-tagline {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 13.5pt;
-  font-style: italic;
-  color: rgba(247,240,227,.7);
-  margin-bottom: 1.8cm;
-  line-height: 1.7;
-  max-width: 12cm;
-}
-.cover-ligne {
-  width: 70px;
-  height: 1px;
-  background: var(--or);
-  margin: 0 auto 1.2cm;
-  opacity: .45;
-}
-.cover-names {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 24pt;
-  font-style: italic;
-  color: var(--creme);
-  margin-bottom: .5cm;
-  line-height: 1.3;
-}
-.cover-meta {
-  font-family: 'Jost', sans-serif;
-  font-size: 7pt;
-  letter-spacing: .35em;
-  text-transform: uppercase;
-  color: rgba(247,240,227,.35);
-  margin-top: 1.8cm;
-}
+.cover-symbol { font-size: 22pt; color: var(--or); margin-bottom: 1.5cm; }
+.cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: 1cm; }
+.cover-origin { font-family: 'Cinzel', serif; font-size: 42pt; letter-spacing: .22em; color: var(--or); margin-bottom: .5cm; }
+.cover-tagline { font-family: 'Cormorant Garamond', serif; font-size: 13pt; font-style: italic; color: rgba(245,237,216,.75); margin-bottom: 1.5cm; }
+.cover-ligne { width: 60px; height: 1px; background: var(--or); margin: 0 auto 1cm; opacity: .5; }
+.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 22pt; font-style: italic; color: var(--creme); margin-bottom: .4cm; }
+.cover-meta { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .3em; text-transform: uppercase; color: rgba(245,237,216,.4); margin-top: 1.5cm; }
 
-/* ── SECTIONS ── */
-.section {
-  padding: 1.2cm 0 1.5cm;
-}
-.section + .section {
-  border-top: 1px solid var(--bordure);
-  padding-top: 1.4cm;
-}
+.section { padding: 1.5cm 2cm; }
+.section + .section { border-top: 1px solid rgba(201,168,76,.18); }
 
-.eyebrow {
-  font-family: 'Jost', sans-serif;
-  font-size: 7pt;
-  letter-spacing: .5em;
-  text-transform: uppercase;
-  color: var(--cuivre);
-  margin-bottom: .5cm;
-  display: block;
-}
-.section-title {
-  font-family: 'Cinzel', serif;
-  font-size: 17pt;
-  font-weight: 400;
-  color: var(--or-clair);
-  margin-bottom: .4cm;
-  letter-spacing: .07em;
-  line-height: 1.3;
-}
-.light-line {
-  width: 55px;
-  height: 1px;
-  background: var(--or);
-  margin: .45cm 0 .9cm;
-  opacity: .45;
-}
+.eyebrow { font-family: 'Jost', sans-serif; font-size: 6.5pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .4cm; display: block; }
+.section-title { font-family: 'Cinzel', serif; font-size: 16pt; font-weight: 400; color: var(--or); margin-bottom: .35cm; letter-spacing: .08em; line-height: 1.3; }
+.light-line { width: 50px; height: 1px; background: var(--or); margin: .4cm 0 .8cm; opacity: .5; }
 
-/* ── PROSE — bien lisible ── */
-.prose {
-  font-size: 12pt;
-  line-height: 1.95;
-  color: var(--encre);
-}
-.prose p {
-  margin-bottom: .7cm;
-  text-align: justify;
-  hyphens: auto;
-}
-.prose em {
-  color: var(--cuivre);
-  font-style: italic;
-}
+.prose { font-size: 12pt; line-height: 2; color: var(--encre); }
+.prose p { margin-bottom: .65cm; }
+.prose em { color: var(--cuivre); font-style: italic; }
 
-/* ── LETTRE D'OUVERTURE ── */
-.lettre {
-  background: rgba(201,168,76,.04);
-  border: 1px solid var(--bordure);
-  border-left: 3px solid var(--cuivre);
-  padding: 1.1cm 1.5cm;
-  margin-bottom: .6cm;
-  border-radius: 2px;
-}
-.lettre-signature {
-  font-family: 'Cinzel', serif;
-  font-size: 8pt;
-  letter-spacing: .22em;
-  color: var(--cuivre);
-  margin-top: .6cm;
-  display: block;
-}
+.lettre { background: rgba(201,168,76,.04); border: 1px solid rgba(201,168,76,.2); border-left: 3px solid var(--cuivre); padding: 1cm 1.4cm; margin-bottom: .5cm; }
+.lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .5cm; }
 
-/* ── MANTRAS ── */
-.mantra-block {
-  text-align: center;
-  padding: 1.1cm 1.8cm;
-  border: 1px solid var(--bordure);
-  margin-bottom: .6cm;
-  background: rgba(201,168,76,.025);
-  border-radius: 2px;
-  page-break-inside: avoid;
-}
-.mantra-prenom {
-  font-family: 'Cinzel', serif;
-  font-size: 7.5pt;
-  letter-spacing: .5em;
-  text-transform: uppercase;
-  color: var(--cuivre);
-  margin-bottom: .4cm;
-}
-.mantra-txt {
-  font-family: 'Cinzel', serif;
-  font-size: 14pt;
-  color: var(--or-clair);
-  line-height: 1.65;
-  margin-bottom: .3cm;
-}
-.mantra-note {
-  font-size: 10pt;
-  font-style: italic;
-  color: var(--muted);
-}
+.mantra-block { text-align: center; padding: 1cm 1.5cm; border: 1px solid rgba(201,168,76,.15); margin-bottom: .5cm; background: rgba(201,168,76,.02); }
+.mantra-prenom { font-family: 'Cinzel', serif; font-size: 7pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .35cm; }
+.mantra-txt { font-family: 'Cinzel', serif; font-size: 13pt; color: var(--or); line-height: 1.6; margin-bottom: .25cm; }
+.mantra-note { font-size: 9.5pt; font-style: italic; color: var(--muted); }
 
-/* ── ORNEMENTS ── */
-.ornament {
-  display: flex;
-  align-items: center;
-  gap: 1cm;
-  margin: .7cm 0;
-  opacity: .35;
-}
-.ornament-line {
-  flex: 1;
-  height: 1px;
-  background: var(--or);
-}
-.ornament-symbol {
-  color: var(--or);
-  font-size: 10pt;
-}
+.ornament { display: flex; align-items: center; gap: 1cm; margin: .6cm 0; opacity: .4; }
+.ornament-line { flex: 1; height: 1px; background: var(--or); }
+.ornament-symbol { color: var(--or); font-size: 10pt; }
 
-/* ── MESSAGE FINAL ── */
-.final-section {
-  padding: 1.4cm 0;
-  text-align: center;
-  border-top: 1px solid var(--bordure);
-  margin-top: .5cm;
-}
-.final-prose {
-  font-size: 12pt;
-  line-height: 1.95;
-  color: var(--encre);
-  max-width: 14cm;
-  margin: 0 auto .9cm;
-  text-align: justify;
-  hyphens: auto;
-}
-.final-prose p {
-  margin-bottom: .6cm;
-}
-.final-prose em {
-  color: var(--cuivre);
-  font-style: italic;
-}
-.final-origin {
-  font-family: 'Cinzel', serif;
-  font-size: 8pt;
-  letter-spacing: .6em;
-  color: var(--cuivre);
-  display: block;
-  margin-top: .5cm;
-}
+.final-section { padding: 1.5cm 2cm; text-align: center; border-top: 1px solid rgba(201,168,76,.18); }
+.final-prose { font-size: 12pt; line-height: 2; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
+.final-prose p { margin-bottom: .65cm; }
+.final-prose em { color: var(--cuivre); font-style: italic; }
+.final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
-/* ── CARNET D'INTÉGRATION ── */
-.notes-cover-page {
-  page-break-before: always;
-  padding: 3cm 2cm 1.5cm;
-  text-align: center;
-  min-height: 20cm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.notes-cover-ornament {
-  width: 55px;
-  height: 1px;
-  background: var(--or);
-  margin: .7cm auto;
-  opacity: .35;
-}
-.notes-cover-title {
-  font-family: 'Cinzel', serif;
-  font-size: 22pt;
-  color: var(--or-clair);
-  letter-spacing: .2em;
-  margin-bottom: .4cm;
-  font-weight: 400;
-}
-.notes-cover-sub {
-  font-family: 'Jost', sans-serif;
-  font-size: 7.5pt;
-  letter-spacing: .45em;
-  text-transform: uppercase;
-  color: var(--cuivre);
-  margin-bottom: .7cm;
-}
-.notes-cover-intro {
-  font-size: 11pt;
-  font-style: italic;
-  color: var(--muted);
-  max-width: 12cm;
-  margin: 0 auto;
-  line-height: 1.85;
-}
-.notes-page {
-  page-break-before: always;
-  padding: .8cm 0 0;
-  min-height: 24cm;
-}
-.notes-page-header {
-  display: flex;
-  align-items: center;
-  gap: .8cm;
-  margin-bottom: .9cm;
-  padding-bottom: .35cm;
-  border-bottom: 1px solid rgba(201,168,76,.18);
-}
-.notes-page-label {
-  font-family: 'Jost', sans-serif;
-  font-size: 6.5pt;
-  letter-spacing: .45em;
-  text-transform: uppercase;
-  color: rgba(160,98,42,.45);
-  white-space: nowrap;
-}
-.notes-page-decor {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(to right, rgba(201,168,76,.12), transparent);
-}
-.notes-symbol {
-  font-size: 8pt;
-  color: rgba(201,168,76,.22);
-}
-.note-line {
-  width: 100%;
-  height: 1px;
-  background: rgba(180,140,60,.13);
-  margin-bottom: .92cm;
-}
+/* CARNET D'INTÉGRATION */
+.carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:4cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; }
+.carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
+.carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
+.carnet-page { padding:2cm 2.5cm; }
+.carnet-header { font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1.2cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; }
+.carnet-question { font-family:'Cormorant Garamond',serif; font-size:12pt; font-style:italic; color:var(--encre); margin-bottom:.5cm; line-height:1.6; }
+.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); margin-bottom:.55cm; }
 """
-
-def generer_pages_libres_pdf():
-    """Génère 18 pages de notes pour le carnet d'intégration"""
-    labels = [
-        "Ce qui résonne", "Questions ouvertes", "Engagements", "Observations",
-        "Ce que je veux retenir", "Prises de conscience", "Intentions",
-        "Ce que je lâche", "Ce que j'accueille", "Réflexions",
-        "Notes libres", "Notes libres", "Notes libres", "Notes libres",
-        "Notes libres", "Notes libres", "Notes libres", "Notes libres"
-    ]
-
-    html = """
-<div class="notes-cover-page page">
-  <div class="notes-cover-ornament"></div>
-  <h2 class="notes-cover-title">Carnet d'intégration</h2>
-  <p class="notes-cover-sub">Notes · Réflexions · Prises de conscience</p>
-  <div class="notes-cover-ornament"></div>
-  <p class="notes-cover-intro">
-    Ces pages t'appartiennent. Utilise-les pour noter ce qui résonne, 
-    tes prises de conscience, les engagements que tu veux prendre, 
-    les questions qui émergent au fil de ta lecture.<br><br>
-    Ton livret ORIGIN est vivant — il grandit avec toi.
-  </p>
-  <div class="notes-cover-ornament"></div>
-</div>
-"""
-
-    for i, label in enumerate(labels):
-        nb_lignes = 22
-        lignes = '\n'.join(['<div class="note-line"></div>'] * nb_lignes)
-        html += f"""
-<div class="notes-page page">
-  <div class="notes-page-header">
-    <span class="notes-page-label">{label}</span>
-    <div class="notes-page-decor"></div>
-    <span class="notes-symbol">✦</span>
-  </div>
-  {lignes}
-</div>
-"""
-    return html
-
 
 def generer_pdf_imprimable(offre, clients, narratif):
     annee = date.today().year
@@ -992,8 +809,6 @@ def generer_pdf_imprimable(offre, clients, narratif):
   <p class="mantra-note">{m.get('note','')}</p>
 </div>"""
 
-    pages_libres = generer_pages_libres_pdf()
-
     html_print = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1018,7 +833,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
   <div class="light-line"></div>
   <div class="lettre">
     <div class="prose">{narratif.get('lettre','')}</div>
-    <span class="lettre-signature">ORIGIN · Lecture personnalisée {annee}</span>
+    <p class="lettre-signature">ORIGIN · Lecture personnalisée {annee}</p>
   </div>
 </div>
 
@@ -1027,16 +842,34 @@ def generer_pdf_imprimable(offre, clients, narratif):
 <div class="section page">
   <span class="eyebrow">Mots pour avancer</span>
   <h2 class="section-title" style="text-align:center">Tes mantras personnalisés</h2>
-  <div class="light-line" style="margin:.4cm auto .9cm;"></div>
+  <div class="light-line" style="margin:.4cm auto .8cm;"></div>
   {mantras_html}
 </div>
 
-<div class="final-section page">
+<div class="final-section">
   <div class="final-prose">{narratif.get('message_final','')}</div>
-  <span class="final-origin">ORIGIN · origin-famille.fr</span>
+  <p class="final-origin">ORIGIN · origin-famille.fr</p>
 </div>
 
-{pages_libres}
+<!-- CARNET D'INTÉGRATION -->
+<div class="carnet-cover page">
+  <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
+  <h2 class="carnet-cover-title">Carnet d'Intégration</h2>
+  <p class="carnet-cover-sub">Tes réflexions · Tes prises de conscience · Ton chemin</p>
+  <div style="width:60px;height:1px;background:#C9A84C;margin:2cm auto;opacity:.5;"></div>
+  <p style="font-size:9pt;color:rgba(245,237,216,.4);letter-spacing:.2em;font-family:'Jost',sans-serif">À imprimer · À compléter à la main</p>
+</div>
+
+{"".join([f'''
+<div class="carnet-page page">
+  <p class="carnet-header">Réflexion {i+1} · ORIGIN</p>
+  {"".join([f'<p class="carnet-question">{"q"}</p>' + '<div class="carnet-line"></div>' * 6 for q in [
+    ["Qu'est-ce qui t'a le plus touché dans ta lecture ?",
+     "Quelle phrase résonne encore en toi ?",
+     "Qu'as-tu envie de changer à partir d'aujourd'hui ?"][i % 3]
+  ]])}
+  {"".join(['<div class="carnet-line"></div>' for _ in range(12)])}
+</div>''' for i in range(6)])}
 
 </body>
 </html>"""
@@ -1059,7 +892,7 @@ Date : {date.today().strftime('%d/%m/%Y')}
 
 Pièces jointes :
 - {filename_html} → livret interactif (ouvrir dans un navigateur)
-- {filename_pdf}  → version imprimable A4 + carnet d'intégration (18 pages)
+- {filename_pdf}  → version imprimable A4
 {"- Les_Heritages_Invisibles.pdf → ebook bonus inclus" if offre in ('famille','prestige') else ""}
 
 Valide le contenu puis transfère au client.
