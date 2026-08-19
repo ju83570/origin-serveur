@@ -344,7 +344,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
         "https://api.anthropic.com/v1/messages",
         headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
         json={"model": "claude-opus-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
-        timeout=300
+        timeout=600
     )
     r.raise_for_status()
     resp_json = r.json()
