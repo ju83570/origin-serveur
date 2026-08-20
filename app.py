@@ -251,6 +251,10 @@ def fmt_profil(p):
     return "\n".join(lines), num, astro
 
 def appeler_claude(offre, profils_txt):
+    if offre == 'prestige':
+        # Prestige = jusqu'a 7-8 personnes -> trop de texte pour un seul appel, on scinde.
+        return appeler_claude_prestige(profils_txt)
+
     annee_courante = date.today().year
     structures = {
         'solo': """
@@ -276,9 +280,10 @@ def appeler_claude(offre, profils_txt):
 2. PORTRAIT DE CHAQUE MEMBRE (4 paragraphes denses par personne — numerologie + astrologie + annee perso + pinnacle — chaque membre traite avec la meme profondeur)
 3. DYNAMIQUE FAMILIALE (4 paragraphes denses — ce que chacun apporte au collectif, les tensions creatives, les complementarites, les roles non dits)
 4. HERITAGES ET TRANSMISSION (4 paragraphes denses — patterns qui se repetent, loyautes invisibles, ce qui a ete transmis sans le vouloir, ce qui cherche a se liberer)
-5. OMBRES VERS LUMIERES (3 tensions familiales, 1 paragraphe dense chacune : situation concrete + bascule + lumiere + phrase)
-6. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de foyer commun)
-7. MESSAGE FINAL (3 paragraphes longs — vision de ce que ce foyer peut devenir, chaleureux et porteur d'espoir)""",
+5. COMMENT ACCOMPAGNER CHAQUE ENFANT — LE COEUR DU LIVRET (section la plus importante, a traiter avec un soin maximal : pour CHAQUE enfant du foyer, 1 paragraphe dense et distinct — jamais la meme approche copiee-collee d'un enfant a l'autre. Pour chaque enfant : ce que son theme revele de sa nature profonde et de sa sensibilite propre ; en quoi cette nature peut differer de celle du parent ou d'un frere/soeur, et pourquoi l'education ne peut pas etre identique pour chacun ; des conseils concrets, pratiques et actionnables — jamais vagues — sur la posture a adopter avec CET enfant precisement pour qu'il se sente compris et non juge ; comment eviter de lui transmettre malgre soi les schemas et loyautes invisibles identifies en section 4 ; comment, avec comprehension et amour, l'aider a devenir la meilleure version de lui-meme plutot que de le faire rentrer dans un moule. Termine cette section par un paragraphe de synthese sur l'art d'adapter sa parentalite a chaque enfant sans perdre la cohesion du foyer.)
+6. OMBRES VERS LUMIERES (3 tensions familiales, 1 paragraphe dense chacune : situation concrete + bascule + lumiere + phrase)
+7. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de foyer commun)
+8. MESSAGE FINAL (3 paragraphes longs — vision de ce que ce foyer peut devenir, chaleureux et porteur d'espoir)""",
         'prestige': """
 1. LETTRE D'OUVERTURE (4 paragraphes longs — a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission)
 2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (4 paragraphes denses par personne — numerologie + astrologie + annee perso — chaque membre traite avec la meme profondeur)
@@ -290,6 +295,8 @@ def appeler_claude(offre, profils_txt):
 8. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)""",
     }
     structure = structures.get(offre, structures['famille'])
+    mots_cible = "11 000 et 14 000" if offre == 'famille' else "9 000 et 12 000"
+    max_tokens_appel = 20000 if offre == 'famille' else 16000
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
@@ -299,7 +306,7 @@ Toutes les références à "cette année", "en {annee_courante}", l'année perso
 LONGUEUR IMPERATIVE — REGLE ABSOLUE PRIORITAIRE :
 - Chaque paragraphe = MINIMUM 6-8 lignes de prose dense. Un paragraphe court est un paragraphe raté.
 - Respecte EXACTEMENT le nombre de paragraphes indiqué. Si la structure dit 5 paragraphes, ecris 5 paragraphes complets, jamais 3.
-- Le livret complet doit atteindre entre 9 000 et 12 000 mots. Ne condense pas, ne resume pas.
+- Le livret complet doit atteindre entre {mots_cible} mots. Ne condense pas, ne resume pas.
 - Si tu as l'impression d'avoir dit l'essentiel, c'est le signal pour creuser encore : ajoute un exemple concret, une image, une connexion entre donnees, une nuance supplementaire.
 - Chaque section doit etre aussi longue et dense que les autres. Aucune section light.
 
@@ -347,7 +354,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
             r = requests.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-opus-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
+                json={"model": "claude-opus-4-6", "max_tokens": max_tokens_appel, "messages": [{"role": "user", "content": prompt}]},
                 timeout=600
             )
             r.raise_for_status()
@@ -360,6 +367,11 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
             else:
                 print(f"3 tentatives echouees — abandon")
                 raise last_exception
+    return _extraire_json_claude(r) or FALLBACK_NARRATIF
+
+
+def _extraire_json_claude(r):
+    """Parse + répare le JSON renvoyé par Claude. Isolé pour être réutilisé par les appels scindés (Prestige)."""
     resp_json = r.json()
     stop_reason = resp_json.get('stop_reason', '?')
     usage = resp_json.get('usage', {})
@@ -390,18 +402,164 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
                     return json.loads(candidate)
                 except:
                     pass
-        return {
-            "lettre": "<p>Une erreur technique est survenue. Nous vous recontactons sous 24h.</p>",
-            "sections": [],
-            "mantras": [{"prenom": "Vous", "texte": "Votre lecture est en cours de préparation.", "note": ""}],
-            "message_final": "<p>Nous avons bien reçu vos informations et préparons votre livret. Il vous sera envoyé sous 24h.</p>"
-        }
+        return None
+
+
+FALLBACK_NARRATIF = {
+    "lettre": "<p>Une erreur technique est survenue. Nous vous recontactons sous 24h.</p>",
+    "sections": [],
+    "mantras": [{"prenom": "Vous", "texte": "Votre lecture est en cours de préparation.", "note": ""}],
+    "message_final": "<p>Nous avons bien reçu vos informations et préparons votre livret. Il vous sera envoyé sous 24h.</p>"
+}
+
+
+def _appel_claude_chunk(prompt, max_tokens=8000):
+    """Un appel Claude isolé pour un morceau du livret (utilisé par le découpage Prestige).
+    Retourne le JSON parsé, ou None si echec/troncature apres reparation."""
+    import time
+    last_exception = None
+    for tentative in range(3):
+        try:
+            r = requests.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                json={"model": "claude-opus-4-6", "max_tokens": max_tokens, "messages": [{"role": "user", "content": prompt}]},
+                timeout=300
+            )
+            r.raise_for_status()
+            return _extraire_json_claude(r)
+        except Exception as e:
+            last_exception = e
+            if tentative < 2:
+                print(f"[chunk] Tentative {tentative+1}/3 echouee : {e} — relance dans 15s")
+                time.sleep(15)
+            else:
+                print(f"[chunk] 3 tentatives echouees — abandon")
+                raise last_exception
+
+
+def _preambule_prompt(annee_courante, style_mots, profils_txt):
+    return f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
+
+ANNÉE EN COURS : {annee_courante}
+Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
+
+LONGUEUR IMPERATIVE — REGLE ABSOLUE PRIORITAIRE :
+- Chaque paragraphe = MINIMUM 6-8 lignes de prose dense. Un paragraphe court est un paragraphe raté.
+- Respecte EXACTEMENT le nombre de paragraphes indiqué. Si la structure dit 5 paragraphes, ecris 5 paragraphes complets, jamais 3.
+- Cette partie du livret doit atteindre environ {style_mots} mots. Ne condense pas, ne resume pas.
+- Si tu as l'impression d'avoir dit l'essentiel, c'est le signal pour creuser encore : ajoute un exemple concret, une image, une connexion entre donnees, une nuance supplementaire.
+- Chaque section doit etre aussi longue et dense que les autres. Aucune section light.
+
+STYLE OBLIGATOIRE :
+- Tutoiement systematique, chaleureux, direct
+- Tout en prose narrative — zero liste a puces dans le contenu
+- Profond, immersif, le client doit sentir qu'on a passe des heures sur son cas
+- Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
+- Chaque paragraphe apporte quelque chose de nouveau — jamais de redite
+- Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
+- Ton bienveillant mais direct sur les zones d'ombre
+
+UTILISATION DES DONNEES ENRICHIES :
+- L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement
+- Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer par des situations de vie concretes
+- Les chiffres manquants = zones de croissance a explorer avec bienveillance — donne des exemples precis de ce que ca genere dans la vie quotidienne
+- Le pinnacle actuel = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
+- Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
+- Pour l'astrologie : developpe Soleil, Lune, Ascendant (si connu), puis Mercure, Venus, Mars avec leurs aspects significatifs
+
+DONNÉES :
+{profils_txt}
+"""
+
+
+def appeler_claude_prestige(profils_txt):
+    """L'offre Prestige (jusqu'a 7-8 personnes) genere trop de texte pour un seul appel Claude
+    (le stop_reason='max_tokens' tronque le JSON et fait planter la generation).
+    On scinde donc en 3 appels plus petits, chacun avec sa propre marge de tokens, puis on fusionne."""
+    annee_courante = date.today().year
+    pre = lambda mots: _preambule_prompt(annee_courante, mots, profils_txt)
+
+    # --- Appel A : lettre d'ouverture + portrait de chaque membre + les racines ---
+    prompt_a = pre("3500-4000") + """
+STRUCTURE (rediger uniquement ces 3 parties) :
+1. LETTRE D'OUVERTURE (4 paragraphes longs — a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission)
+2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (4 paragraphes denses par personne — numerologie + astrologie + annee perso — chaque membre traite avec la meme profondeur)
+3. LES RACINES — LECTURE DES PARENTS DES DEUX ADULTES (5 paragraphes denses — profil de chaque parent, ce que chaque lignee a transmis, les schemas dominants de chaque branche familiale)
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "lettre": "<p>...</p>",
+  "sections": [
+    {"titre": "Portrait de chaque membre du foyer", "eyebrow": "...", "contenu": "<p>...</p>..."},
+    {"titre": "Les racines", "eyebrow": "...", "contenu": "<p>...</p>..."}
+  ]
+}"""
+
+    # --- Appel B : heritage invisible + accompagner chaque enfant + ce qui peut se denouer + ombres vers lumieres ---
+    prompt_b = pre("4500-5500") + """
+STRUCTURE (rediger uniquement ces 4 parties) :
+1. L'HERITAGE INVISIBLE (4 paragraphes denses — repetitions sur 3 generations, silences familiaux, loyautes inconscientes, blessures transmises, ce qui cherche a se liberer a travers le foyer actuel)
+2. COMMENT ACCOMPAGNER CHAQUE ENFANT — LE COEUR DU LIVRET (section la plus importante, a traiter avec un soin maximal : pour CHAQUE enfant du foyer, 1 paragraphe dense et distinct — jamais la meme approche copiee-collee d'un enfant a l'autre. Pour chaque enfant : ce que son theme revele de sa nature profonde ; en quoi elle differe de celle de ses parents ou de sa fratrie, et pourquoi l'education ne peut pas etre identique pour chacun ; des conseils concrets, pratiques et actionnables sur la posture a adopter avec CET enfant precisement ; comment eviter de lui transmettre malgre soi les schemas identifies dans l'heritage invisible ; comment, avec comprehension et amour, l'aider a devenir la meilleure version de lui-meme. Termine par un paragraphe de synthese sur l'art d'adapter sa parentalite a chaque enfant sans perdre la cohesion du foyer.)
+3. CE QUI PEUT SE DENOUER (3 paragraphes denses — pistes concretes de liberation pour chaque membre et pour le foyer, ce que cette generation peut transformer pour les suivantes)
+4. OMBRES VERS LUMIERES (3 tensions transgenerationnelles, 1 paragraphe dense chacune : pattern concret observe sur plusieurs generations + bascule + lumiere + phrase de liberation)
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "sections": [
+    {"titre": "L'heritage invisible", "eyebrow": "...", "contenu": "<p>...</p>..."},
+    {"titre": "Comment accompagner chaque enfant", "eyebrow": "...", "contenu": "<p>...</p>..."},
+    {"titre": "Ce qui peut se denouer", "eyebrow": "...", "contenu": "<p>...</p>..."},
+    {"titre": "Ombres vers lumieres", "eyebrow": "...", "contenu": "<p>...</p>..."}
+  ]
+}"""
+
+    # --- Appel C : mantras + message final ---
+    prompt_c = pre("1500-2000") + """
+STRUCTURE (rediger uniquement ces 2 parties) :
+1. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de lignee commun qui honore les racines et ouvre vers l'avenir)
+2. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "mantras": [
+    {"prenom": "...", "texte": "...", "note": "..."},
+    ...
+  ],
+  "message_final": "<p>...</p>"
+}"""
+
+    a = _appel_claude_chunk(prompt_a, max_tokens=8000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=10000)
+    c = _appel_claude_chunk(prompt_c, max_tokens=4000)
+
+    if not a or not b or not c:
+        print("⚠️ ATTENTION : un des 3 morceaux Prestige a echoue — fallback d'erreur")
+        return FALLBACK_NARRATIF
+
+    return {
+        "lettre": a.get("lettre", ""),
+        "sections": (a.get("sections") or []) + (b.get("sections") or []),
+        "mantras": c.get("mantras") or [{"prenom": "Vous", "texte": "Votre lecture est en cours de préparation.", "note": ""}],
+        "message_final": c.get("message_final", ""),
+    }
 
 CSS = """
 :root{--noir:#090907;--encre:#111109;--or:#C9A84C;--or-clair:#E8C97A;--cuivre:#B97333;--creme:#F2ECD8;--muted:#9E9478;--dim:#5A5340;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',serif;font-weight:300;overflow-x:hidden;}
+
+/* LUMIÈRE VIVANTE — respiration continue en fond, comme sur le site */
+.ambient{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(38% 34% at 28% 22%, rgba(185,115,51,.10), transparent 70%),
+  radial-gradient(34% 40% at 78% 72%, rgba(201,168,76,.075), transparent 72%);
+  animation:ambientDrift 24s ease-in-out infinite alternate;}
+@keyframes ambientDrift{0%{transform:translate3d(0,0,0) scale(1);opacity:.85}100%{transform:translate3d(-3%,2.5%,0) scale(1.1);opacity:1}}
+
+/* TEXTE OR CHATOYANT — effet wow sur les mantras */
+.shimmer{background:linear-gradient(105deg,#8A5E26 0%,var(--or) 28%,#FFF7DA 48%,var(--or) 66%,#8A5E26 100%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shimmerShine 4s linear infinite;}
+@keyframes shimmerShine{to{background-position:-250% center;}}
 
 /* COVER */
 .cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:4rem 2rem;text-align:center;}
@@ -510,7 +668,17 @@ footer{border-top:1px solid rgba(201,168,76,.08);padding:2.5rem;text-align:cente
 """
 
 SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-<defs><radialGradient id="sg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#E8C97A" stop-opacity=".9"/><stop offset="100%" stop-color="#B97333" stop-opacity=".5"/></radialGradient></defs>
+<defs>
+<radialGradient id="sg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#E8C97A" stop-opacity=".9"/><stop offset="100%" stop-color="#B97333" stop-opacity=".5"/></radialGradient>
+<radialGradient id="sgDot" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF4D0"/><stop offset="40%" stop-color="#F0D080"/><stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/></radialGradient>
+<path id="sgPath1" d="M 128,100 A 28,28 0 1,1 72,100 A 28,28 0 1,1 128,100" fill="none"/>
+<path id="sgPath2" d="M 128,72 A 28,28 0 1,1 72,72 A 28,28 0 1,1 128,72" fill="none"/>
+<path id="sgPath3" d="M 152,86 A 28,28 0 1,1 96,86 A 28,28 0 1,1 152,86" fill="none"/>
+<path id="sgPath4" d="M 152,114 A 28,28 0 1,1 96,114 A 28,28 0 1,1 152,114" fill="none"/>
+<path id="sgPath5" d="M 128,128 A 28,28 0 1,1 72,128 A 28,28 0 1,1 128,128" fill="none"/>
+<path id="sgPath6" d="M 104,114 A 28,28 0 1,1 48,114 A 28,28 0 1,1 104,114" fill="none"/>
+<path id="sgPath7" d="M 104,86 A 28,28 0 1,1 48,86 A 28,28 0 1,1 104,86" fill="none"/>
+</defs>
 <circle cx="100" cy="100" r="28" stroke="url(#sg)" stroke-width="1.2" fill="none"/>
 <circle cx="100" cy="72" r="28" stroke="url(#sg)" stroke-width="1.2" fill="none" opacity=".85"/>
 <circle cx="124" cy="86" r="28" stroke="url(#sg)" stroke-width="1.2" fill="none" opacity=".85"/>
@@ -520,6 +688,13 @@ SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="htt
 <circle cx="76" cy="86" r="28" stroke="url(#sg)" stroke-width="1.2" fill="none" opacity=".85"/>
 <circle cx="100" cy="100" r="56" stroke="#C9A84C" stroke-width=".6" fill="none" opacity=".3"/>
 <circle cx="100" cy="100" r="70" stroke="#C9A84C" stroke-width=".4" fill="none" opacity=".15"/>
+<circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#sgPath1"/></animateMotion></circle>
+<circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="0.85s" repeatCount="indefinite"><mpath href="#sgPath2"/></animateMotion></circle>
+<circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="1.7s" repeatCount="indefinite"><mpath href="#sgPath3"/></animateMotion></circle>
+<circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="2.55s" repeatCount="indefinite"><mpath href="#sgPath4"/></animateMotion></circle>
+<circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="3.4s" repeatCount="indefinite"><mpath href="#sgPath5"/></animateMotion></circle>
+<circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="4.25s" repeatCount="indefinite"><mpath href="#sgPath6"/></animateMotion></circle>
+<circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="5.1s" repeatCount="indefinite"><mpath href="#sgPath7"/></animateMotion></circle>
 </svg>"""
 
 def generer_html(offre, clients, narratif):
@@ -560,7 +735,7 @@ def generer_html(offre, clients, narratif):
 <div class="mantra-wrap reveal-scale">
   <div class="mantra-bg"></div>
   <p class="mantra-prenom">{m['prenom'].upper()}</p>
-  <p class="mantra-txt">{m['texte']}</p>
+  <p class="mantra-txt shimmer">{m['texte']}</p>
   <p class="mantra-note">{m.get('note','')}</p>
 </div>"""
 
@@ -578,6 +753,7 @@ def generer_html(offre, clients, narratif):
 <style>{CSS}</style>
 </head>
 <body>
+<div class="ambient"></div>
 <nav class="nav-dots" id="navDots">{nav}</nav>
 
 <section class="cover" id="s0">
