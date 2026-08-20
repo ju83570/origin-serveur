@@ -70,7 +70,6 @@ def label_nombre(n):
     noms = {11:"Maître Inspirateur", 22:"Maître Bâtisseur", 33:"Maître Enseignant"}
     return f"{n} ({noms[n]})" if n in noms else str(n)
 
-# ── Significations des chiffres ──────────────────────────────────────────────
 SIGNIF_CHIFFRES = {
     1: "leadership, indépendance, initiative, volonté",
     2: "harmonie, sensibilité, coopération, diplomatie",
@@ -208,16 +207,13 @@ def fmt_profil(p):
     filiation = p.get('filiation', '')
     filiation_str = f"\n  Filiation     : {filiation}" if filiation else ""
 
-    # Enrichissements
     chiffres = analyse_chiffres(j, m, a)
     num_pin, val_pin, reste_pin = pinnacles(j, m, a)
     ap, theme_ap, energie_ap, focus_ap = annee_perso_detaillee(j, m)
 
-    # Chiffres dominants / manquants
     dom_str = ", ".join(f"{d} ({sig})" for d, sig in chiffres['dominants']) or "aucun"
     man_str = ", ".join(f"{mn} ({sig})" for mn, sig in chiffres['manquants']) or "aucun"
 
-    # Pinnacle
     pin_str = f"Pinnacle {num_pin} — valeur {val_pin}"
     if reste_pin:
         pin_str += f" (encore {reste_pin} ans dans ce cycle)"
@@ -252,29 +248,26 @@ def fmt_profil(p):
 
 def appeler_claude(offre, profils_txt):
     if offre == 'prestige':
-        # Prestige = jusqu'a 7-8 personnes -> trop de texte pour un seul appel, on scinde.
         return appeler_claude_prestige(profils_txt)
 
     annee_courante = date.today().year
     structures = {
         'solo': """
-1. LETTRE D'OUVERTURE (4 paragraphes longs — accroche sur ce qui rend cette personne absolument unique, reference precise aux nombres et planetes, chaleur et profondeur)
-2. PORTRAIT NUMEROLOGIQUE (5 paragraphes denses — 1 par nombre : chemin de vie, expression, intime, realisation, annee perso/pinnacle — croise les nombres entre eux dans chaque paragraphe)
-3. PORTRAIT ASTROLOGIQUE (5 paragraphes denses — Soleil avec aspects, Lune avec aspects, Ascendant si connu, planetes personnelles Mercure+Venus+Mars, synthese du theme natal global)
-4. TON ANNEE EN COURS (3 paragraphes denses — theme de l'annee perso, energie et focus concrets, resonance avec le pinnacle et les transits actuels en 2026)
-5. FORCES ET CROISSANCE (3 paragraphes denses — dominants comme forces celebrees avec exemples de vie, manquants comme zones d'invitation avec exemples concrets de ce que ca genere)
-6. OMBRES VERS LUMIERES (3 transformations completes, 1 paragraphe dense chacune : situation concrete vecue + bascule + lumiere + phrase a dire a voix haute)
-7. MANTRA PERSONNEL (1 mantra fort — texte du mantra + note explicative de 3-4 lignes ancree dans les donnees)
-8. MESSAGE FINAL (3 paragraphes longs — elan vers l'avenir, ce que cette personne est venue accomplir, chaleureux et concret)""",
+1. LETTRE D'OUVERTURE (3 paragraphes — accroche sur ce qui rend cette personne unique, reference aux nombres et planetes, chaleur et profondeur)
+2. PORTRAIT NUMEROLOGIQUE (4 paragraphes — chemin de vie, expression/intime/realisation croises, annee perso avec theme et focus, pinnacle actuel)
+3. PORTRAIT ASTROLOGIQUE (3 paragraphes — Soleil+Lune narrativises ensemble, planetes personnelles Mercure+Venus+Mars, synthese du theme natal)
+4. FORCES ET CROISSANCE (2 paragraphes — dominants comme forces celebrees, manquants comme zones d'invitation avec exemples concrets)
+5. OMBRES VERS LUMIERES (2 transformations — situation concrete vecue + bascule + lumiere + phrase a dire a voix haute)
+6. MANTRA PERSONNEL (1 mantra + note explicative de 2-3 lignes)
+7. MESSAGE FINAL (2 paragraphes — elan vers l'avenir, chaleureux et concret)""",
         'couple': """
-1. LETTRE D'OUVERTURE (4 paragraphes longs — ce qui rend cette rencontre unique, resonances entre leurs deux themes, chaleur et profondeur)
-2. PORTRAIT INDIVIDUEL PERSONNE 1 (5 paragraphes denses — numerologie complete, astrologie, annee perso, pinnacle, ce qui la/le caracterise profondement)
-3. PORTRAIT INDIVIDUEL PERSONNE 2 (5 paragraphes denses — idem, avec ses specificites propres, sans copier la structure de P1)
-4. CE QUE VOUS CREEZ ENSEMBLE (4 paragraphes denses — resonances des chiffres croises, dynamique de couple, zones de friction et de complementarite, ce que leur union cree comme energie tierce)
-5. VOS ANNEES EN RESONANCE (3 paragraphes denses — croiser les annees personnelles, les pinnacles, les transits communs en 2026)
-6. OMBRES VERS LUMIERES (3 tensions de couple, 1 paragraphe dense chacune : situation concrete + bascule + lumiere + phrase commune)
-7. MANTRAS (un par personne ancre dans son profil + un mantra commun ancre dans leur dynamique)
-8. MESSAGE FINAL (3 paragraphes longs)""",
+1. LETTRE D'OUVERTURE (3 paragraphes — ce qui rend cette rencontre unique, resonances entre leurs deux themes)
+2. PORTRAIT INDIVIDUEL PERSONNE 1 (4 paragraphes — numerologie complete, astrologie, annee perso, pinnacle)
+3. PORTRAIT INDIVIDUEL PERSONNE 2 (4 paragraphes — idem, avec ses specificites propres)
+4. CE QUE VOUS CREEZ ENSEMBLE (3 paragraphes — resonances des chiffres croises, dynamique de couple, zones de friction et de complementarite)
+5. OMBRES VERS LUMIERES (2 tensions de couple — situation concrete + bascule + lumiere + phrase commune)
+6. MANTRAS (un par personne + un mantra commun)
+7. MESSAGE FINAL (2 paragraphes)""",
         'famille': """
 1. LETTRE D'OUVERTURE (4 paragraphes longs — ce qui rend ce foyer unique, les resonances entre membres, ce que cette famille porte comme mission collective)
 2. PORTRAIT DE CHAQUE MEMBRE (4 paragraphes denses par personne — numerologie + astrologie + annee perso + pinnacle — chaque membre traite avec la meme profondeur)
@@ -295,37 +288,35 @@ def appeler_claude(offre, profils_txt):
 8. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)""",
     }
     structure = structures.get(offre, structures['famille'])
-    mots_cible = "11 000 et 14 000" if offre == 'famille' else "9 000 et 12 000"
-    max_tokens_appel = 20000 if offre == 'famille' else 16000
+    mots_cible = "8 000 et 10 000" if offre == 'famille' else "4 500 et 6 000"
+    max_tokens_appel = 12000 if offre == 'famille' else 8000
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
-LONGUEUR IMPERATIVE — REGLE ABSOLUE PRIORITAIRE :
-- Chaque paragraphe = MINIMUM 6-8 lignes de prose dense. Un paragraphe court est un paragraphe raté.
-- Respecte EXACTEMENT le nombre de paragraphes indiqué. Si la structure dit 5 paragraphes, ecris 5 paragraphes complets, jamais 3.
-- Le livret complet doit atteindre entre {mots_cible} mots. Ne condense pas, ne resume pas.
-- Si tu as l'impression d'avoir dit l'essentiel, c'est le signal pour creuser encore : ajoute un exemple concret, une image, une connexion entre donnees, une nuance supplementaire.
-- Chaque section doit etre aussi longue et dense que les autres. Aucune section light.
+LONGUEUR IMPERATIVE :
+- Chaque paragraphe = MINIMUM 5-6 lignes de prose dense.
+- Respecte EXACTEMENT le nombre de paragraphes indiqué.
+- Le livret complet doit atteindre entre {mots_cible} mots.
+- Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données.
 
 STYLE OBLIGATOIRE :
 - Tutoiement systematique, chaleureux, direct
 - Tout en prose narrative — zero liste a puces dans le contenu
-- Profond, immersif, le client doit sentir qu'on a passe des heures sur son cas
+- Profond, immersif, le client doit sentir qu'on a passé des heures sur son cas
 - Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
 - Chaque paragraphe apporte quelque chose de nouveau — jamais de redite
 - Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
 - Ton bienveillant mais direct sur les zones d'ombre
 
 UTILISATION DES DONNEES ENRICHIES :
-- L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement sur 3 paragraphes denses
+- L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement
 - Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer par des situations de vie concretes
-- Les chiffres manquants = zones de croissance a explorer avec bienveillance — donne des exemples precis de ce que ca genere dans la vie quotidienne
+- Les chiffres manquants = zones de croissance a explorer avec bienveillance
 - Le pinnacle actuel = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
 - Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
-- Pour l'astrologie : developpe Soleil, Lune, Ascendant (si connu), puis Mercure, Venus, Mars avec leurs aspects significatifs
 
 DONNÉES :
 {profils_txt}
@@ -371,7 +362,6 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 
 
 def _extraire_json_claude(r):
-    """Parse + répare le JSON renvoyé par Claude. Isolé pour être réutilisé par les appels scindés (Prestige)."""
     resp_json = r.json()
     stop_reason = resp_json.get('stop_reason', '?')
     usage = resp_json.get('usage', {})
@@ -379,12 +369,10 @@ def _extraire_json_claude(r):
     if stop_reason == 'max_tokens':
         print("⚠️ ATTENTION : réponse tronquée (max_tokens atteint) — le JSON sera probablement invalide")
     raw = resp_json['content'][0]['text']
-    # Nettoyage robuste markdown
     raw = raw.strip()
     raw = re.sub(r'^```(?:json)?\s*', '', raw)
     raw = re.sub(r'\s*```$', '', raw)
     raw = raw.strip()
-    # Extraire le JSON si du texte précède
     match = re.search(r'\{[\s\S]*\}', raw)
     if match:
         raw = match.group(0)
@@ -414,8 +402,6 @@ FALLBACK_NARRATIF = {
 
 
 def _appel_claude_chunk(prompt, max_tokens=8000):
-    """Un appel Claude isolé pour un morceau du livret (utilisé par le découpage Prestige).
-    Retourne le JSON parsé, ou None si echec/troncature apres reparation."""
     import time
     last_exception = None
     for tentative in range(3):
@@ -444,17 +430,16 @@ def _preambule_prompt(annee_courante, style_mots, profils_txt):
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
-LONGUEUR IMPERATIVE — REGLE ABSOLUE PRIORITAIRE :
-- Chaque paragraphe = MINIMUM 6-8 lignes de prose dense. Un paragraphe court est un paragraphe raté.
-- Respecte EXACTEMENT le nombre de paragraphes indiqué. Si la structure dit 5 paragraphes, ecris 5 paragraphes complets, jamais 3.
-- Cette partie du livret doit atteindre environ {style_mots} mots. Ne condense pas, ne resume pas.
-- Si tu as l'impression d'avoir dit l'essentiel, c'est le signal pour creuser encore : ajoute un exemple concret, une image, une connexion entre donnees, une nuance supplementaire.
-- Chaque section doit etre aussi longue et dense que les autres. Aucune section light.
+LONGUEUR IMPERATIVE :
+- Chaque paragraphe = MINIMUM 5-6 lignes de prose dense.
+- Respecte EXACTEMENT le nombre de paragraphes indiqué.
+- Cette partie du livret doit atteindre environ {style_mots} mots.
+- Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données.
 
 STYLE OBLIGATOIRE :
 - Tutoiement systematique, chaleureux, direct
 - Tout en prose narrative — zero liste a puces dans le contenu
-- Profond, immersif, le client doit sentir qu'on a passe des heures sur son cas
+- Profond, immersif, le client doit sentir qu'on a passé des heures sur son cas
 - Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
 - Chaque paragraphe apporte quelque chose de nouveau — jamais de redite
 - Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
@@ -462,11 +447,10 @@ STYLE OBLIGATOIRE :
 
 UTILISATION DES DONNEES ENRICHIES :
 - L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement
-- Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer par des situations de vie concretes
-- Les chiffres manquants = zones de croissance a explorer avec bienveillance — donne des exemples precis de ce que ca genere dans la vie quotidienne
+- Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer
+- Les chiffres manquants = zones de croissance a explorer avec bienveillance
 - Le pinnacle actuel = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
 - Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
-- Pour l'astrologie : developpe Soleil, Lune, Ascendant (si connu), puis Mercure, Venus, Mars avec leurs aspects significatifs
 
 DONNÉES :
 {profils_txt}
@@ -474,14 +458,10 @@ DONNÉES :
 
 
 def appeler_claude_prestige(profils_txt):
-    """L'offre Prestige (jusqu'a 7-8 personnes) genere trop de texte pour un seul appel Claude
-    (le stop_reason='max_tokens' tronque le JSON et fait planter la generation).
-    On scinde donc en 3 appels plus petits, chacun avec sa propre marge de tokens, puis on fusionne."""
     annee_courante = date.today().year
     pre = lambda mots: _preambule_prompt(annee_courante, mots, profils_txt)
 
-    # --- Appel A : lettre d'ouverture + portrait de chaque membre + les racines ---
-    prompt_a = pre("3500-4000") + """
+    prompt_a = pre("3000-3500") + """
 STRUCTURE (rediger uniquement ces 3 parties) :
 1. LETTRE D'OUVERTURE (4 paragraphes longs — a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission)
 2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (4 paragraphes denses par personne — numerologie + astrologie + annee perso — chaque membre traite avec la meme profondeur)
@@ -496,13 +476,12 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   ]
 }"""
 
-    # --- Appel B : heritage invisible + accompagner chaque enfant + ce qui peut se denouer + ombres vers lumieres ---
-    prompt_b = pre("4500-5500") + """
+    prompt_b = pre("3500-4500") + """
 STRUCTURE (rediger uniquement ces 4 parties) :
 1. L'HERITAGE INVISIBLE (4 paragraphes denses — repetitions sur 3 generations, silences familiaux, loyautes inconscientes, blessures transmises, ce qui cherche a se liberer a travers le foyer actuel)
-2. COMMENT ACCOMPAGNER CHAQUE ENFANT — LE COEUR DU LIVRET (section la plus importante, a traiter avec un soin maximal : pour CHAQUE enfant du foyer, 1 paragraphe dense et distinct — jamais la meme approche copiee-collee d'un enfant a l'autre. Pour chaque enfant : ce que son theme revele de sa nature profonde ; en quoi elle differe de celle de ses parents ou de sa fratrie, et pourquoi l'education ne peut pas etre identique pour chacun ; des conseils concrets, pratiques et actionnables sur la posture a adopter avec CET enfant precisement ; comment eviter de lui transmettre malgre soi les schemas identifies dans l'heritage invisible ; comment, avec comprehension et amour, l'aider a devenir la meilleure version de lui-meme. Termine par un paragraphe de synthese sur l'art d'adapter sa parentalite a chaque enfant sans perdre la cohesion du foyer.)
-3. CE QUI PEUT SE DENOUER (3 paragraphes denses — pistes concretes de liberation pour chaque membre et pour le foyer, ce que cette generation peut transformer pour les suivantes)
-4. OMBRES VERS LUMIERES (3 tensions transgenerationnelles, 1 paragraphe dense chacune : pattern concret observe sur plusieurs generations + bascule + lumiere + phrase de liberation)
+2. COMMENT ACCOMPAGNER CHAQUE ENFANT — LE COEUR DU LIVRET (pour CHAQUE enfant du foyer, 1 paragraphe dense et distinct — nature profonde, conseils concrets et actionnables, comment eviter de transmettre les schemas identifies, comment l'aider a devenir la meilleure version de lui-meme. Termine par un paragraphe de synthese.)
+3. CE QUI PEUT SE DENOUER (3 paragraphes denses — pistes concretes de liberation pour chaque membre et pour le foyer)
+4. OMBRES VERS LUMIERES (3 tensions transgenerationnelles, 1 paragraphe dense chacune : pattern concret + bascule + lumiere + phrase de liberation)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
@@ -514,8 +493,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   ]
 }"""
 
-    # --- Appel C : mantras + message final ---
-    prompt_c = pre("1500-2000") + """
+    prompt_c = pre("1200-1800") + """
 STRUCTURE (rediger uniquement ces 2 parties) :
 1. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de lignee commun qui honore les racines et ouvre vers l'avenir)
 2. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)
@@ -529,9 +507,9 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p>"
 }"""
 
-    a = _appel_claude_chunk(prompt_a, max_tokens=8000)
-    b = _appel_claude_chunk(prompt_b, max_tokens=10000)
-    c = _appel_claude_chunk(prompt_c, max_tokens=4000)
+    a = _appel_claude_chunk(prompt_a, max_tokens=6000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=8000)
+    c = _appel_claude_chunk(prompt_c, max_tokens=3000)
 
     if not a or not b or not c:
         print("⚠️ ATTENTION : un des 3 morceaux Prestige a echoue — fallback d'erreur")
@@ -549,34 +527,22 @@ CSS = """
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',serif;font-weight:300;overflow-x:hidden;}
-
-/* LUMIÈRE VIVANTE — respiration continue en fond, comme sur le site */
 .ambient{position:fixed;inset:0;z-index:-1;pointer-events:none;background:
   radial-gradient(38% 34% at 28% 22%, rgba(185,115,51,.10), transparent 70%),
   radial-gradient(34% 40% at 78% 72%, rgba(201,168,76,.075), transparent 72%);
   animation:ambientDrift 24s ease-in-out infinite alternate;}
 @keyframes ambientDrift{0%{transform:translate3d(0,0,0) scale(1);opacity:.85}100%{transform:translate3d(-3%,2.5%,0) scale(1.1);opacity:1}}
-
-/* TEXTE OR CHATOYANT — effet wow sur les mantras */
 .shimmer{background:linear-gradient(105deg,#8A5E26 0%,var(--or) 28%,#FFF7DA 48%,var(--or) 66%,#8A5E26 100%);background-size:250% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:shimmerShine 4s linear infinite;}
 @keyframes shimmerShine{to{background-position:-250% center;}}
-
-/* COVER */
 .cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:4rem 2rem;text-align:center;}
 .cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(185,115,51,.15) 0%,transparent 65%);}
 .cover-bg-pulse{position:absolute;inset:0;background:radial-gradient(ellipse 40% 40% at 50% 50%,rgba(201,168,76,.08) 0%,transparent 60%);animation:bgp 8s ease-in-out infinite;}
 @keyframes bgp{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
-
-/* PARTICULES */
 .particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
 .particle{position:absolute;border-radius:50%;opacity:0;animation:pf var(--dur) var(--delay) ease-in-out infinite;}
 @keyframes pf{0%{opacity:0;transform:translateY(0) scale(0)}15%{opacity:.9}70%{opacity:.3}100%{opacity:0;transform:translateY(-150px) scale(2)}}
 .star{position:absolute;width:1px;height:1px;background:var(--or-clair);border-radius:50%;animation:twinkle var(--dur) var(--delay) ease-in-out infinite;}
 @keyframes twinkle{0%,100%{opacity:0;transform:scale(1)}50%{opacity:.8;transform:scale(1.5)}}
-
-/* LOGO MAIN */
-
-/* GRAINE DE VIE */
 .cover-content{position:relative;z-index:2;max-width:720px;margin:0 auto;}
 .cover-eyebrow{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.55em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1.5rem;animation:fadein 1.5s ease-out forwards;}
 .seed-wrap{width:110px;height:110px;margin:0 auto 2rem;position:relative;}
@@ -585,31 +551,23 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .seed-pulse{position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(201,168,76,.15);animation:pr 3s ease-in-out infinite;}
 .seed-pulse:nth-child(2){inset:-32px;animation-delay:1s;border-color:rgba(201,168,76,.08);}
 @keyframes pr{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.5}}
-
-.cover-title{font-family:'Cinzel',serif;font-size:clamp(1.8rem,5vw,3rem);font-weight:400;letter-spacing:.12em;color:var(--or-clair);margin-bottom:.8rem;animation:tg 6s ease-in-out infinite,fadein 2s ease-out forwards;}
+.cover-title{font-family:'Cinzel',serif;font-size:clamp(2.8rem,8vw,5rem);font-weight:400;letter-spacing:.28em;text-indent:.28em;color:var(--or-clair);margin-bottom:1.5rem;text-align:center;width:100%;text-shadow:0 0 60px rgba(201,168,76,.5);animation:tg 6s ease-in-out infinite,fadein 2s ease-out forwards;}
 @keyframes tg{0%,100%{text-shadow:0 0 40px rgba(232,201,122,.2)}50%{text-shadow:0 0 80px rgba(232,201,122,.6),0 0 120px rgba(201,168,76,.3)}}
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .cover-names{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,4vw,2.4rem);font-style:italic;color:var(--creme);margin-bottom:.6rem;}
 .cover-amp{color:var(--or);font-style:normal;margin:0 .5rem;}
 .cover-tagline{font-size:1.05rem;color:var(--muted);font-style:italic;margin-bottom:2.5rem;line-height:1.7;}
 .cover-ligne{width:80px;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:0 auto 1.8rem;}
-.cover-title{font-family:'Cinzel',serif;font-size:clamp(2.8rem,8vw,5rem);font-weight:400;letter-spacing:.28em;text-indent:.28em;color:var(--or-clair);margin-bottom:1.5rem;text-align:center;width:100%;text-shadow:0 0 60px rgba(201,168,76,.5);animation:tg 6s ease-in-out infinite,fadein 2s ease-out forwards;}
 .cover-meta{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);}
-
-/* SCROLL INDICATOR */
 .scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:.4;animation:bounce 2s ease-in-out infinite;}
 @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
 .scroll-hint span{font-family:'Jost',sans-serif;font-size:.55rem;letter-spacing:.3em;color:var(--or);}
 .scroll-arrow{width:20px;height:20px;border-right:1px solid var(--or);border-bottom:1px solid var(--or);transform:rotate(45deg);}
-
-/* NAV DOTS */
 .nav-dots{position:fixed;right:1.8rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.7rem;z-index:100;}
 .nav-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.25);cursor:pointer;transition:all .4s;position:relative;}
 .nav-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(201,168,76,.0);transition:all .4s;}
 .nav-dot.active,.nav-dot:hover{background:var(--or);box-shadow:0 0 12px rgba(201,168,76,.7);transform:scale(1.5);}
 .nav-dot.active::after{border-color:rgba(201,168,76,.3);}
-
-/* SECTIONS */
 .section{max-width:820px;margin:0 auto;padding:7rem 2.5rem;}
 .section-sep{border-top:1px solid rgba(201,168,76,.08);}
 .s-eyebrow{font-family:'Jost',sans-serif;font-size:.58rem;letter-spacing:.5em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1rem;display:block;}
@@ -618,27 +576,19 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .prose{font-size:clamp(1rem,1.8vw,1.12rem);line-height:2;color:var(--creme);font-weight:300;}
 .prose p{margin-bottom:1.8rem;}
 .prose em{color:var(--or-clair);font-style:italic;}
-
-/* LETTRE */
 .lettre{background:rgba(201,168,76,.03);border:1px solid rgba(201,168,76,.12);border-left:3px solid var(--cuivre);padding:2.8rem 3rem;position:relative;overflow:hidden;}
 .lettre::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,var(--cuivre),transparent);}
 .lettre-signature{margin-top:2rem;font-size:.85rem;letter-spacing:.2em;color:var(--cuivre);font-family:'Cinzel',serif;}
-
-/* ORNEMENTS */
 .ornament{display:flex;align-items:center;gap:1.2rem;margin:3rem 0;opacity:.4;}
 .ornament-line{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--or));}
 .ornament-line:last-child{background:linear-gradient(to left,transparent,var(--or));}
 .ornament-symbol{color:var(--or);font-size:1rem;}
-
-/* MANTRAS */
 .mantra-wrap{text-align:center;padding:4rem 2rem;position:relative;overflow:hidden;}
 .mantra-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(185,115,51,.08) 0%,transparent 70%);pointer-events:none;animation:mb 5s ease-in-out infinite;}
 @keyframes mb{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
 .mantra-prenom{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.45em;color:var(--cuivre);margin-bottom:1.5rem;position:relative;z-index:1;}
 .mantra-txt{font-family:'Cinzel',serif;font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:400;color:var(--or-clair);line-height:1.7;position:relative;z-index:1;}
 .mantra-note{margin-top:1rem;font-size:.95rem;color:var(--dim);font-style:italic;position:relative;z-index:1;}
-
-/* FINAL */
 .final-wrap{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem;position:relative;}
 .final-glow{position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(185,115,51,.12) 0%,transparent 70%);animation:fb 6s ease-in-out infinite;}
 @keyframes fb{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
@@ -647,8 +597,6 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .final-prose em{color:var(--or-clair);font-style:italic;}
 .final-origin{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.55em;color:var(--cuivre);position:relative;z-index:1;}
 .final-seed{width:80px;height:80px;margin:0 auto 2rem;opacity:.6;animation:sr 30s linear infinite;}
-
-/* RÉVÉLATION AU SCROLL — Safari + Android compatible */
 .reveal{opacity:1;transform:translateY(0);transition:opacity 1s ease,transform 1s ease;}
 .js-loaded .reveal{opacity:0;transform:translateY(40px);}
 .reveal.visible{opacity:1 !important;transform:translateY(0) !important;}
@@ -658,11 +606,8 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .reveal-scale{opacity:1;transform:scale(1);transition:opacity 1s ease,transform 1s ease;}
 .js-loaded .reveal-scale{opacity:0;transform:scale(0.92);}
 .reveal-scale.visible{opacity:1 !important;transform:scale(1) !important;}
-
-/* LIGNE LUMINEUSE */
 .light-line{width:0;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:2rem auto;transition:width 1.5s ease;}
 .light-line.visible{width:120px;}
-
 footer{border-top:1px solid rgba(201,168,76,.08);padding:2.5rem;text-align:center;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.25em;color:var(--dim);}
 @media(max-width:768px){.section{padding:4rem 1.4rem;}.lettre{padding:2rem 1.6rem;}}
 """
@@ -817,10 +762,7 @@ def generer_html(offre, clients, narratif):
 <footer>ORIGIN · Analyse personnalisée · {annee} · Confidentiel</footer>
 
 <script>
-// Activation progressive — Safari safe
 document.body.classList.add('js-loaded');
-
-// Particules dorées
 const pc = document.getElementById('particles');
 for(let i=0;i<60;i++){{
   const p = document.createElement('div');
@@ -835,16 +777,12 @@ for(let i=0;i<60;i++){{
   }}
   pc.appendChild(p);
 }}
-
-// Navigation dots
 const dots = document.querySelectorAll('.nav-dot');
 const sIds = {sid_list};
 const sections = sIds.map(id => document.getElementById(id));
 dots.forEach((d,i) => d.addEventListener('click', () => {{
   if(sections[i]) sections[i].scrollIntoView({{behavior:'smooth'}});
 }}));
-
-// Intersection Observer — révélations + nav active
 const revealObs = new IntersectionObserver(entries => {{
   entries.forEach(en => {{
     if(en.isIntersecting){{
@@ -858,14 +796,10 @@ const revealObs = new IntersectionObserver(entries => {{
   }});
 }}, {{threshold: 0.05, rootMargin: '0px 0px -50px 0px'}});
 sections.forEach(s => {{ if(s) revealObs.observe(s); }});
-
-// Effet parallaxe léger sur la cover
 window.addEventListener('scroll', () => {{
   const sy = window.scrollY;
   const coverContent = document.querySelector('.cover-content');
   if(coverContent) coverContent.style.transform = `translateY(${{sy * 0.3}}px)`;
-  const logo = document.querySelector('.logo-main-wrap');
-  if(logo) logo.style.transform = `translateY(${{sy * 0.15}}px)`;
 }});
 </script>
 </body></html>"""
@@ -968,7 +902,6 @@ body {
 .final-prose em { color: var(--cuivre); font-style: italic; }
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
-/* CARNET D'INTÉGRATION */
 .carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:4cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; }
 .carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
 .carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
@@ -1048,7 +981,6 @@ def generer_pdf_imprimable(offre, clients, narratif):
   {mantras_html}
 </div>
 
-<!-- CARNET D'INTÉGRATION -->
 <div class="carnet-cover page">
   <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
   <h2 class="carnet-cover-title">Carnet d'Intégration</h2>
@@ -1061,9 +993,9 @@ def generer_pdf_imprimable(offre, clients, narratif):
 <div class="carnet-page page">
   <p class="carnet-header">Réflexion {i+1} · ORIGIN</p>
   {"".join([f'<p class="carnet-question">{q}</p>' + '<div class="carnet-line"></div>' * 6 for q in [
-    ["Qu'est-ce qui t'a le plus touché dans ta lecture ?",
+    ["Qu\'est-ce qui t\'a le plus touché dans ta lecture ?",
      "Quelle phrase résonne encore en toi ?",
-     "Qu'as-tu envie de changer à partir d'aujourd'hui ?"][i % 3]
+     "Qu\'as-tu envie de changer à partir d\'aujourd\'hui ?"][i % 3]
   ]])}
   {"".join(['<div class="carnet-line"></div>' for _ in range(12)])}
 </div>''' for i in range(6)])}
@@ -1216,7 +1148,6 @@ def webhook():
         def generer():
             try:
                 narratif = appeler_claude(offre, profils_txt)
-                # Vérification que le narratif n'est pas le fallback d'erreur
                 lettre = narratif.get("lettre", "")
                 if "erreur technique" in lettre.lower() or "en cours de préparation" in lettre.lower():
                     raise ValueError("Narratif invalide — fallback d'erreur détecté après parsing JSON")
@@ -1227,7 +1158,6 @@ def webhook():
             except Exception as ex:
                 print(f"ERREUR génération : {ex}")
                 import traceback; traceback.print_exc()
-                # Alerte email interne
                 try:
                     prenoms = " & ".join(c['prenom'] for c in clients)
                     payload_alerte = {
