@@ -997,13 +997,23 @@ body {
 
 def _get_logo_b64():
     """Charge logo-main.png depuis static/ et retourne le base64, ou '' si absent."""
-    logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logo-main.png')
-    if os.path.exists(logo_path):
-        try:
-            with open(logo_path, 'rb') as f:
-                return base64.b64encode(f.read()).decode('utf-8')
-        except Exception as e:
-            print(f"[logo] Erreur lecture logo : {e}")
+    # Essai de plusieurs chemins possibles (Render peut varier)
+    candidats = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logo-main.png'),
+        os.path.join(os.getcwd(), 'static', 'logo-main.png'),
+        '/opt/render/project/src/static/logo-main.png',
+        'static/logo-main.png',
+    ]
+    for logo_path in candidats:
+        if os.path.exists(logo_path):
+            print(f"[logo] Trouvé : {logo_path}")
+            try:
+                with open(logo_path, 'rb') as f:
+                    return base64.b64encode(f.read()).decode('utf-8')
+            except Exception as e:
+                print(f"[logo] Erreur lecture : {e}")
+    print(f"[logo] Introuvable. CWD={os.getcwd()}, __file__={__file__}")
+    print(f"[logo] Candidats essayés : {candidats}")
     return ''
 
 
