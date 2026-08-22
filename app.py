@@ -690,11 +690,7 @@ def generer_html(offre, clients, narratif, type_analyse='adulte'):
   <div class="cover-bg-pulse"></div>
   <div class="particles" id="particles"></div>
   <div class="cover-content">
-    {'<p class="cover-eyebrow">Carnet de naissance · ' + str(annee) + '</p><img src="data:image/png;base64,' + LOGO_B64_EMBEDDED + '" alt="ORIGIN" style="width:220px;max-width:58vw;margin:0.8rem auto 1.6rem;display:block;" />' if is_naissance else '<p class="cover-eyebrow">Analyse personnalisée · ' + offre.capitalize() + ' · ' + str(annee) + '</p><h1 class="cover-title">ORIGIN</h1><div class="seed-wrap"><div class="seed-pulse"></div><div class="seed-pulse"></div>' + SEED_SVG + '</div>'}
-    <p class="cover-names">{noms}</p>
-    <p class="cover-tagline">{tagline}</p>
-    <div class="cover-ligne"></div>
-    <p class="cover-meta">{"Numérologie · Astrologie · Carnet de naissance" if is_naissance else "Numérologie · Astrologie · Transgénérationnel"}</p>
+    {'<img src="data:image/png;base64,' + LOGO_B64_EMBEDDED + '" alt="ORIGIN" style="width:260px;max-width:62vw;margin:0 auto 2.4rem;display:block;" /><p class="cover-names" style="margin-bottom:0;">' + noms + '</p><div class="cover-ligne" style="margin-top:1.4rem;"></div>' if is_naissance else '<p class="cover-eyebrow">Analyse personnalisée · ' + offre.capitalize() + ' · ' + str(annee) + '</p><h1 class="cover-title">ORIGIN</h1><div class="seed-wrap"><div class="seed-pulse"></div><div class="seed-pulse"></div>' + SEED_SVG + '</div><p class="cover-names">' + noms + '</p><p class="cover-tagline">' + tagline + '</p><div class="cover-ligne"></div><p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>'}
   </div>
   <div class="scroll-hint"><span>Découvrir</span><div class="scroll-arrow"></div></div>
 </section>
@@ -890,7 +886,8 @@ body {
 }
 
 /* ── SECTIONS — chaque titre sur nouvelle page ── */
-.section { page-break-before: always; padding-top: .6cm; padding-bottom: 1cm; }
+.section { break-before: page; padding-top: .5cm; padding-bottom: .8cm; margin: 0; }
+.section:first-of-type { break-before: avoid; }
 
 .eyebrow {
   font-family: 'Jost', sans-serif;
@@ -985,7 +982,7 @@ body {
 
 /* ── MESSAGE FINAL ── */
 .final-section {
-  page-break-before: always;
+  break-before: page;
   padding: .6cm 0;
   text-align: center;
 }
@@ -1013,7 +1010,7 @@ body {
 
 /* ── CARNET D'INTÉGRATION ── */
 .notes-cover-page {
-  page-break-before: always;
+  break-before: page;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1047,7 +1044,7 @@ body {
   margin: 0 auto;
   line-height: 1.9;
 }
-.notes-page { page-break-before: always; padding: .8cm 0 0; }
+.notes-page { break-before: page; padding: .5cm 0 0; margin: 0; }
 .notes-page-header {
   display: flex;
   align-items: center;
@@ -1091,12 +1088,12 @@ CSS_PRINT_NAISSANCE_EXTRA = """
 /* Graine de vie fixe en bas de chaque page — méthode WeasyPrint */
 .seed-fixed {
   position: fixed;
-  bottom: .55cm;
+  bottom: .4cm;
   left: 50%;
   transform: translateX(-50%);
-  width: 22px;
-  height: 22px;
-  opacity: .32;
+  width: 70px;
+  height: 70px;
+  opacity: .14;
 }
 /* Palette légèrement plus douce pour naissance */
 :root {
@@ -1247,11 +1244,10 @@ def generer_pdf_imprimable(offre, clients, narratif, type_analyse='adulte'):
 
 <div class="cover">
   {logo_html}
-  <p class="cover-eyebrow">{cover_eyebrow}</p>
-  <p class="cover-tagline">{tagline}</p>
-  <div class="cover-ligne"></div>
+  {"" if is_naissance else f'<p class="cover-eyebrow">{cover_eyebrow}</p>'}
   <p class="cover-names">{noms_display}</p>
-  <p class="cover-meta">{cover_meta}</p>
+  <div class="cover-ligne"></div>
+  {"" if is_naissance else f'<p class="cover-tagline">{tagline}</p><p class="cover-meta">{cover_meta}</p>'}
 </div>
 
 <div class="section">
