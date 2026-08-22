@@ -690,7 +690,7 @@ def generer_html(offre, clients, narratif, type_analyse='adulte'):
   <div class="cover-bg-pulse"></div>
   <div class="particles" id="particles"></div>
   <div class="cover-content">
-    {'<img src="data:image/png;base64,' + LOGO_B64_EMBEDDED + '" alt="ORIGIN" style="width:260px;max-width:62vw;margin:0 auto 2.4rem;display:block;" /><p class="cover-names" style="margin-bottom:0;">' + noms + '</p><div class="cover-ligne" style="margin-top:1.4rem;"></div>' if is_naissance else '<p class="cover-eyebrow">Analyse personnalisée · ' + offre.capitalize() + ' · ' + str(annee) + '</p><h1 class="cover-title">ORIGIN</h1><div class="seed-wrap"><div class="seed-pulse"></div><div class="seed-pulse"></div>' + SEED_SVG + '</div><p class="cover-names">' + noms + '</p><p class="cover-tagline">' + tagline + '</p><div class="cover-ligne"></div><p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>'}
+    {'<img src="data:image/png;base64,' + LOGO_B64_EMBEDDED + '" alt="ORIGIN" style="width:260px;max-width:62vw;margin:0 auto 2.4rem;display:block;" /><div class="cover-ligne" style="margin-top:1.4rem;"></div>' if is_naissance else '<p class="cover-eyebrow">Analyse personnalisée · ' + offre.capitalize() + ' · ' + str(annee) + '</p><h1 class="cover-title">ORIGIN</h1><div class="seed-wrap"><div class="seed-pulse"></div><div class="seed-pulse"></div>' + SEED_SVG + '</div><p class="cover-names">' + noms + '</p><p class="cover-tagline">' + tagline + '</p><div class="cover-ligne"></div><p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>'}
   </div>
   <div class="scroll-hint"><span>Découvrir</span><div class="scroll-arrow"></div></div>
 </section>
@@ -1077,7 +1077,9 @@ CSS_PRINT_NAISSANCE_EXTRA = """
     letter-spacing: .25em;
     color: #A89E82;
   }
-  @bottom-center { content: ""; }
+  @bottom-center {
+    content: element(seed-running);
+  }
   @bottom-right {
     content: counter(page);
     font-family: 'Jost', sans-serif;
@@ -1085,14 +1087,11 @@ CSS_PRINT_NAISSANCE_EXTRA = """
     color: #C9A84C;
   }
 }
-/* Graine de vie fixe en bas de chaque page — méthode WeasyPrint */
+/* Graine de vie — méthode WeasyPrint avec running element */
 .seed-fixed {
-  position: fixed;
-  bottom: .4cm;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70px;
-  height: 70px;
+  position: running(seed-running);
+  width: 35px;
+  height: 35px;
   opacity: .14;
 }
 /* Palette légèrement plus douce pour naissance */
