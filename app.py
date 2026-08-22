@@ -623,9 +623,16 @@ SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="htt
 <circle cx="100" cy="100" r="70" stroke="#C9A84C" stroke-width=".4" fill="none" opacity=".15"/>
 </svg>"""
 
-def generer_html(offre, clients, narratif):
+def generer_html(offre, clients, narratif, type_analyse='adulte'):
     annee = date.today().year
-    if offre == 'solo':
+    is_naissance = (type_analyse == 'naissance')
+
+    if is_naissance:
+        prenom_e = clients[0]['prenom'].strip().capitalize()
+        nom_e    = clients[0].get('nom','').strip().capitalize()
+        noms     = f"{prenom_e} {nom_e}".strip()
+        tagline  = f"Le carnet d'empreinte de {prenom_e} — un trésor pour toute une vie."
+    elif offre == 'solo':
         noms = f"{clients[0]['prenom']} {clients[0].get('nom','')}"
         tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
     elif offre == 'couple':
@@ -683,17 +690,11 @@ def generer_html(offre, clients, narratif):
   <div class="cover-bg-pulse"></div>
   <div class="particles" id="particles"></div>
   <div class="cover-content">
-    <p class="cover-eyebrow">Analyse personnalisée · {offre.capitalize()} · {annee}</p>
-    <h1 class="cover-title">ORIGIN</h1>
-    <div class="seed-wrap">
-      <div class="seed-pulse"></div>
-      <div class="seed-pulse"></div>
-      {SEED_SVG}
-    </div>
+    {'<p class="cover-eyebrow">Carnet de naissance · ' + str(annee) + '</p><img src="data:image/png;base64,' + LOGO_B64_EMBEDDED + '" alt="ORIGIN" style="width:220px;max-width:58vw;margin:0.8rem auto 1.6rem;display:block;" />' if is_naissance else '<p class="cover-eyebrow">Analyse personnalisée · ' + offre.capitalize() + ' · ' + str(annee) + '</p><h1 class="cover-title">ORIGIN</h1><div class="seed-wrap"><div class="seed-pulse"></div><div class="seed-pulse"></div>' + SEED_SVG + '</div>'}
     <p class="cover-names">{noms}</p>
     <p class="cover-tagline">{tagline}</p>
     <div class="cover-ligne"></div>
-    <p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>
+    <p class="cover-meta">{"Numérologie · Astrologie · Carnet de naissance" if is_naissance else "Numérologie · Astrologie · Transgénérationnel"}</p>
   </div>
   <div class="scroll-hint"><span>Découvrir</span><div class="scroll-arrow"></div></div>
 </section>
@@ -1421,7 +1422,7 @@ def webhook():
                 narratif = appeler_claude(offre, profils_txt, type_analyse)
                 if "erreur technique" in narratif.get("lettre","").lower():
                     raise ValueError("Narratif invalide — fallback d'erreur détecté")
-                html = generer_html(offre, clients, narratif)
+                html = generer_html(offre, clients, narratif, type_analyse)
                 pdf  = generer_pdf_imprimable(offre, clients, narratif, type_analyse)
                 envoyer_email(html, pdf, clients, offre, email_client)
                 print(f"✅ Livret {offre} envoyé à {email_client}")
