@@ -1067,11 +1067,8 @@ body {
 
 
 CSS_PRINT_NAISSANCE_EXTRA = """
-/* ── MODE NAISSANCE : graine de vie en bas de chaque page ── */
+/* ── MODE NAISSANCE : footer override ── */
 @page {
-  @bottom-center {
-    content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 200 200' fill='none'%3E%3Ccircle cx='100' cy='100' r='28' stroke='%23C9A84C' stroke-width='4' fill='none' opacity='.45'/%3E%3Ccircle cx='100' cy='72' r='28' stroke='%23C9A84C' stroke-width='4' fill='none' opacity='.35'/%3E%3Ccircle cx='124' cy='86' r='28' stroke='%23C9A84C' stroke-width='4' fill='none' opacity='.35'/%3E%3Ccircle cx='124' cy='114' r='28' stroke='%23C9A84C' stroke-width='4' fill='none' opacity='.35'/%3E%3Ccircle cx='100' cy='128' r='28' stroke='%23C9A84C' stroke-width='4' fill='none' opacity='.35'/%3E%3Ccircle cx='76' cy='114' r='28' stroke='%23C9A84C' stroke-width='4' fill='none' opacity='.35'/%3E%3Ccircle cx='76' cy='86' r='28' stroke='%23C9A84C' stroke-width='4' fill='none' opacity='.35'/%3E%3C/svg%3E";
-  }
   @bottom-left {
     content: "ORIGIN · Carnet de naissance · Confidentiel";
     font-family: 'Jost', sans-serif;
@@ -1079,12 +1076,23 @@ CSS_PRINT_NAISSANCE_EXTRA = """
     letter-spacing: .25em;
     color: #A89E82;
   }
+  @bottom-center { content: ""; }
   @bottom-right {
     content: counter(page);
     font-family: 'Jost', sans-serif;
     font-size: 7pt;
     color: #C9A84C;
   }
+}
+/* Graine de vie fixe en bas de chaque page — méthode WeasyPrint */
+.seed-fixed {
+  position: fixed;
+  bottom: .55cm;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 22px;
+  opacity: .32;
 }
 /* Palette légèrement plus douce pour naissance */
 :root {
@@ -1117,14 +1125,34 @@ CSS_PRINT_NAISSANCE_EXTRA = """
 .lettre-enfant .prose { font-style: italic; }
 """
 
+SEED_SVG_FIXED = """<svg class="seed-fixed" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="100" cy="100" r="28" stroke="#C9A84C" stroke-width="5" fill="none"/>
+<circle cx="100" cy="72"  r="28" stroke="#C9A84C" stroke-width="5" fill="none"/>
+<circle cx="124" cy="86"  r="28" stroke="#C9A84C" stroke-width="5" fill="none"/>
+<circle cx="124" cy="114" r="28" stroke="#C9A84C" stroke-width="5" fill="none"/>
+<circle cx="100" cy="128" r="28" stroke="#C9A84C" stroke-width="5" fill="none"/>
+<circle cx="76"  cy="114" r="28" stroke="#C9A84C" stroke-width="5" fill="none"/>
+<circle cx="76"  cy="86"  r="28" stroke="#C9A84C" stroke-width="5" fill="none"/>
+</svg>"""
+
 def _get_logo_b64():
-    logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logo-main.png')
-    if os.path.exists(logo_path):
-        try:
-            with open(logo_path, 'rb') as f:
-                return base64.b64encode(f.read()).decode('utf-8')
-        except Exception as e:
-            print(f"[logo] Erreur lecture : {e}")
+    """Cherche logo-main.png dans plusieurs emplacements possibles."""
+    candidates = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logo-main.png'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logo-main.png'),
+        '/opt/render/project/src/static/logo-main.png',
+        '/opt/render/project/static/logo-main.png',
+    ]
+    for logo_path in candidates:
+        if os.path.exists(logo_path):
+            try:
+                with open(logo_path, 'rb') as f:
+                    data = base64.b64encode(f.read()).decode('utf-8')
+                print(f"[logo] Trouvé : {logo_path} ({len(data)} chars b64)")
+                return data
+            except Exception as e:
+                print(f"[logo] Erreur lecture {logo_path} : {e}")
+    print("[logo] logo-main.png introuvable dans tous les chemins testés")
     return ''
 
 
@@ -1215,6 +1243,8 @@ def generer_pdf_imprimable(offre, clients, narratif, type_analyse='adulte'):
     cover_meta = "Numérologie · Astrologie · Carnet de naissance" if is_naissance else "Numérologie · Astrologie · Transgénérationnel"
     cover_eyebrow = f"Carnet de naissance · {annee}" if is_naissance else f"Lecture personnalisée · {offre.capitalize()} · {annee}"
 
+    seed_fixed_html = SEED_SVG_FIXED if is_naissance else ""
+
     html_print = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1222,6 +1252,7 @@ def generer_pdf_imprimable(offre, clients, narratif, type_analyse='adulte'):
 <style>{CSS_PRINT}{css_extra}</style>
 </head>
 <body>
+{seed_fixed_html}
 
 <div class="cover">
   {logo_html}
