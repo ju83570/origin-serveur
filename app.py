@@ -940,11 +940,12 @@ body {
   color: var(--creme);
 }
 .cover-logo {
-  max-width: 200px;
-  max-height: 130px;
-  margin-bottom: 1.5cm;
+  width: 160px;
+  height: 160px;
+  margin-bottom: .8cm;
   opacity: .92;
   object-fit: contain;
+  border-radius: 50%;
 }
 .cover-symbol { font-size: 22pt; color: var(--or); margin-bottom: 1.5cm; }
 .cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: 1cm; }
