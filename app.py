@@ -246,7 +246,84 @@ def fmt_profil(p):
         lines.append(f"  Ascendant  : {asc['signe']}{deg_str}")
     return "\n".join(lines), num, astro
 
-def appeler_claude(offre, profils_txt):
+PROMPT_NAISSANCE = """Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
+
+Tu reçois les données numériques et astrologiques d'un enfant qui vient de naître ou qui est sur le point de naître.
+Ton rôle : rédiger un carnet d'empreinte de naissance — un document profond, poétique et concret que les parents liront comme une boussole pour accompagner cet enfant tout au long de sa vie.
+
+TON ET POSTURE :
+- Parle de l'enfant à la troisième personne : "cet enfant", "il/elle" (utilise le prénom très souvent)
+- Ton contemplatif, lumineux, ancré — comme une sage-femme de l'âme
+- Jamais de jargon ésotérique brut — traduis tout en langage humain
+- Les parents doivent ressentir qu'ils tiennent quelque chose de précieux
+
+ANNÉE EN COURS : {annee_courante}
+
+LONGUEUR IMPERATIVE :
+- Chaque paragraphe = MINIMUM 5-6 lignes de prose dense
+- Respecte EXACTEMENT le nombre de paragraphes indiqué
+- Le livret complet doit atteindre entre 4500 et 6000 mots
+
+STYLE :
+- Tout en prose narrative — zero liste à puces
+- Utilise le prénom de l'enfant régulièrement
+- Situations concrètes, images sensorielles, émotions précises
+
+DONNÉES :
+{profils_txt}
+
+STRUCTURE :
+1. LETTRE D'OUVERTURE (3 paragraphes — ce que ce jour de naissance révèle, l'énergie fondamentale de cet enfant, ce qu'il/elle porte comme lumière)
+2. SON CHEMIN DE VIE (3 paragraphes — mission profonde, ce qu'il/elle est venu apprendre et incarner, comment ce chemin se manifestera dans son enfance puis plus tard)
+3. SES DONS NATURELS (3 paragraphes — ce qui lui vient facilement, ses forces innées issues des nombres dominants, des situations concrètes d'enfance où ces dons apparaîtront)
+4. SES ZONES DE CROISSANCE (2 paragraphes — les apprentissages qui l'attendront, zones manquantes traitées avec douceur et espoir, sans dramatiser)
+5. SON CIEL NATAL (3 paragraphes — Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse du tempérament et de la sensibilité propre à cet enfant)
+6. LES GRANDES ÉTAPES (2 paragraphes — ses années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation prévisibles)
+7. POUR VOUS, PARENTS (3 paragraphes — comment accompagner cet enfant selon son profil précis, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler et comment éviter de projeter)
+8. UN MOT POUR LUI QUAND IL SERA GRAND (1 paragraphe long — écrit directement à l'enfant, qu'il/elle pourra lire un jour, chaleureux, profond, porteur d'espoir)
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "lettre": "<p>...</p>",
+  "sections": [
+    {{"titre": "...", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"}},
+    ...
+  ],
+  "mantras": [
+    {{"prenom": "...", "texte": "...", "note": "..."}}
+  ],
+  "message_final": "<p>...</p>"
+}}"""
+
+
+def appeler_claude_naissance(profils_txt):
+    annee_courante = date.today().year
+    import time
+    prompt = PROMPT_NAISSANCE.format(annee_courante=annee_courante, profils_txt=profils_txt)
+    last_exception = None
+    for tentative in range(3):
+        try:
+            r = requests.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                json={"model": "claude-opus-4-6", "max_tokens": 10000, "messages": [{"role": "user", "content": prompt}]},
+                timeout=600
+            )
+            r.raise_for_status()
+            break
+        except Exception as e:
+            last_exception = e
+            if tentative < 2:
+                print(f"[naissance] Tentative {tentative+1}/3 echouee : {e} — relance dans 30s")
+                time.sleep(30)
+            else:
+                raise last_exception
+    return _extraire_json_claude(r) or FALLBACK_NARRATIF
+
+
+def appeler_claude(offre, profils_txt, type_analyse='adulte'):
+    if type_analyse == 'naissance':
+        return appeler_claude_naissance(profils_txt)
     if offre == 'prestige':
         return appeler_claude_prestige(profils_txt)
 
@@ -508,7 +585,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 }"""
 
     a = _appel_claude_chunk(prompt_a, max_tokens=6000)
-    b = _appel_claude_chunk(prompt_b, max_tokens=8000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=16000)
     c = _appel_claude_chunk(prompt_c, max_tokens=3000)
 
     if not a or not b or not c:
@@ -1083,6 +1160,7 @@ def webhook():
         print(f"Webhook reçu : {json.dumps(data, ensure_ascii=False)[:300]}")
 
         offre = data.get('offre', 'solo').lower()
+        type_analyse = data.get('type_analyse', 'adulte').lower()
         email_client = data.get('email', '')
 
         clients = []
@@ -1147,7 +1225,7 @@ def webhook():
 
         def generer():
             try:
-                narratif = appeler_claude(offre, profils_txt)
+                narratif = appeler_claude(offre, profils_txt, type_analyse)
                 lettre = narratif.get("lettre", "")
                 if "erreur technique" in lettre.lower() or "en cours de préparation" in lettre.lower():
                     raise ValueError("Narratif invalide — fallback d'erreur détecté après parsing JSON")
