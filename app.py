@@ -306,7 +306,7 @@ def appeler_claude_naissance(profils_txt):
             r = requests.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-opus-4-6", "max_tokens": 10000, "messages": [{"role": "user", "content": prompt}]},
+                json={"model": "claude-opus-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
                 timeout=600
             )
             r.raise_for_status()
