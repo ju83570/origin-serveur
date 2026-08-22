@@ -939,6 +939,13 @@ body {
   background: #0A0A08;
   color: var(--creme);
 }
+.cover-logo {
+  max-width: 200px;
+  max-height: 130px;
+  margin-bottom: 1.5cm;
+  opacity: .92;
+  object-fit: contain;
+}
 .cover-symbol { font-size: 22pt; color: var(--or); margin-bottom: 1.5cm; }
 .cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: 1cm; }
 .cover-origin { font-family: 'Cinzel', serif; font-size: 42pt; letter-spacing: .22em; color: var(--or); margin-bottom: .5cm; }
@@ -988,6 +995,18 @@ body {
 .carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); margin-bottom:.55cm; }
 """
 
+def _get_logo_b64():
+    """Charge logo-main.png depuis static/ et retourne le base64, ou '' si absent."""
+    logo_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logo-main.png')
+    if os.path.exists(logo_path):
+        try:
+            with open(logo_path, 'rb') as f:
+                return base64.b64encode(f.read()).decode('utf-8')
+        except Exception as e:
+            print(f"[logo] Erreur lecture logo : {e}")
+    return ''
+
+
 def generer_pdf_imprimable(offre, clients, narratif):
     annee = date.today().year
 
@@ -1000,6 +1019,14 @@ def generer_pdf_imprimable(offre, clients, narratif):
     else:
         noms_display = " · ".join(c['prenom'] for c in clients)
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
+
+    # ── Logo page de garde ──────────────────────────────────────────────────
+    logo_b64 = _get_logo_b64()
+    if logo_b64:
+        logo_html = f'<img class="cover-logo" src="data:image/png;base64,{logo_b64}" alt="ORIGIN" />'
+    else:
+        logo_html = '<p class="cover-symbol">✦</p>'
+    # ────────────────────────────────────────────────────────────────────────
 
     sections_html = ""
     for sec in narratif.get('sections', []):
@@ -1030,7 +1057,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
 <body>
 
 <div class="cover page">
-  <p class="cover-symbol">✦</p>
+  {logo_html}
   <p class="cover-eyebrow">Lecture personnalisée · {offre.capitalize()} · {annee}</p>
   <h1 class="cover-origin">ORIGIN</h1>
   <p class="cover-tagline">{tagline}</p>
