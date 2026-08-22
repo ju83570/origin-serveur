@@ -939,14 +939,14 @@ body {
   justify-content: center;
   min-height: 100vh;
   text-align: center;
-  padding: 4cm 2cm;
+  padding: 2cm 2cm 3cm;
   background: #0A0A08;
   color: var(--creme);
 }
 .cover-logo {
   width: 100%;
-  max-width: 14cm;
-  margin-bottom: .6cm;
+  max-width: 16cm;
+  margin-bottom: 1.2cm;
   opacity: .95;
   object-fit: contain;
 }
@@ -954,9 +954,9 @@ body {
 .cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: 1cm; }
 .cover-origin { font-family: 'Cinzel', serif; font-size: 42pt; letter-spacing: .22em; color: var(--or); margin-bottom: .5cm; }
 .cover-tagline { font-family: 'Cormorant Garamond', serif; font-size: 13pt; font-style: italic; color: rgba(245,237,216,.75); margin-bottom: 1.5cm; }
-.cover-ligne { width: 60px; height: 1px; background: var(--or); margin: 0 auto 1cm; opacity: .5; }
-.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 22pt; font-style: italic; color: var(--creme); margin-bottom: .4cm; }
-.cover-meta { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .3em; text-transform: uppercase; color: rgba(245,237,216,.4); margin-top: 1.5cm; }
+.cover-ligne { width: 80px; height: 1px; background: var(--or); margin: 0 auto 1.2cm; opacity: .6; }
+.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 26pt; font-style: italic; color: var(--creme); margin-bottom: .5cm; }
+.cover-meta { font-family: 'Jost', sans-serif; font-size: 7.5pt; letter-spacing: .35em; text-transform: uppercase; color: rgba(245,237,216,.5); }
 
 .section { padding: 1.5cm 2cm; }
 .section + .section { border-top: 1px solid rgba(201,168,76,.18); }
