@@ -1072,7 +1072,6 @@ def generer_pdf_imprimable(offre, clients, narratif):
 <div class="cover page">
   {logo_html}
   <p class="cover-eyebrow">Lecture personnalisée · {offre.capitalize()} · {annee}</p>
-  <h1 class="cover-origin">ORIGIN</h1>
   <p class="cover-tagline">{tagline}</p>
   <div class="cover-ligne"></div>
   <p class="cover-names">{noms_display}</p>
