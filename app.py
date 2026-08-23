@@ -431,9 +431,114 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 
 def appeler_claude_naissance(profils_txt):
     annee_courante = date.today().year
-    prompt = PROMPT_NAISSANCE.format(annee_courante=annee_courante, profils_txt=profils_txt)
-    r = _appel_claude_raw(prompt, max_tokens=20000)
-    return _extraire_json_claude(r) or FALLBACK_NARRATIF
+
+    def pre(sections_txt, mots):
+        return f"""Tu es le narrateur sacré d'ORIGIN, service de lecture personnalisée de naissance.
+Tu reçois les données numériques et astrologiques d'un enfant qui vient de naître ou qui est sur le point de naître.
+
+TON RÔLE EST EXCEPTIONNEL :
+Tu crées le document le plus précieux que ces parents recevront jamais — un carnet d'empreinte de naissance relu chaque anniversaire, offert à l'enfant adulte. Il doit être à la hauteur de ce moment.
+
+POSTURE ET TON :
+- Parle de l'enfant avec son prénom très souvent — jamais "l'enfant" seul
+- Ton : contemplatif, lumineux, ancré, bienveillant
+- Jamais de jargon ésotérique brut — traduis TOUT en langage humain, concret, sensoriel
+- Chaque phrase doit être belle, juste, mémorable
+- Bienveillance absolue sur les zones d'ombre — toujours comme une invitation, jamais comme une limite
+
+ANNÉE EN COURS : {annee_courante}
+
+LONGUEUR IMPÉRATIVE :
+- Chaque paragraphe = MINIMUM 6-8 lignes de prose dense
+- Cette partie du livret doit atteindre environ {mots} mots
+- Ne jamais sacrifier la profondeur à la concision
+
+STYLE ABSOLU :
+- Tout en prose narrative — zéro liste, zéro tiret
+- Des scènes concrètes : décris des moments que cet enfant pourrait vivre
+- Croise systématiquement numérologie + astrologie
+- Utilise le prénom au moins 3 fois par paragraphe
+
+DONNÉES :
+{profils_txt}
+
+""" + sections_txt
+
+    prompt_a = pre(f"""STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
+1. LETTRE D'OUVERTURE AUX PARENTS (4 paragraphes denses)
+Ce que le cosmos a voulu ce jour précis. La signification de la date de naissance dans son ensemble. L'énergie fondamentale que cet enfant porte. Ce qu'il/elle est venu apporter dans cette famille. Ce que les parents tiennent entre leurs mains ce soir.
+
+2. SON CHEMIN DE VIE — LA MISSION (4 paragraphes denses)
+Le chemin de vie narrativisé — comment il se manifestera concrètement. Des scènes précises de son enfance, adolescence, âge adulte. Ce qu'il cherchera naturellement. Ce que ce chemin lui demandera comme courage et lui offrira en retour.
+
+3. SES DONS NATURELS — CE QUI LUI VIENT FACILEMENT (4 paragraphes denses)
+Les forces issues des chiffres dominants et planètes favorables. Pour chaque don : description narrative + scène concrète d'enfance + évolution à l'âge adulte. Célébration et émerveillement.
+
+4. SON MONDE INTÉRIEUR — LE CIEL NATAL (4 paragraphes denses)
+Soleil et Lune narrativisés ensemble. Mercure, Vénus, Mars. Synthèse du tempérament global — ce qui rend cet enfant unique au monde.
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "lettre": "<p>...</p><p>...</p><p>...</p><p>...</p>",
+  "sections": [
+    {{"titre": "Son chemin de vie — La mission", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Ses dons naturels", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Son monde intérieur — Le ciel natal", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}
+  ]
+}}""", "3000-3500")
+
+    prompt_b = pre(f"""STRUCTURE (rédiger UNIQUEMENT ces 3 sections) :
+5. SES ZONES DE CROISSANCE — LES APPRENTISSAGES QUI L'ATTENDENT (3 paragraphes denses)
+Chiffres manquants et tensions planétaires avec bienveillance absolue — toujours comme invitations à grandir. Pour chaque zone : ce que l'enfant pourrait traverser + ce que cela enseigne + comment les parents peuvent accompagner. Des cadeaux déguisés.
+
+6. LES GRANDES ÉTAPES — SA VIE EN PERSPECTIVE (3 paragraphes denses)
+Les cycles numériques clés de sa vie : années importantes dans l'enfance, tournant de l'adolescence, premier grand cycle adulte. Le pinnacle actuel. Des rendez-vous avec lui-même, pas des épreuves. Vision douce et confiante.
+
+7. POUR VOUS, PARENTS — L'ART D'ACCOMPAGNER CETTE ÂME (4 paragraphes denses)
+Le plus important pour les parents — concret, actionnable, profond. Ce dont cet enfant a besoin selon son profil précis. Ce qu'il faudra respecter. Comment lui parler, le toucher, le gronder, le féliciter selon sa nature. Ce que ces parents-là peuvent lui apporter de précieux — et où faire attention. Une phrase finale sur le privilège de recevoir cette âme.
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "sections": [
+    {{"titre": "Ses zones de croissance", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Les grandes étapes — Sa vie en perspective", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Pour vous, parents", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}
+  ]
+}}""", "3000-3500")
+
+    prompt_c = pre(f"""STRUCTURE (rédiger UNIQUEMENT ces 3 sections) :
+8. SA PLACE DANS LA LIGNÉE (2 paragraphes denses)
+Ce que cet enfant apporte de nouveau dans la famille — ce qui n'avait jamais existé avant lui/elle. Ce qu'il/elle est peut-être venu réparer ou inaugurer dans la lignée. Note d'espoir.
+
+9. SON MANTRA DE VIE (1 mantra beau et fort + note de 4-5 lignes)
+Un mantra profond, poétique, vraiment issu de son profil unique. Une phrase que cet enfant pourra un jour faire sienne. La note raconte pourquoi ces mots précis ont été choisis pour lui/elle.
+
+10. UNE LETTRE POUR LUI — À LIRE QUAND IL SERA GRAND (3 paragraphes denses)
+Écrit directement à l'enfant, à la deuxième personne, comme s'il avait 18 ans. Commence par "Tu es né(e) le..." Raconte qui il/elle était en arrivant au monde. Ce que ses parents ont ressenti. Ce que le ciel et les nombres disaient. Sa lumière unique. Terminer sur un message d'amour inconditionnel — quelque chose de si beau qu'il/elle voudra le relire toute sa vie.
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "sections": [
+    {{"titre": "Sa place dans la lignée", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"}}
+  ],
+  "mantras": [{{"prenom": "...", "texte": "...", "note": "..."}}],
+  "message_final": "<p>...</p><p>...</p><p>...</p>"
+}}""", "2000-2500")
+
+    a = _extraire_json_claude(_appel_claude_raw(prompt_a, max_tokens=6000))
+    b = _extraire_json_claude(_appel_claude_raw(prompt_b, max_tokens=6000))
+    c = _extraire_json_claude(_appel_claude_raw(prompt_c, max_tokens=4000))
+
+    if not a or not b or not c:
+        print("⚠️ Un chunk Naissance a échoué — fallback")
+        return FALLBACK_NARRATIF
+
+    return {
+        "lettre": a.get("lettre", ""),
+        "sections": (a.get("sections") or []) + (b.get("sections") or []) + (c.get("sections") or []),
+        "mantras": c.get("mantras") or [{"prenom": "Votre enfant", "texte": "Tu es exactement là où tu dois être.", "note": ""}],
+        "message_final": c.get("message_final", ""),
+    }
 
 
 def appeler_claude_prestige(profils_txt):
