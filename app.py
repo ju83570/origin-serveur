@@ -375,6 +375,8 @@ def appeler_claude(offre, profils_txt, type_analyse='adulte'):
         return appeler_claude_naissance(profils_txt)
     if offre == 'prestige':
         return appeler_claude_prestige(profils_txt)
+    if offre == 'couple':
+        return appeler_claude_couple(profils_txt)
 
     annee_courante = date.today().year
     structures = {
@@ -525,6 +527,118 @@ FALLBACK_NARRATIF = {
     "mantras": [{"prenom": "Vous", "texte": "Votre lecture est en cours de préparation.", "note": ""}],
     "message_final": "<p>Nous avons bien reçu vos informations et préparons votre livret. Il vous sera envoyé sous 24h.</p>"
 }
+
+
+def appeler_claude_couple(profils_txt):
+    """Génération couple en 2 chunks pour éviter la troncature JSON."""
+    annee_courante = date.today().year
+
+    prompt_a = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
+
+ANNÉE EN COURS : {annee_courante}
+Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
+
+LONGUEUR IMPERATIVE :
+- Chaque paragraphe = MINIMUM 5-6 lignes de prose dense.
+- Respecte EXACTEMENT le nombre de paragraphes indiqué.
+- Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données.
+
+STYLE OBLIGATOIRE :
+- Tutoiement systematique, chaleureux, direct
+- Tout en prose narrative — zero liste a puces dans le contenu
+- Profond, immersif, le client doit sentir qu'on a passé des heures sur son cas
+- Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
+- Chaque paragraphe apporte quelque chose de nouveau — jamais de redite
+- Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
+- Ton bienveillant mais direct sur les zones d'ombre
+
+DONNÉES :
+{profils_txt}
+
+CHUNK A — retourne UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "lettre": "<p>...</p><p>...</p><p>...</p>",
+  "sections": [
+    {{"titre": "Portrait de [Personne 1]", "eyebrow": "Qui tu es vraiment", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Portrait de [Personne 2]", "eyebrow": "Qui tu es vraiment", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}
+  ]
+}}
+
+Lettre d'ouverture : 3 paragraphes — ce qui rend cette rencontre unique, resonances entre leurs deux themes.
+Portrait individuel personne 1 : 4 paragraphes — numerologie complete, astrologie, annee perso, pinnacle.
+Portrait individuel personne 2 : 4 paragraphes — idem, avec ses specificites propres."""
+
+    prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
+
+ANNÉE EN COURS : {annee_courante}
+
+STYLE OBLIGATOIRE :
+- Tutoiement systematique, chaleureux, direct
+- Tout en prose narrative — zero liste a puces
+- Profond, immersif, utilise les prenoms regulierement
+- Nomme des situations concretes, des emotions precises
+
+DONNÉES :
+{profils_txt}
+
+CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "sections": [
+    {{"titre": "Ce que vous créez ensemble", "eyebrow": "Votre alchimie", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Ombres vers Lumières", "eyebrow": "Vos zones de transformation", "contenu": "<p>...</p><p>...</p>"}}
+  ],
+  "mantras": [
+    {{"prenom": "[Personne 1]", "texte": "...", "note": "..."}},
+    {{"prenom": "[Personne 2]", "texte": "...", "note": "..."}},
+    {{"prenom": "Ensemble", "texte": "...", "note": "..."}}
+  ],
+  "message_final": "<p>...</p><p>...</p>"
+}}
+
+Ce que vous créez ensemble : 3 paragraphes — resonances des chiffres croises, dynamique de couple, zones de friction et de complementarite.
+Ombres vers Lumières : 2 tensions de couple — situation concrete + bascule + lumiere + phrase commune (1 paragraphe dense chacune).
+Mantras : un par personne ancré dans son profil + un mantra commun.
+Message final : 2 paragraphes chaleureux et porteurs d'espoir."""
+
+    import time
+    # Chunk A
+    data_a = None
+    for t in range(3):
+        try:
+            data_a = _appel_claude_chunk(prompt_a, max_tokens=6000)
+            if data_a:
+                break
+        except Exception as e:
+            if t < 2:
+                print(f"Couple chunk A tentative {t+1} échouée : {e} — relance dans 30s")
+                time.sleep(30)
+            else:
+                raise
+
+    # Chunk B
+    data_b = None
+    for t in range(3):
+        try:
+            data_b = _appel_claude_chunk(prompt_b, max_tokens=6000)
+            if data_b:
+                break
+        except Exception as e:
+            if t < 2:
+                print(f"Couple chunk B tentative {t+1} échouée : {e} — relance dans 30s")
+                time.sleep(30)
+            else:
+                raise
+
+    if not data_a or not data_b:
+        return FALLBACK_NARRATIF
+
+    # Fusionner les deux chunks
+    return {
+        "lettre": data_a.get("lettre", ""),
+        "sections": data_a.get("sections", []) + data_b.get("sections", []),
+        "mantras": data_b.get("mantras", []),
+        "message_final": data_b.get("message_final", "")
+    }
 
 
 def _appel_claude_chunk(prompt, max_tokens=8000):
@@ -1055,14 +1169,14 @@ body {
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
 /* Carnet d'intégration */
-.carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:4cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; }
+.carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; padding:3cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; page-break-after:always; }
 .carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
 .carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
 .carnet-page { padding: 0; page-break-before: always; }
 .carnet-header { font-family:'Cinzel',serif; font-size:6.5pt; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; }
 .carnet-question { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:var(--encre); margin-bottom:.7cm; line-height:1.7; }
 .carnet-lines-block { margin-top: .5cm; }
-.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); margin-bottom:.8cm; display:block; }
+.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); margin-bottom:.62cm; display:block; }
 """
 
 def _get_logo_b64():
@@ -1142,7 +1256,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
     ]
     carnet_pages_html = ""
     for i, q in enumerate(questions_list):
-        lignes_html = '<div class="carnet-line"></div>' * 18
+        lignes_html = '<div class="carnet-line"></div>' * 22
         carnet_pages_html += f"""
 <div class="carnet-page">
   <p class="carnet-header">Réflexion {i+1} · ORIGIN</p>
