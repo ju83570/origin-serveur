@@ -1068,10 +1068,13 @@ CSS_PRINT = """@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html, body { background: #FDF6E3; }
+
+@page { background: #FDF6E3; }
+
 body {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 300;
-  background: var(--creme);
   color: var(--encre);
   font-size: 13.5pt;
   line-height: 2.4;
@@ -1100,7 +1103,13 @@ body {
     padding-bottom: .3cm;
   }
 }
-@page cover { margin: 0; background: #0A0A08; }
+@page cover {
+  margin: 0;
+  background: #0A0A08;
+  @bottom-center { content: none; }
+  @bottom-right { content: none; }
+  @bottom-left { content: none; }
+}
 .cover { page: cover; }
 
 /* Graine de vie en bas de chaque page via running element */
@@ -1114,11 +1123,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  height: 297mm;
   text-align: center;
-  padding: 2cm 2cm 3cm;
+  padding: 3cm 2cm;
   background: #0A0A08;
   color: var(--creme);
+  overflow: hidden;
 }
 .cover-logo {
   width: 100%;
@@ -1179,7 +1189,7 @@ body {
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
 /* Carnet d'intégration */
-.carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; padding:3cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; page-break-after:always; }
+.carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; height:297mm; padding:3cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; page-break-after:always; overflow:hidden; }
 .carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
 .carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
 .carnet-page { padding: 0; page-break-before: always; position: relative; }
@@ -1335,7 +1345,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
 </body>
 </html>"""
 
-    return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf()
+    return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf(presentational_hints=True)
 
 def envoyer_email(html_content, pdf_bytes, clients, offre, email_client):
     prenoms = " & ".join(c['prenom'] for c in clients)
