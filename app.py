@@ -1165,7 +1165,6 @@ body {
 .prose { font-size: 11.5pt; line-height: 1.95; color: var(--encre); }
 .prose p { margin-bottom: .6cm; text-align: justify; text-indent: 1.2em; }
 .prose p:last-child { margin-bottom: 0; }
-.prose p:first-child { text-indent: 0; }
 .prose em { color: var(--cuivre); font-style: italic; }
 .prose * { color: var(--encre) !important; }
 .prose em, .prose em * { color: var(--cuivre) !important; }
@@ -1190,7 +1189,6 @@ body {
 .final-section { padding: 1.5cm 0; text-align: center; }
 .final-prose { font-size: 13.5pt; line-height: 2.4; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
 .final-prose p { margin-bottom: 1.2cm; text-align: justify; text-indent: 1.4em; }
-.final-prose p:first-child { text-indent: 0; }
 .final-prose em { color: var(--cuivre); font-style: italic; }
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
@@ -1198,12 +1196,12 @@ body {
 .carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; height:297mm; padding:3cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; page-break-after:always; overflow:hidden; }
 .carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
 .carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
-.carnet-page { padding: 0; page-break-before: always; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.carnet-page { height: 240mm; padding: 0; page-break-before: always; position: relative; overflow: hidden; display: flex; flex-direction: column; }
 .carnet-filigrane { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16cm; opacity: .13; pointer-events: none; filter: sepia(1) saturate(.6) hue-rotate(340deg) brightness(.55); }
-.carnet-header { font-family:'Cinzel',serif; font-size:6.5pt; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; position: relative; z-index:1; }
-.carnet-question { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:var(--encre); margin-bottom:.7cm; line-height:1.7; position: relative; z-index:1; }
-.carnet-lines-block { margin-top: .5cm; flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index:1; }
-.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); display:block; }
+.carnet-header { font-family:'Cinzel',serif; font-size:6.5pt; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1.4cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; position: relative; z-index:1; flex-shrink: 0; }
+.carnet-question { font-family:'Cormorant Garamond',serif; font-size:17pt; font-style:italic; color:var(--encre); text-align:center; max-width:13cm; margin:0 auto 1.2cm; line-height:1.7; position: relative; z-index:1; flex-shrink: 0; }
+.carnet-lines-block { margin-top: .5cm; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index:1; }
+.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); display:block; flex-shrink:0; }
 
 @page fleur-finale {
   size: A4;
@@ -1252,13 +1250,15 @@ body {
   transform: translate(-50%, -56%);
 }
 .fleur-vie-img {
-  width: 185mm;
-  height: 185mm;
+  width: 150mm;
+  height: auto;
+  max-height: 150mm;
+  object-fit: contain;
   display: block;
   position: relative;
   z-index: 2;
-  margin-bottom: 0.8cm;
-  margin-top: -0.8cm;
+  margin-bottom: 1cm;
+  opacity: .98;
 }
 .fvf-bas {
   position: relative;
@@ -1329,8 +1329,10 @@ def generer_pdf_imprimable(offre, clients, narratif):
     logo_b64 = _get_logo_b64()
     if logo_b64:
         logo_html = f'<img class="cover-logo" src="data:image/png;base64,{logo_b64}" alt="ORIGIN" />'
+        finale_logo_html = f'<img class="fleur-vie-img" src="data:image/png;base64,{logo_b64}" alt="ORIGIN" />'
     else:
         logo_html = '<p class="cover-symbol">✦</p>'
+        finale_logo_html = '<p class="fvf-titre" style="font-size:22pt;margin-bottom:.6cm">✦ ORIGIN ✦</p>'
     # ────────────────────────────────────────────────────────────────────────
 
     # Graine de vie pour footer (running element WeasyPrint)
@@ -1433,14 +1435,13 @@ def generer_pdf_imprimable(offre, clients, narratif):
 
 {carnet_pages_html}
 
-<!-- ═══ PAGE FINALE : FLEUR DE VIE ═══ -->
+<!-- ═══ PAGE FINALE : LOGO ORIGIN ═══ -->
 <div class="fleur-vie-finale">
   <div class="fvf-halo-outer"></div>
   <div class="fvf-halo"></div>
-  <img class="fleur-vie-img" src="https://origin-famille.fr/static/fleur-vie.png" alt="Fleur de Vie" />
+  {finale_logo_html}
   <div class="fvf-bas">
     <div class="fvf-ligne"></div>
-    <p class="fvf-titre">ORIGIN</p>
     <p class="fvf-sous">origin-famille.fr</p>
     <div class="fvf-ligne"></div>
   </div>
