@@ -464,13 +464,22 @@ DONNÉES :
 
 """ + sections_txt
 
-    prompt_a = pre(f"""STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
+    prompt_a = pre(f"""STRUCTURE (rédiger UNIQUEMENT ces 2 sections) :
 1. LETTRE D'OUVERTURE AUX PARENTS (4 paragraphes denses)
 Ce que le cosmos a voulu ce jour précis. La signification de la date de naissance dans son ensemble. L'énergie fondamentale que cet enfant porte. Ce qu'il/elle est venu apporter dans cette famille. Ce que les parents tiennent entre leurs mains ce soir.
 
 2. SON CHEMIN DE VIE — LA MISSION (4 paragraphes denses)
 Le chemin de vie narrativisé — comment il se manifestera concrètement. Des scènes précises de son enfance, adolescence, âge adulte. Ce qu'il cherchera naturellement. Ce que ce chemin lui demandera comme courage et lui offrira en retour.
 
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "lettre": "<p>...</p><p>...</p><p>...</p><p>...</p>",
+  "sections": [
+    {{"titre": "Son chemin de vie — La mission", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}
+  ]
+}}""", "1800-2200")
+
+    prompt_a2 = pre(f"""STRUCTURE (rédiger UNIQUEMENT ces 2 sections) :
 3. SES DONS NATURELS — CE QUI LUI VIENT FACILEMENT (4 paragraphes denses)
 Les forces issues des chiffres dominants et planètes favorables. Pour chaque don : description narrative + scène concrète d'enfance + évolution à l'âge adulte. Célébration et émerveillement.
 
@@ -479,13 +488,11 @@ Soleil et Lune narrativisés ensemble. Mercure, Vénus, Mars. Synthèse du temp�
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {{
-  "lettre": "<p>...</p><p>...</p><p>...</p><p>...</p>",
   "sections": [
-    {{"titre": "Son chemin de vie — La mission", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "Ses dons naturels", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "Son monde intérieur — Le ciel natal", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}
   ]
-}}""", "3000-3500")
+}}""", "1800-2200")
 
     prompt_b = pre(f"""STRUCTURE (rédiger UNIQUEMENT ces 3 sections) :
 5. SES ZONES DE CROISSANCE — LES APPRENTISSAGES QUI L'ATTENDENT (3 paragraphes denses)
@@ -525,17 +532,18 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p><p>...</p><p>...</p>"
 }}""", "2000-2500")
 
-    a = _extraire_json_claude(_appel_claude_raw(prompt_a, max_tokens=6000))
-    b = _extraire_json_claude(_appel_claude_raw(prompt_b, max_tokens=6000))
-    c = _extraire_json_claude(_appel_claude_raw(prompt_c, max_tokens=4000))
+    a  = _extraire_json_claude(_appel_claude_raw(prompt_a,  max_tokens=5000))
+    a2 = _extraire_json_claude(_appel_claude_raw(prompt_a2, max_tokens=5000))
+    b  = _extraire_json_claude(_appel_claude_raw(prompt_b,  max_tokens=5000))
+    c  = _extraire_json_claude(_appel_claude_raw(prompt_c,  max_tokens=4000))
 
-    if not a or not b or not c:
+    if not a or not a2 or not b or not c:
         print("⚠️ Un chunk Naissance a échoué — fallback")
         return FALLBACK_NARRATIF
 
     return {
         "lettre": a.get("lettre", ""),
-        "sections": (a.get("sections") or []) + (b.get("sections") or []) + (c.get("sections") or []),
+        "sections": (a.get("sections") or []) + (a2.get("sections") or []) + (b.get("sections") or []) + (c.get("sections") or []),
         "mantras": c.get("mantras") or [{"prenom": "Votre enfant", "texte": "Tu es exactement là où tu dois être.", "note": ""}],
         "message_final": c.get("message_final", ""),
     }
