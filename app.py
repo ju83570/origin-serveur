@@ -323,7 +323,7 @@ STRUCTURES = {
 4. FORCES ET CROISSANCE (2 paragraphes — dominants comme forces célébrées, manquants comme zones d'invitation avec exemples concrets)
 5. OMBRES VERS LUMIÈRES (2 transformations — situation concrète vécue + bascule + lumière + phrase à dire à voix haute)
 6. MANTRA PERSONNEL (1 mantra + note explicative de 2-3 lignes)
-7. MESSAGE FINAL (2 paragraphes — élan vers l'avenir, chaleureux et concret)""", "4500-6000", 8000),
+7. MESSAGE FINAL (2 paragraphes — élan vers l'avenir, chaleureux et concret)""", "3500-4500", 6000),
 
     'couple': ("""
 1. LETTRE D'OUVERTURE (3 paragraphes — ce qui rend cette rencontre unique, résonances entre leurs deux thèmes)
@@ -332,7 +332,7 @@ STRUCTURES = {
 4. CE QUE VOUS CRÉEZ ENSEMBLE (3 paragraphes — résonances des chiffres croisés, dynamique de couple, zones de friction et de complémentarité)
 5. OMBRES VERS LUMIÈRES (2 tensions de couple — situation concrète + bascule + lumière + phrase commune)
 6. MANTRAS (un par personne + un mantra commun)
-7. MESSAGE FINAL (2 paragraphes)""", "4500-6000", 8000),
+7. MESSAGE FINAL (2 paragraphes)""", "3500-4500", 6000),
 
     'famille': ("""
 1. LETTRE D'OUVERTURE (4 paragraphes longs — ce qui rend ce foyer unique, les résonances entre membres, mission collective)
@@ -1528,8 +1528,6 @@ def webhook():
         def generer():
             try:
                 narratif = appeler_claude(offre, profils_txt, type_analyse)
-                if "erreur technique" in narratif.get("lettre","").lower():
-                    raise ValueError("Narratif invalide — fallback d'erreur détecté")
                 html = generer_html(offre, clients, narratif, type_analyse)
                 pdf  = generer_pdf_imprimable(offre, clients, narratif, type_analyse)
                 envoyer_email(html, pdf, clients, offre, email_client)
