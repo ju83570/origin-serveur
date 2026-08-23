@@ -1192,12 +1192,12 @@ body {
 .carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; height:297mm; padding:3cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; page-break-after:always; overflow:hidden; }
 .carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
 .carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
-.carnet-page { padding: 0; page-break-before: always; position: relative; }
-.carnet-filigrane { position: absolute; bottom: 1cm; right: 0; width: 9cm; opacity: .07; pointer-events: none; }
-.carnet-header { font-family:'Cinzel',serif; font-size:6.5pt; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; }
-.carnet-question { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:var(--encre); margin-bottom:.7cm; line-height:1.7; }
-.carnet-lines-block { margin-top: .5cm; }
-.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); margin-bottom:.62cm; display:block; }
+.carnet-page { padding: 0; page-break-before: always; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.carnet-filigrane { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16cm; opacity: .13; pointer-events: none; filter: sepia(1) saturate(.6) hue-rotate(340deg) brightness(.55); }
+.carnet-header { font-family:'Cinzel',serif; font-size:6.5pt; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; position: relative; z-index:1; }
+.carnet-question { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:var(--encre); margin-bottom:.7cm; line-height:1.7; position: relative; z-index:1; }
+.carnet-lines-block { margin-top: .5cm; flex: 1; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index:1; }
+.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); display:block; }
 """
 
 def _get_logo_b64():
