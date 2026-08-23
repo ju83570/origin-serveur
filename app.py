@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -589,7 +590,9 @@ CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
   ],
   "mantras": [
     {{"prenom": "[Personne 1]", "texte": "...", "note": "..."}},
+    {{"prenom": "[Personne 1] — invitation", "texte": "...", "note": "..."}},
     {{"prenom": "[Personne 2]", "texte": "...", "note": "..."}},
+    {{"prenom": "[Personne 2] — invitation", "texte": "...", "note": "..."}},
     {{"prenom": "Ensemble", "texte": "...", "note": "..."}}
   ],
   "message_final": "<p>...</p><p>...</p>"
@@ -597,7 +600,13 @@ CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
 
 Ce que vous créez ensemble : 3 paragraphes — resonances des chiffres croises, dynamique de couple, zones de friction et de complementarite.
 Ombres vers Lumières : 2 tensions de couple — situation concrete + bascule + lumiere + phrase commune (1 paragraphe dense chacune).
-Mantras : un par personne ancré dans son profil + un mantra commun.
+Mantras — RÈGLES STRICTES, 5 mantras au total :
+- Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil — célèbre ce qu'elle EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
+- Mantra 2 [Personne 1] : ancré dans son chiffre manquant ou sa Lune/Ascendant — une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout".
+- Mantra 3 [Personne 2] : idem, ancré dans son chiffre dominant ou son Soleil. Différent du mantra de Personne 1 en ton et en contenu.
+- Mantra 4 [Personne 2] : idem, ancré dans son chiffre manquant ou sa Lune/Ascendant. Doit nommer quelque chose de précis à elle.
+- Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils — cite les chiffres ou planètes des deux, nomme la tension créatrice entre eux. Pas un mantra générique sur l'amour.
+Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra, quels chiffres/planètes l'ancrent.
 Message final : 2 paragraphes chaleureux et porteurs d'espoir."""
 
     import time
