@@ -1132,9 +1132,9 @@ body {
 }
 .cover-logo {
   width: 100%;
-  max-width: 16cm;
-  margin-bottom: 1.4cm;
-  opacity: .95;
+  max-width: 20cm;
+  margin-bottom: 1.8cm;
+  opacity: .98;
   object-fit: contain;
 }
 .cover-symbol { font-size: 22pt; color: var(--or); margin-bottom: 1.5cm; }
