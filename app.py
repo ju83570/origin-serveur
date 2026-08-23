@@ -981,7 +981,7 @@ body {
 
 /* Graine de vie en bas de chaque page via running element */
 #seed-footer { position: running(seed-footer); text-align: center; }
-#seed-footer svg { width: 28pt; height: 28pt; opacity: .25; }
+#seed-footer svg { width: 52pt; height: 52pt; opacity: .55; }
 
 .page-break { page-break-after: always; }
 
@@ -1032,7 +1032,6 @@ body {
 
 .lettre {
   background: rgba(201,168,76,.05);
-  border-left: 3px solid var(--cuivre);
   padding: 1.2cm 1.6cm;
   margin-bottom: .6cm;
 }
