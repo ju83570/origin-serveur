@@ -1125,39 +1125,45 @@ body {
   justify-content: center;
   height: 297mm;
   text-align: center;
-  padding: 3cm 2cm;
+  padding: 1cm 1.5cm 2cm;
   background: #0A0A08;
   color: var(--creme);
   overflow: hidden;
+  gap: 0;
 }
 .cover-logo {
-  width: 100%;
-  max-width: 20cm;
-  margin-bottom: 1.8cm;
+  width: 210mm;
+  height: auto;
+  max-height: 210mm;
+  margin-bottom: .6cm;
+  margin-top: -1cm;
   opacity: .98;
   object-fit: contain;
 }
-.cover-symbol { font-size: 22pt; color: var(--or); margin-bottom: 1.5cm; }
-.cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: 1cm; }
-.cover-origin { font-family: 'Cinzel', serif; font-size: 42pt; letter-spacing: .22em; color: var(--or); margin-bottom: .5cm; }
-.cover-tagline { font-family: 'Cormorant Garamond', serif; font-size: 13pt; font-style: italic; color: rgba(245,237,216,.75); margin-bottom: 1.5cm; }
-.cover-ligne { width: 80px; height: 1px; background: var(--or); margin: 0 auto 1.4cm; opacity: .6; }
-.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 28pt; font-style: italic; color: var(--creme); margin-bottom: .6cm; }
+.cover-symbol { font-size: 22pt; color: var(--or); margin-bottom: .6cm; }
+.cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .5cm; }
+.cover-origin { font-family: 'Cinzel', serif; font-size: 42pt; letter-spacing: .22em; color: var(--or); margin-bottom: .4cm; }
+.cover-tagline { font-family: 'Cormorant Garamond', serif; font-size: 13pt; font-style: italic; color: rgba(245,237,216,.75); margin-bottom: .6cm; }
+.cover-ligne { width: 80px; height: 1px; background: var(--or); margin: 0 auto .5cm; opacity: .6; }
+.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 26pt; font-style: italic; color: var(--creme); margin-bottom: .4cm; }
 .cover-meta { font-family: 'Jost', sans-serif; font-size: 7.5pt; letter-spacing: .35em; text-transform: uppercase; color: rgba(245,237,216,.5); }
 
 /* Chaque section commence sur une nouvelle page */
 .section {
-  page-break-before: always;
-  padding: 0 0 2cm;
+  padding: 0 0 1.5cm;
+  page-break-inside: avoid;
 }
-.section:first-child { page-break-before: avoid; }
+.section-newpage {
+  page-break-before: always;
+  padding: 0 0 1.5cm;
+}
 
 .eyebrow { font-family: 'Jost', sans-serif; font-size: 6.5pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .5cm; display: block; }
 .section-title { font-family: 'Cinzel', serif; font-size: 18pt; font-weight: 400; color: var(--or); margin-bottom: .6cm; letter-spacing: .08em; line-height: 1.4; }
 .light-line { width: 50px; height: 1px; background: var(--or); margin: .6cm 0 1.3cm; opacity: .5; }
 
-.prose { font-size: 13.5pt; line-height: 2.4; color: var(--encre); }
-.prose p { margin-bottom: 1.2cm; text-align: justify; text-indent: 1.4em; }
+.prose { font-size: 11.5pt; line-height: 1.95; color: var(--encre); }
+.prose p { margin-bottom: .6cm; text-align: justify; text-indent: 1.2em; }
 .prose p:last-child { margin-bottom: 0; }
 .prose p:first-child { text-indent: 0; }
 .prose em { color: var(--cuivre); font-style: italic; }
@@ -1334,7 +1340,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
     sections_html = ""
     for sec in narratif.get('sections', []):
         sections_html += f"""
-<div class="section">
+<div class="section-newpage">
   <span class="eyebrow">{sec.get('eyebrow','')}</span>
   <h2 class="section-title">{sec.get('titre','')}</h2>
   <div class="light-line"></div>
@@ -1398,7 +1404,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
   <p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>
 </div>
 
-<div class="section" style="page-break-before:always">
+<div class="section-newpage">
   <span class="eyebrow">Avant tout</span>
   <h2 class="section-title">{'Une lettre pour vous' if offre in ('couple','famille','prestige') else 'Une lettre pour toi'}</h2>
   <div class="light-line"></div>
@@ -1410,7 +1416,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
 
 {sections_html}
 
-<div class="section">
+<div class="section-newpage">
   <span class="eyebrow">Mots pour avancer</span>
   <h2 class="section-title" style="text-align:center">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra personnel'}</h2>
   <div class="light-line" style="margin:.5cm auto 1cm;"></div>
