@@ -967,11 +967,11 @@ def generer_html(offre, clients, narratif):
 <section class="section section-sep" id="s1">
   <div class="reveal">
     <span class="s-eyebrow">Avant tout</span>
-    <h2 class="s-title">Une lettre pour toi</h2>
+    <h2 class="s-title">{'Une lettre pour vous' if offre in ('couple','famille','prestige') else 'Une lettre pour toi'}</h2>
     <div class="light-line"></div>
     <div class="lettre">
       <div class="prose">{narratif.get('lettre','')}</div>
-      <p class="lettre-signature">ORIGIN · Lecture personnalisée {annee}</p>
+      <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
     </div>
   </div>
 </section>
@@ -981,7 +981,7 @@ def generer_html(offre, clients, narratif):
 <section class="section section-sep" id="s{sm}">
   <div class="reveal">
     <span class="s-eyebrow">Mots pour avancer</span>
-    <h2 class="s-title s-title-center">Tes mantras personnalisés</h2>
+    <h2 class="s-title s-title-center">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra personnel'}</h2>
     <div class="light-line" style="margin:0 auto 3rem;"></div>
     {mantras_html}
   </div>
@@ -1063,13 +1063,13 @@ body {
   font-weight: 300;
   background: var(--creme);
   color: var(--encre);
-  font-size: 12.5pt;
-  line-height: 2.1;
+  font-size: 13.5pt;
+  line-height: 2.4;
 }
 
 @page {
   size: A4;
-  margin: 2.2cm 2.4cm 2.8cm;
+  margin: 2.5cm 3cm 3.2cm;
   background: #FDF6E3;
   @bottom-center {
     content: element(seed-footer);
@@ -1128,16 +1128,16 @@ body {
 /* Chaque section commence sur une nouvelle page */
 .section {
   page-break-before: always;
-  padding: 0 0 1.5cm;
+  padding: 0 0 2cm;
 }
 .section:first-child { page-break-before: avoid; }
 
 .eyebrow { font-family: 'Jost', sans-serif; font-size: 6.5pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .5cm; display: block; }
-.section-title { font-family: 'Cinzel', serif; font-size: 17pt; font-weight: 400; color: var(--or); margin-bottom: .4cm; letter-spacing: .08em; line-height: 1.3; }
-.light-line { width: 50px; height: 1px; background: var(--or); margin: .5cm 0 1cm; opacity: .5; }
+.section-title { font-family: 'Cinzel', serif; font-size: 18pt; font-weight: 400; color: var(--or); margin-bottom: .6cm; letter-spacing: .08em; line-height: 1.4; }
+.light-line { width: 50px; height: 1px; background: var(--or); margin: .6cm 0 1.3cm; opacity: .5; }
 
-.prose { font-size: 12.5pt; line-height: 2.1; color: var(--encre); }
-.prose p { margin-bottom: .9cm; text-align: justify; text-indent: 1.2em; }
+.prose { font-size: 13.5pt; line-height: 2.4; color: var(--encre); }
+.prose p { margin-bottom: 1.2cm; text-align: justify; text-indent: 1.4em; }
 .prose p:last-child { margin-bottom: 0; }
 .prose p:first-child { text-indent: 0; }
 .prose em { color: var(--cuivre); font-style: italic; }
@@ -1147,8 +1147,8 @@ body {
 
 .lettre {
   background: rgba(201,168,76,.05);
-  padding: 1.2cm 1.6cm;
-  margin-bottom: .6cm;
+  padding: 1.4cm 1.8cm;
+  margin-bottom: .8cm;
 }
 .lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .7cm; }
 
@@ -1162,8 +1162,8 @@ body {
 .ornament-symbol { color: var(--or); font-size: 10pt; }
 
 .final-section { padding: 1.5cm 0; text-align: center; }
-.final-prose { font-size: 12.5pt; line-height: 2.1; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
-.final-prose p { margin-bottom: .9cm; text-align: justify; text-indent: 1.2em; }
+.final-prose { font-size: 13.5pt; line-height: 2.4; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
+.final-prose p { margin-bottom: 1.2cm; text-align: justify; text-indent: 1.4em; }
 .final-prose p:first-child { text-indent: 0; }
 .final-prose em { color: var(--cuivre); font-style: italic; }
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
@@ -1246,14 +1246,24 @@ def generer_pdf_imprimable(offre, clients, narratif):
 </div>"""
 
     # Pages carnet d'intégration — lignes qui remplissent la page
-    questions_list = [
-        "Qu\'est-ce qui t\'a le plus touché dans ta lecture ?",
-        "Quelle phrase résonne encore en toi ?",
-        "Qu\'as-tu envie de changer à partir d\'aujourd\'hui ?",
-        "Comment ce que tu as lu éclaire ta relation à toi-même ?",
-        "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
-        "Quel premier pas concret peux-tu faire dès demain ?"
-    ]
+    if offre in ('couple', 'famille', 'prestige'):
+        questions_list = [
+            "Qu'est-ce qui vous a le plus touchés dans cette lecture ?",
+            "Quelle phrase résonne encore en vous ?",
+            "Qu'avez-vous envie de changer à partir d'aujourd'hui ?",
+            "Comment ce que vous avez lu éclaire votre relation ?",
+            "Quelle ancienne histoire êtes-vous prêts à lâcher ensemble ?",
+            "Quel premier pas concret pouvez-vous faire dès demain ?"
+        ]
+    else:
+        questions_list = [
+            "Qu'est-ce qui t'a le plus touché dans ta lecture ?",
+            "Quelle phrase résonne encore en toi ?",
+            "Qu'as-tu envie de changer à partir d'aujourd'hui ?",
+            "Comment ce que tu as lu éclaire ta relation à toi-même ?",
+            "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
+            "Quel premier pas concret peux-tu faire dès demain ?"
+        ]
     carnet_pages_html = ""
     for i, q in enumerate(questions_list):
         lignes_html = '<div class="carnet-line"></div>' * 22
@@ -1283,11 +1293,11 @@ def generer_pdf_imprimable(offre, clients, narratif):
 
 <div class="section" style="page-break-before:always">
   <span class="eyebrow">Avant tout</span>
-  <h2 class="section-title">Une lettre pour toi</h2>
+  <h2 class="section-title">{'Une lettre pour vous' if offre in ('couple','famille','prestige') else 'Une lettre pour toi'}</h2>
   <div class="light-line"></div>
   <div class="lettre">
     <div class="prose">{narratif.get('lettre','')}</div>
-    <p class="lettre-signature">ORIGIN · Lecture personnalisée {annee}</p>
+    <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
   </div>
 </div>
 
@@ -1295,7 +1305,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
 
 <div class="section">
   <span class="eyebrow">Mots pour avancer</span>
-  <h2 class="section-title" style="text-align:center">Tes mantras personnalisés</h2>
+  <h2 class="section-title" style="text-align:center">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra personnel'}</h2>
   <div class="light-line" style="margin:.5cm auto 1cm;"></div>
   {mantras_html}
 </div>
@@ -1303,7 +1313,7 @@ def generer_pdf_imprimable(offre, clients, narratif):
 <div class="carnet-cover">
   <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
   <h2 class="carnet-cover-title">Carnet d'Intégration</h2>
-  <p class="carnet-cover-sub">Tes réflexions · Tes prises de conscience · Ton chemin</p>
+  <p class="carnet-cover-sub">{'Vos réflexions · Vos prises de conscience · Votre chemin' if offre in ('couple','famille','prestige') else 'Tes réflexions · Tes prises de conscience · Ton chemin'}</p>
   <div style="width:60px;height:1px;background:#C9A84C;margin:2cm auto;opacity:.5;"></div>
   <p style="font-size:9pt;color:rgba(245,237,216,.4);letter-spacing:.2em;font-family:'Jost',sans-serif">À imprimer · À compléter à la main</p>
 </div>
