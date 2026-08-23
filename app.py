@@ -981,7 +981,7 @@ body {
 
 /* Graine de vie en bas de chaque page via running element */
 #seed-footer { position: running(seed-footer); text-align: center; }
-#seed-footer svg { width: 52pt; height: 52pt; opacity: .55; }
+#seed-footer svg { width: 70pt; height: 70pt; opacity: .75; }
 
 .page-break { page-break-after: always; }
 
@@ -1023,8 +1023,9 @@ body {
 .light-line { width: 50px; height: 1px; background: var(--or); margin: .5cm 0 1cm; opacity: .5; }
 
 .prose { font-size: 12.5pt; line-height: 2.1; color: var(--encre); }
-.prose p { margin-bottom: .9cm; text-align: justify; }
+.prose p { margin-bottom: .9cm; text-align: justify; text-indent: 1.2em; }
 .prose p:last-child { margin-bottom: 0; }
+.prose p:first-child { text-indent: 0; }
 .prose em { color: var(--cuivre); font-style: italic; }
 .prose * { color: var(--encre) !important; }
 .prose em, .prose em * { color: var(--cuivre) !important; }
@@ -1048,7 +1049,8 @@ body {
 
 .final-section { padding: 1.5cm 0; text-align: center; }
 .final-prose { font-size: 12.5pt; line-height: 2.1; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
-.final-prose p { margin-bottom: .9cm; text-align: justify; }
+.final-prose p { margin-bottom: .9cm; text-align: justify; text-indent: 1.2em; }
+.final-prose p:first-child { text-indent: 0; }
 .final-prose em { color: var(--cuivre); font-style: italic; }
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
