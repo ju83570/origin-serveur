@@ -931,16 +931,15 @@ window.addEventListener('scroll', () => {{
 </body></html>"""
 
 
-CSS_PRINT = """
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap');
+CSS_PRINT = """@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@300;400&display=swap');
 
 :root {
   --or: #C9A84C;
   --or-clair: #E8C97A;
   --cuivre: #B97333;
-  --creme: #F5EDD8;
-  --encre: #1C1409;
-  --muted: #7A6E58;
+  --creme: #FDF6E3;
+  --encre: #2C1E0A;
+  --muted: #8A7A60;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -950,32 +949,41 @@ body {
   font-weight: 300;
   background: var(--creme);
   color: var(--encre);
-  font-size: 12pt;
-  line-height: 2;
+  font-size: 12.5pt;
+  line-height: 2.1;
 }
 
 @page {
   size: A4;
-  margin: 2cm 2.2cm;
+  margin: 2.2cm 2.4cm 2.8cm;
+  background: #FDF6E3;
   @bottom-center {
-    content: "ORIGIN · Lecture personnalisée · Confidentiel";
-    font-family: 'Jost', sans-serif;
-    font-size: 6.5pt;
-    letter-spacing: .2em;
-    color: #9E9478;
+    content: element(seed-footer);
   }
   @bottom-right {
     content: counter(page);
     font-family: 'Jost', sans-serif;
     font-size: 7pt;
     color: #C9A84C;
+    padding-bottom: .3cm;
+  }
+  @bottom-left {
+    content: "ORIGIN · Lecture personnalisée · Confidentiel";
+    font-family: 'Jost', sans-serif;
+    font-size: 6pt;
+    letter-spacing: .18em;
+    color: #9E9478;
+    padding-bottom: .3cm;
   }
 }
-@page cover { margin: 0; }
+@page cover { margin: 0; background: #0A0A08; }
 .cover { page: cover; }
 
-.page { page-break-after: always; }
-.page:last-child { page-break-after: avoid; }
+/* Graine de vie en bas de chaque page via running element */
+#seed-footer { position: running(seed-footer); text-align: center; }
+#seed-footer svg { width: 28pt; height: 28pt; opacity: .25; }
+
+.page-break { page-break-after: always; }
 
 .cover {
   display: flex;
@@ -991,7 +999,7 @@ body {
 .cover-logo {
   width: 100%;
   max-width: 16cm;
-  margin-bottom: 1.2cm;
+  margin-bottom: 1.4cm;
   opacity: .95;
   object-fit: contain;
 }
@@ -999,49 +1007,61 @@ body {
 .cover-eyebrow { font-family: 'Jost', sans-serif; font-size: 7pt; letter-spacing: .5em; text-transform: uppercase; color: var(--cuivre); margin-bottom: 1cm; }
 .cover-origin { font-family: 'Cinzel', serif; font-size: 42pt; letter-spacing: .22em; color: var(--or); margin-bottom: .5cm; }
 .cover-tagline { font-family: 'Cormorant Garamond', serif; font-size: 13pt; font-style: italic; color: rgba(245,237,216,.75); margin-bottom: 1.5cm; }
-.cover-ligne { width: 80px; height: 1px; background: var(--or); margin: 0 auto 1.2cm; opacity: .6; }
-.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 26pt; font-style: italic; color: var(--creme); margin-bottom: .5cm; }
+.cover-ligne { width: 80px; height: 1px; background: var(--or); margin: 0 auto 1.4cm; opacity: .6; }
+.cover-names { font-family: 'Cormorant Garamond', serif; font-size: 28pt; font-style: italic; color: var(--creme); margin-bottom: .6cm; }
 .cover-meta { font-family: 'Jost', sans-serif; font-size: 7.5pt; letter-spacing: .35em; text-transform: uppercase; color: rgba(245,237,216,.5); }
 
-.section { padding: 1.5cm 2cm; }
-.section + .section { border-top: 1px solid rgba(201,168,76,.18); }
+/* Chaque section commence sur une nouvelle page */
+.section {
+  page-break-before: always;
+  padding: 0 0 1.5cm;
+}
+.section:first-child { page-break-before: avoid; }
 
-.eyebrow { font-family: 'Jost', sans-serif; font-size: 6.5pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .4cm; display: block; }
-.section-title { font-family: 'Cinzel', serif; font-size: 16pt; font-weight: 400; color: var(--or); margin-bottom: .35cm; letter-spacing: .08em; line-height: 1.3; }
-.light-line { width: 50px; height: 1px; background: var(--or); margin: .4cm 0 .8cm; opacity: .5; }
+.eyebrow { font-family: 'Jost', sans-serif; font-size: 6.5pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .5cm; display: block; }
+.section-title { font-family: 'Cinzel', serif; font-size: 17pt; font-weight: 400; color: var(--or); margin-bottom: .4cm; letter-spacing: .08em; line-height: 1.3; }
+.light-line { width: 50px; height: 1px; background: var(--or); margin: .5cm 0 1cm; opacity: .5; }
 
-.prose { font-size: 12pt; line-height: 2; color: var(--encre); }
-.prose p { margin-bottom: .65cm; }
+.prose { font-size: 12.5pt; line-height: 2.1; color: var(--encre); }
+.prose p { margin-bottom: .9cm; text-align: justify; }
+.prose p:last-child { margin-bottom: 0; }
 .prose em { color: var(--cuivre); font-style: italic; }
 .prose * { color: var(--encre) !important; }
 .prose em, .prose em * { color: var(--cuivre) !important; }
 .lettre .prose * { color: var(--encre) !important; }
 
-.lettre { background: rgba(201,168,76,.04); border: 1px solid rgba(201,168,76,.2); border-left: 3px solid var(--cuivre); padding: 1cm 1.4cm; margin-bottom: .5cm; }
-.lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .5cm; }
+.lettre {
+  background: rgba(201,168,76,.05);
+  border-left: 3px solid var(--cuivre);
+  padding: 1.2cm 1.6cm;
+  margin-bottom: .6cm;
+}
+.lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .7cm; }
 
-.mantra-block { text-align: center; padding: 1cm 1.5cm; border: 1px solid rgba(201,168,76,.15); margin-bottom: .5cm; background: rgba(201,168,76,.02); }
-.mantra-prenom { font-family: 'Cinzel', serif; font-size: 7pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .35cm; }
-.mantra-txt { font-family: 'Cinzel', serif; font-size: 13pt; color: var(--or); line-height: 1.6; margin-bottom: .25cm; }
-.mantra-note { font-size: 9.5pt; font-style: italic; color: var(--muted); }
+.mantra-block { text-align: center; padding: 1.2cm 2cm; margin-bottom: .8cm; }
+.mantra-prenom { font-family: 'Cinzel', serif; font-size: 7pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .4cm; }
+.mantra-txt { font-family: 'Cinzel', serif; font-size: 14pt; color: var(--or); line-height: 1.7; margin-bottom: .3cm; }
+.mantra-note { font-size: 10pt; font-style: italic; color: var(--muted); line-height: 1.7; }
 
-.ornament { display: flex; align-items: center; gap: 1cm; margin: .6cm 0; opacity: .4; }
+.ornament { display: flex; align-items: center; gap: 1cm; margin: .8cm 0; opacity: .35; }
 .ornament-line { flex: 1; height: 1px; background: var(--or); }
 .ornament-symbol { color: var(--or); font-size: 10pt; }
 
-.final-section { padding: 1.5cm 2cm; text-align: center; border-top: 1px solid rgba(201,168,76,.18); }
-.final-prose { font-size: 12pt; line-height: 2; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
-.final-prose p { margin-bottom: .65cm; }
+.final-section { padding: 1.5cm 0; text-align: center; }
+.final-prose { font-size: 12.5pt; line-height: 2.1; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
+.final-prose p { margin-bottom: .9cm; text-align: justify; }
 .final-prose em { color: var(--cuivre); font-style: italic; }
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
+/* Carnet d'intégration */
 .carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:4cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; }
 .carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
 .carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
-.carnet-page { padding:2cm 2.5cm; }
-.carnet-header { font-family:'Cinzel',serif; font-size:.65rem; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1.2cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; }
-.carnet-question { font-family:'Cormorant Garamond',serif; font-size:12pt; font-style:italic; color:var(--encre); margin-bottom:.5cm; line-height:1.6; }
-.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); margin-bottom:.55cm; }
+.carnet-page { padding: 0; page-break-before: always; }
+.carnet-header { font-family:'Cinzel',serif; font-size:6.5pt; letter-spacing:.4em; text-transform:uppercase; color:var(--cuivre); margin-bottom:1cm; border-bottom:1px solid rgba(201,168,76,.3); padding-bottom:.4cm; }
+.carnet-question { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:var(--encre); margin-bottom:.7cm; line-height:1.7; }
+.carnet-lines-block { margin-top: .5cm; }
+.carnet-line { width:100%; height:1px; background:linear-gradient(to right,rgba(201,168,76,.4),rgba(201,168,76,.1)); margin-bottom:.8cm; display:block; }
 """
 
 def _get_logo_b64():
@@ -1086,6 +1106,10 @@ def generer_pdf_imprimable(offre, clients, narratif):
         logo_html = '<p class="cover-symbol">✦</p>'
     # ────────────────────────────────────────────────────────────────────────
 
+    # Graine de vie pour footer (running element WeasyPrint)
+    seed_footer_svg = '<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="sgp" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#E8C97A" stop-opacity=".8"/><stop offset="100%" stop-color="#B97333" stop-opacity=".3"/></radialGradient></defs><circle cx="100" cy="100" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none"/><circle cx="100" cy="72" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="124" cy="86" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="124" cy="114" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="100" cy="128" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="76" cy="114" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="76" cy="86" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="100" cy="100" r="56" stroke="#C9A84C" stroke-width=".6" fill="none" opacity=".2"/></svg>'
+    seed_footer_html = f'<div id="seed-footer">{seed_footer_svg}</div>'
+
     sections_html = ""
     for sec in narratif.get('sections', []):
         sections_html += f"""
@@ -1106,6 +1130,25 @@ def generer_pdf_imprimable(offre, clients, narratif):
   <p class="mantra-note">{m.get('note','')}</p>
 </div>"""
 
+    # Pages carnet d'intégration — lignes qui remplissent la page
+    questions_list = [
+        "Qu\'est-ce qui t\'a le plus touché dans ta lecture ?",
+        "Quelle phrase résonne encore en toi ?",
+        "Qu\'as-tu envie de changer à partir d\'aujourd\'hui ?",
+        "Comment ce que tu as lu éclaire ta relation à toi-même ?",
+        "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
+        "Quel premier pas concret peux-tu faire dès demain ?"
+    ]
+    carnet_pages_html = ""
+    for i, q in enumerate(questions_list):
+        lignes_html = '<div class="carnet-line"></div>' * 18
+        carnet_pages_html += f"""
+<div class="carnet-page">
+  <p class="carnet-header">Réflexion {i+1} · ORIGIN</p>
+  <p class="carnet-question">{q}</p>
+  <div class="carnet-lines-block">{lignes_html}</div>
+</div>"""
+
     html_print = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1114,14 +1157,16 @@ def generer_pdf_imprimable(offre, clients, narratif):
 </head>
 <body>
 
-<div class="cover page">
+{seed_footer_html}
+
+<div class="cover">
   {logo_html}
   <p class="cover-names">{noms_display}</p>
   <div class="cover-ligne"></div>
   <p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>
 </div>
 
-<div class="section page">
+<div class="section" style="page-break-before:always">
   <span class="eyebrow">Avant tout</span>
   <h2 class="section-title">Une lettre pour toi</h2>
   <div class="light-line"></div>
@@ -1133,14 +1178,14 @@ def generer_pdf_imprimable(offre, clients, narratif):
 
 {sections_html}
 
-<div class="section page">
+<div class="section">
   <span class="eyebrow">Mots pour avancer</span>
   <h2 class="section-title" style="text-align:center">Tes mantras personnalisés</h2>
-  <div class="light-line" style="margin:.4cm auto .8cm;"></div>
+  <div class="light-line" style="margin:.5cm auto 1cm;"></div>
   {mantras_html}
 </div>
 
-<div class="carnet-cover page">
+<div class="carnet-cover">
   <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
   <h2 class="carnet-cover-title">Carnet d'Intégration</h2>
   <p class="carnet-cover-sub">Tes réflexions · Tes prises de conscience · Ton chemin</p>
@@ -1148,22 +1193,12 @@ def generer_pdf_imprimable(offre, clients, narratif):
   <p style="font-size:9pt;color:rgba(245,237,216,.4);letter-spacing:.2em;font-family:'Jost',sans-serif">À imprimer · À compléter à la main</p>
 </div>
 
-{"".join([f'''
-<div class="carnet-page page">
-  <p class="carnet-header">Réflexion {i+1} · ORIGIN</p>
-  {"".join([f'<p class="carnet-question">{q}</p>' + '<div class="carnet-line"></div>' * 6 for q in [
-    ["Qu\'est-ce qui t\'a le plus touché dans ta lecture ?",
-     "Quelle phrase résonne encore en toi ?",
-     "Qu\'as-tu envie de changer à partir d\'aujourd\'hui ?"][i % 3]
-  ]])}
-  {"".join(['<div class="carnet-line"></div>' for _ in range(12)])}
-</div>''' for i in range(6)])}
+{carnet_pages_html}
 
 </body>
 </html>"""
 
     return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf()
-
 
 def envoyer_email(html_content, pdf_bytes, clients, offre, email_client):
     prenoms = " & ".join(c['prenom'] for c in clients)
