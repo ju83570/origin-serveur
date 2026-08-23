@@ -355,8 +355,8 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p>"
 }"""
 
-    a = _extraire_json_claude(_appel_claude_chunk(prompt_a, max_tokens=6000))
-    b = _extraire_json_claude(_appel_claude_chunk(prompt_b, max_tokens=6000))
+    a = _appel_claude_chunk(prompt_a, max_tokens=6000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=6000)
 
     if not a or not b:
         print("⚠️ Un chunk Naissance a échoué — fallback")
