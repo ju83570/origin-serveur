@@ -1469,7 +1469,6 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <h2 class="section-title">{sec.get('titre','')}</h2>
   <div class="light-line"></div>
   <div class="prose">{sec.get('contenu','')}</div>
-  {chapter_end_html}
 </div>"""
 
     # Pages "Thème astral" — une roue par personne, construite à partir des
@@ -1593,7 +1592,6 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     <div class="prose">{narratif.get('lettre','')}</div>
     <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
   </div>
-  {chapter_end_html}
 </div>
 
 {sections_html}
@@ -1605,6 +1603,9 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <h2 class="section-title" style="text-align:center">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra personnel'}</h2>
   <div class="light-line" style="margin:.5cm auto 1cm;"></div>
   {mantras_html}
+</div>
+
+<div class="section-newpage">
   {chapter_end_html}
 </div>
 
