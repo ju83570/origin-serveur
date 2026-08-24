@@ -196,6 +196,85 @@ def calc_theme(j, m, a, ville, heure=None, minute=0, asc_force=None):
     asc_data = {'signe': asc_force, 'degre': None} if asc_force else None
     return {'planetes':planetes,'ascendant':asc_data}
 
+# ── Roue du thème astral (SVG) ───────────────────────────────────────────────
+SIGNES_ABBR = ['BÉLIER','TAUREAU','GÉMEAUX','CANCER','LION','VIERGE',
+               'BALANCE','SCORPION','SAGITTAIRE','CAPRICORNE','VERSEAU','POISSONS']
+PLANET_LABEL = {
+    'Soleil':'SOLEIL','Lune':'LUNE','Mercure':'MERCURE','Vénus':'VÉNUS','Mars':'MARS',
+    'Jupiter':'JUPITER','Saturne':'SATURNE','Uranus':'URANUS','Neptune':'NEPTUNE',
+}
+
+def _polar(cx, cy, r, lon_deg):
+    theta = math.radians(lon_deg - 90)
+    return cx + r * math.cos(theta), cy + r * math.sin(theta)
+
+def build_natal_wheel_svg(planetes, ascendant=None):
+    """Construit une roue zodiacale SVG à partir des positions planétaires réelles
+    (calc_theme). Wheel illustrative : signes + planètes positionnés à leur degré
+    exact, Ascendant marqué si connu. Pas de système de maisons (nécessiterait une
+    heure de naissance fiable pour tous les cas, non garanti ici)."""
+    cx = cy = 200
+    r_outer, r_sign_in, r_tick_in, r_dot, r_label_base = 195, 158, 150, 140, 116
+
+    parts = ['<svg viewBox="-35 -15 470 430" xmlns="http://www.w3.org/2000/svg" font-family="Jost, sans-serif">']
+    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{r_outer}" fill="none" stroke="#C9A84C" stroke-width="1" opacity=".55"/>')
+    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{r_sign_in}" fill="none" stroke="#C9A84C" stroke-width=".7" opacity=".4"/>')
+    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{r_tick_in-4}" fill="none" stroke="#C9A84C" stroke-width=".5" opacity=".25"/>')
+
+    for i in range(12):
+        a0, a1, mid = i*30, i*30+30, i*30+15
+        if i % 2 == 0:
+            x0,y0 = _polar(cx,cy,r_outer,a0); x1,y1 = _polar(cx,cy,r_outer,a1)
+            xi1,yi1 = _polar(cx,cy,r_sign_in,a1); xi0,yi0 = _polar(cx,cy,r_sign_in,a0)
+            parts.append(f'<path d="M{x0:.1f},{y0:.1f} A{r_outer},{r_outer} 0 0 1 {x1:.1f},{y1:.1f} L{xi1:.1f},{yi1:.1f} A{r_sign_in},{r_sign_in} 0 0 0 {xi0:.1f},{yi0:.1f} Z" fill="#C9A84C" opacity=".07"/>')
+        xo,yo = _polar(cx,cy,r_outer,a0); xin,yin = _polar(cx,cy,r_sign_in,a0)
+        parts.append(f'<line x1="{xin:.1f}" y1="{yin:.1f}" x2="{xo:.1f}" y2="{yo:.1f}" stroke="#C9A84C" stroke-width=".6" opacity=".4"/>')
+        lx,ly = _polar(cx,cy,(r_outer+r_sign_in)/2, mid)
+        parts.append(f'<text x="{lx:.1f}" y="{ly:.1f}" font-size="8.5" letter-spacing="1.5" fill="#B97333" text-anchor="middle" dominant-baseline="middle">{SIGNES_ABBR[i]}</text>')
+
+    items = []
+    for nom, d in (planetes or {}).items():
+        try:
+            idx = SIGNES.index(d['signe'])
+        except (ValueError, KeyError, TypeError):
+            continue
+        items.append({'nom': nom, 'lon': idx*30 + float(d.get('degre',0) or 0)})
+    items.sort(key=lambda it: it['lon'])
+    used = []
+    for it in items:
+        tier = 0
+        for u in used:
+            if abs(((it['lon']-u['lon']+180)%360)-180) < 14 and u['tier']==tier:
+                tier += 1
+        it['tier'] = tier
+        used.append(it)
+
+    for it in items:
+        lon = it['lon']
+        xdot,ydot = _polar(cx,cy,r_dot,lon)
+        parts.append(f'<circle cx="{xdot:.1f}" cy="{ydot:.1f}" r="3" fill="#B97333"/>')
+        xt0,yt0 = _polar(cx,cy,r_tick_in,lon); xt1,yt1 = _polar(cx,cy,r_dot,lon)
+        parts.append(f'<line x1="{xt0:.1f}" y1="{yt0:.1f}" x2="{xt1:.1f}" y2="{yt1:.1f}" stroke="#B97333" stroke-width=".5" opacity=".5"/>')
+        rlabel = r_label_base - it['tier']*16
+        xl,yl = _polar(cx,cy,rlabel,lon)
+        parts.append(f'<line x1="{xdot:.1f}" y1="{ydot:.1f}" x2="{xl:.1f}" y2="{yl:.1f}" stroke="#B97333" stroke-width=".4" opacity=".35"/>')
+        label = PLANET_LABEL.get(it['nom'], str(it['nom']).upper())
+        parts.append(f'<text x="{xl:.1f}" y="{yl:.1f}" font-size="7" letter-spacing=".5" fill="#5A5240" text-anchor="middle" dominant-baseline="middle">{label}</text>')
+
+    if ascendant and ascendant.get('signe'):
+        try:
+            idx = SIGNES.index(ascendant['signe'])
+            lon = idx*30 + float(ascendant.get('degre') or 0)
+            x0,y0 = _polar(cx,cy,r_sign_in,lon); x1,y1 = _polar(cx,cy,r_outer+8,lon)
+            parts.append(f'<line x1="{x0:.1f}" y1="{y0:.1f}" x2="{x1:.1f}" y2="{y1:.1f}" stroke="#8A2E2E" stroke-width="1"/>')
+            xl,yl = _polar(cx,cy,r_outer+16,lon)
+            parts.append(f'<text x="{xl:.1f}" y="{yl:.1f}" font-size="8" fill="#8A2E2E" text-anchor="middle" dominant-baseline="middle">ASC</text>')
+        except (ValueError, KeyError, TypeError):
+            pass
+
+    parts.append('</svg>')
+    return "".join(parts)
+
 def fmt_profil(p):
     j,m,a = p['jour'],p['mois'],p['annee']
     pr,nm = p['prenom'],p.get('nom','')
@@ -1156,6 +1235,10 @@ body {
 .section-newpage {
   page-break-before: always;
   padding: 0 0 1.5cm;
+  min-height: 240mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .eyebrow { font-family: 'Jost', sans-serif; font-size: 6.5pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .5cm; display: block; }
@@ -1163,7 +1246,7 @@ body {
 .light-line { width: 50px; height: 1px; background: var(--or); margin: .6cm 0 1.3cm; opacity: .5; }
 
 .prose { font-size: 11.5pt; line-height: 1.95; color: var(--encre); }
-.prose p { margin-bottom: .6cm; text-align: justify; text-indent: 1.2em; }
+.prose p { margin-bottom: .6cm; text-align: justify; text-indent: 1.2em; orphans: 3; widows: 3; }
 .prose p:last-child { margin-bottom: 0; }
 .prose em { color: var(--cuivre); font-style: italic; }
 .prose * { color: var(--encre) !important; }
@@ -1171,24 +1254,58 @@ body {
 .lettre .prose * { color: var(--encre) !important; }
 
 .lettre {
-  background: rgba(201,168,76,.05);
-  padding: 1.4cm 1.8cm;
   margin-bottom: .8cm;
 }
-.lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .7cm; }
+.lettre-signature { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .2em; color: var(--cuivre); margin-top: .7cm; page-break-before: avoid; break-before: avoid; }
+
+/* Ornement de fin de chapitre — comble l'espace restant en bas de page, jamais de vide.
+   Volontairement en bloc simple (pas de flex) : imbriquer un flex dans le conteneur
+   .section-newpage (lui-meme flex) casse le rendu de WeasyPrint quand ça se fragmente
+   sur un saut de page. */
+.chapter-end {
+  text-align: center;
+  margin: 2.2cm 0 .6cm;
+  padding: .6cm 0;
+  page-break-inside: avoid;
+  page-break-before: avoid;
+  break-before: avoid;
+}
+.chapter-end-line { width: 60px; height: 1px; background: var(--or); opacity: .45; margin: .45cm auto; }
+.chapter-end-mandala { width: 6.5cm; height: 6.5cm; opacity: .55; display: block; margin: 0 auto; }
+.chapter-end-word { font-family:'Cinzel',serif; font-size:6.5pt; letter-spacing:.5em; text-transform:uppercase; color: var(--cuivre); opacity:.7; margin: .45cm 0; }
 
 .mantra-block { text-align: center; padding: 1.2cm 2cm; margin-bottom: .8cm; }
 .mantra-prenom { font-family: 'Cinzel', serif; font-size: 7pt; letter-spacing: .45em; text-transform: uppercase; color: var(--cuivre); margin-bottom: .4cm; }
 .mantra-txt { font-family: 'Cinzel', serif; font-size: 14pt; color: var(--or); line-height: 1.7; margin-bottom: .3cm; }
 .mantra-note { font-size: 10pt; font-style: italic; color: var(--muted); line-height: 1.7; }
 
-.ornament { display: flex; align-items: center; gap: 1cm; margin: .8cm 0; opacity: .35; }
-.ornament-line { flex: 1; height: 1px; background: var(--or); }
-.ornament-symbol { color: var(--or); font-size: 10pt; }
+/* Roue du thème astral — tableau CSS plutôt que flex : un flex imbriqué dans
+   .section-newpage (lui-même flex) casse le rendu WeasyPrint (colonnes qui
+   s'écrasent et texte qui retourne à la ligne mot par mot). */
+.wheel-wrap { width: 100mm; height: 100mm; margin: 0 auto .4cm; }
+.wheel-wrap svg { width: 100%; height: 100%; display: block; }
+.wheel-legend { display: table; width: 10.5cm; margin: 0 auto; border-collapse: collapse; }
+.wheel-legend-row { display: table-row; }
+.wheel-legend-planet, .wheel-legend-value {
+  display: table-cell;
+  font-family: 'Jost', sans-serif;
+  font-size: 8.5pt;
+  letter-spacing: .04em;
+  border-bottom: 1px solid rgba(201,168,76,.15);
+  padding: .09cm 0;
+}
+.wheel-legend-planet { color: var(--cuivre); letter-spacing: .12em; width: 3.4cm; }
+.wheel-legend-value { color: var(--encre); text-align: right; }
+
+/* Pas de flex ici non plus : nested dans .section-newpage (flex + justify-content:center),
+   voir la note plus haut sur .chapter-end et .wheel-legend. */
+.ornament { text-align: center; margin: .8cm 0; opacity: .35; }
+.ornament-line { display: inline-block; width: 3cm; height: 1px; background: var(--or); vertical-align: middle; }
+.ornament-symbol { display: inline-block; color: var(--or); font-size: 10pt; vertical-align: middle; margin: 0 .4cm; }
 
 .final-section { padding: 1.5cm 0; text-align: center; }
 .final-prose { font-size: 13.5pt; line-height: 2.4; color: var(--encre); max-width: 14cm; margin: 0 auto .8cm; }
-.final-prose p { margin-bottom: 1.2cm; text-align: justify; text-indent: 1.4em; }
+.final-prose p { margin-bottom: 1.2cm; text-align: justify; text-indent: 1.4em; orphans: 3; widows: 3; }
 .final-prose em { color: var(--cuivre); font-style: italic; }
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
@@ -1312,7 +1429,7 @@ def _get_logo_b64():
     return ''
 
 
-def generer_pdf_imprimable(offre, clients, narratif):
+def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='adulte'):
     annee = date.today().year
 
     if offre == 'solo':
@@ -1337,6 +1454,11 @@ def generer_pdf_imprimable(offre, clients, narratif):
 
     # Graine de vie pour footer (running element WeasyPrint)
     seed_footer_svg = '<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="sgp" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#E8C97A" stop-opacity=".8"/><stop offset="100%" stop-color="#B97333" stop-opacity=".3"/></radialGradient></defs><circle cx="100" cy="100" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none"/><circle cx="100" cy="72" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="124" cy="86" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="124" cy="114" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="100" cy="128" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="76" cy="114" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="76" cy="86" r="28" stroke="url(#sgp)" stroke-width="1.5" fill="none" opacity=".7"/><circle cx="100" cy="100" r="56" stroke="#C9A84C" stroke-width=".6" fill="none" opacity=".2"/></svg>'
+
+    # Mandala de fin de chapitre — même langage graphique que la graine de vie,
+    # posé après chaque bloc de texte pour qu'aucune page ne se termine sur du vide.
+    mandala_svg = '<svg class="chapter-end-mandala" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="mdg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#E8C97A" stop-opacity=".9"/><stop offset="100%" stop-color="#B97333" stop-opacity=".25"/></radialGradient></defs><circle cx="100" cy="100" r="26" stroke="url(#mdg)" stroke-width="1.2" fill="none"/><circle cx="100" cy="74" r="26" stroke="url(#mdg)" stroke-width="1.2" fill="none" opacity=".75"/><circle cx="122.5" cy="87" r="26" stroke="url(#mdg)" stroke-width="1.2" fill="none" opacity=".75"/><circle cx="122.5" cy="113" r="26" stroke="url(#mdg)" stroke-width="1.2" fill="none" opacity=".75"/><circle cx="100" cy="126" r="26" stroke="url(#mdg)" stroke-width="1.2" fill="none" opacity=".75"/><circle cx="77.5" cy="113" r="26" stroke="url(#mdg)" stroke-width="1.2" fill="none" opacity=".75"/><circle cx="77.5" cy="87" r="26" stroke="url(#mdg)" stroke-width="1.2" fill="none" opacity=".75"/><circle cx="100" cy="100" r="52" stroke="#C9A84C" stroke-width=".6" fill="none" opacity=".3"/><circle cx="100" cy="100" r="80" stroke="#C9A84C" stroke-width=".5" fill="none" opacity=".15"/></svg>'
+    chapter_end_html = f'<div class="chapter-end"><div class="chapter-end-line"></div>{mandala_svg}<p class="chapter-end-word">ORIGIN</p><div class="chapter-end-line"></div></div>'
     seed_footer_html = f'<div id="seed-footer">{seed_footer_svg}</div>'
 
     sections_html = ""
@@ -1347,6 +1469,36 @@ def generer_pdf_imprimable(offre, clients, narratif):
   <h2 class="section-title">{sec.get('titre','')}</h2>
   <div class="light-line"></div>
   <div class="prose">{sec.get('contenu','')}</div>
+  {chapter_end_html}
+</div>"""
+
+    # Pages "Thème astral" — une roue par personne, construite à partir des
+    # positions planétaires réellement calculées (calc_theme), pas du texte IA.
+    wheel_pages_html = ""
+    if astros:
+        for c, astro in zip(clients, astros):
+            if not astro or not astro.get('planetes'):
+                continue
+            wheel_svg = build_natal_wheel_svg(astro['planetes'], astro.get('ascendant'))
+            legend_rows = "".join(
+                f'<div class="wheel-legend-row"><span class="wheel-legend-planet">{PLANET_LABEL.get(nom, nom.upper())}</span>'
+                f'<span class="wheel-legend-value">{d.get("signe","?")} · {d.get("degre",0)}°</span></div>'
+                for nom, d in astro['planetes'].items()
+            )
+            asc = astro.get('ascendant')
+            asc_row = ''
+            if asc and asc.get('signe'):
+                asc_deg_str = f' · {asc["degre"]}°' if asc.get('degre') else ''
+                asc_row = (f'<div class="wheel-legend-row"><span class="wheel-legend-planet">ASCENDANT</span>'
+                           f'<span class="wheel-legend-value">{asc["signe"]}{asc_deg_str}</span></div>')
+            titre_wheel = f"Le thème astral de {c['prenom']}" if offre in ('couple','famille','prestige') else "Ton thème astral"
+            wheel_pages_html += f"""
+<div class="section-newpage wheel-page">
+  <span class="eyebrow">Carte du ciel</span>
+  <h2 class="section-title" style="text-align:center">{titre_wheel}</h2>
+  <div class="light-line" style="margin:.5cm auto .6cm;"></div>
+  <div class="wheel-wrap">{wheel_svg}</div>
+  <div class="wheel-legend">{legend_rows}{asc_row}</div>
 </div>"""
 
     mantras_html = ""
@@ -1359,35 +1511,62 @@ def generer_pdf_imprimable(offre, clients, narratif):
   <p class="mantra-note">{m.get('note','')}</p>
 </div>"""
 
-    # Pages carnet d'intégration — lignes qui remplissent la page
-    if offre in ('couple', 'famille', 'prestige'):
-        questions_list = [
-            "Qu'est-ce qui vous a le plus touchés dans cette lecture ?",
-            "Quelle phrase résonne encore en vous ?",
-            "Qu'avez-vous envie de changer à partir d'aujourd'hui ?",
-            "Comment ce que vous avez lu éclaire votre relation ?",
-            "Quelle ancienne histoire êtes-vous prêts à lâcher ensemble ?",
-            "Quel premier pas concret pouvez-vous faire dès demain ?"
-        ]
-    else:
-        questions_list = [
-            "Qu'est-ce qui t'a le plus touché dans ta lecture ?",
-            "Quelle phrase résonne encore en toi ?",
-            "Qu'as-tu envie de changer à partir d'aujourd'hui ?",
-            "Comment ce que tu as lu éclaire ta relation à toi-même ?",
-            "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
-            "Quel premier pas concret peux-tu faire dès demain ?"
-        ]
-    carnet_pages_html = ""
-    for i, q in enumerate(questions_list):
-        lignes_html = '<div class="carnet-line"></div>' * 22
-        carnet_pages_html += f"""
+    # Pages carnet d'intégration — lignes qui remplissent la page.
+    # Deux modes : "naissance" (carnet de vie qui suit l'enfant à chaque âge,
+    # avec une page pour les parents) et "adulte" (réflexion immédiate sur la
+    # lecture, comportement historique).
+    est_naissance = (type_analyse == 'naissance')
+    prenom_enfant = clients[0]['prenom'] if clients else ''
+
+    def _carnet_page(header, question, n_lignes=22):
+        lignes_html = '<div class="carnet-line"></div>' * n_lignes
+        return f"""
 <div class="carnet-page">
   <img class="carnet-filigrane" src="data:image/jpeg;base64,{MAIN_FILIGRANE_B64}" alt="" />
-  <p class="carnet-header">Réflexion {i+1} · ORIGIN</p>
-  <p class="carnet-question">{q}</p>
+  <p class="carnet-header">{header}</p>
+  <p class="carnet-question">{question}</p>
   <div class="carnet-lines-block">{lignes_html}</div>
 </div>"""
+
+    if est_naissance:
+        parents_html = _carnet_page(
+            "Pour les parents · ORIGIN",
+            f"Cette page vous appartient. Écrivez à {prenom_enfant} ce que vous ressentez "
+            f"aujourd'hui, ce que vous espérez pour son chemin, ce que vous voulez qu'elle ou "
+            f"il sache — un jour, {prenom_enfant} vous lira ici."
+        )
+        etapes_vie = [
+            ("Enfance · vers 7-10 ans", "Raconte une journée qui t'a rendu·e vraiment heureux·se cette année."),
+            ("Adolescence · vers 13-17 ans", "Qui es-tu en train de devenir ? Qu'est-ce qui compte vraiment pour toi aujourd'hui ?"),
+            ("Jeune adulte · vers 18-25 ans", "Quel chemin es-tu en train de choisir ? Qu'emportes-tu avec toi de ton enfance ?"),
+            ("Âge adulte · vers 30-45 ans", "Qu'as-tu construit ? Qu'est-ce que la vie t'a appris que tu ignorais à 20 ans ?"),
+            ("Maturité · vers 50 ans et plus", "En regardant ton chemin, qu'est-ce qui t'a le plus nourri·e ? Que veux-tu transmettre à ton tour ?"),
+        ]
+        carnet_pages_html = parents_html + "".join(
+            _carnet_page(f"{etape} · ORIGIN", question) for etape, question in etapes_vie
+        )
+    else:
+        if offre in ('couple', 'famille', 'prestige'):
+            questions_list = [
+                "Qu'est-ce qui vous a le plus touchés dans cette lecture ?",
+                "Quelle phrase résonne encore en vous ?",
+                "Qu'avez-vous envie de changer à partir d'aujourd'hui ?",
+                "Comment ce que vous avez lu éclaire votre relation ?",
+                "Quelle ancienne histoire êtes-vous prêts à lâcher ensemble ?",
+                "Quel premier pas concret pouvez-vous faire dès demain ?"
+            ]
+        else:
+            questions_list = [
+                "Qu'est-ce qui t'a le plus touché dans ta lecture ?",
+                "Quelle phrase résonne encore en toi ?",
+                "Qu'as-tu envie de changer à partir d'aujourd'hui ?",
+                "Comment ce que tu as lu éclaire ta relation à toi-même ?",
+                "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
+                "Quel premier pas concret peux-tu faire dès demain ?"
+            ]
+        carnet_pages_html = "".join(
+            _carnet_page(f"Réflexion {i+1} · ORIGIN", q) for i, q in enumerate(questions_list)
+        )
 
     html_print = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -1414,21 +1593,25 @@ def generer_pdf_imprimable(offre, clients, narratif):
     <div class="prose">{narratif.get('lettre','')}</div>
     <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
   </div>
+  {chapter_end_html}
 </div>
 
 {sections_html}
+
+{wheel_pages_html}
 
 <div class="section-newpage">
   <span class="eyebrow">Mots pour avancer</span>
   <h2 class="section-title" style="text-align:center">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra personnel'}</h2>
   <div class="light-line" style="margin:.5cm auto 1cm;"></div>
   {mantras_html}
+  {chapter_end_html}
 </div>
 
 <div class="carnet-cover">
   <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
-  <h2 class="carnet-cover-title">Carnet d'Intégration</h2>
-  <p class="carnet-cover-sub">{'Vos réflexions · Vos prises de conscience · Votre chemin' if offre in ('couple','famille','prestige') else 'Tes réflexions · Tes prises de conscience · Ton chemin'}</p>
+  <h2 class="carnet-cover-title">{'Carnet de Vie' if est_naissance else "Carnet d'Intégration"}</h2>
+  <p class="carnet-cover-sub">{f'Un carnet qui grandit avec {prenom_enfant} · À ouvrir à chaque étape de sa vie' if est_naissance else ('Vos réflexions · Vos prises de conscience · Votre chemin' if offre in ('couple','famille','prestige') else 'Tes réflexions · Tes prises de conscience · Ton chemin')}</p>
   <div style="width:60px;height:1px;background:#C9A84C;margin:2cm auto;opacity:.5;"></div>
   <p style="font-size:9pt;color:rgba(245,237,216,.4);letter-spacing:.2em;font-family:'Jost',sans-serif">À imprimer · À compléter à la main</p>
 </div>
@@ -1587,9 +1770,11 @@ def webhook():
                     })
 
         profils_txt_parts = []
+        astros_clients = []
         for c in clients:
-            txt, _, _ = fmt_profil(c)
+            txt, _, astro = fmt_profil(c)
             profils_txt_parts.append(txt)
+            astros_clients.append(astro)
         profils_txt = "\n\n".join(profils_txt_parts)
 
         def generer():
@@ -1599,7 +1784,7 @@ def webhook():
                 if "erreur technique" in lettre.lower() or "en cours de préparation" in lettre.lower():
                     raise ValueError("Narratif invalide — fallback d'erreur détecté après parsing JSON")
                 html = generer_html(offre, clients, narratif)
-                pdf = generer_pdf_imprimable(offre, clients, narratif)
+                pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
                 envoyer_email(html, pdf, clients, offre, email_client)
                 print(f"✅ Livret {offre} envoyé à {email_client}")
             except Exception as ex:
