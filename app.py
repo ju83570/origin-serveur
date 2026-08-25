@@ -384,17 +384,26 @@ def appeler_claude_naissance(profils_txt):
 
     base = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
 Tu reçois les données numériques et astrologiques d'un enfant qui vient de naître ou qui est sur le point de naître.
-Ton rôle : rédiger un carnet d'empreinte de naissance — un document profond, poétique et concret que les parents liront comme une boussole.
+Ton rôle : rédiger un carnet d'empreinte de naissance — un document profond, poétique et concret, écrit comme une lettre à cet
+enfant, que ses parents liront et lui transmettront comme une boussole tout au long de sa vie.
 
 TON ET POSTURE :
-- Parle de l'enfant avec son prénom très souvent
+- Tutoiement systématique : adresse-toi DIRECTEMENT à l'enfant ("tu", "ton", "ta", "toi"), jamais à la troisième personne —
+  comme si ce texte lui était déjà destiné et qu'il/elle le lira en grandissant, même si ce sont ses parents qui le lisent
+  les premiers aujourd'hui
+- Utilise son prénom très souvent, mêlé au tutoiement
 - Ton contemplatif, lumineux, ancré — comme une sage-femme de l'âme
 - Jamais de jargon ésotérique brut — traduis tout en langage humain
-- Les parents doivent ressentir qu'ils tiennent quelque chose de précieux
+- Le lecteur doit ressentir qu'il tient quelque chose de précieux
+- EXCEPTION : la section "Pour vous, parents" s'adresse aux parents eux-mêmes ("vous") — c'est la seule partie du texte
+  qui ne tutoie pas l'enfant
 
 ANNÉE EN COURS : {annee_courante}
 
-LONGUEUR : chaque paragraphe = MINIMUM 5-6 lignes de prose dense. Tout en prose narrative, zéro liste.
+LONGUEUR IMPERATIVE :
+- Chaque paragraphe = MINIMUM 6-7 lignes de prose dense. Tout en prose narrative, zéro liste.
+- Le livret complet (lettre + toutes les sections) doit atteindre entre 6500 et 8500 mots.
+- Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données — jamais de remplissage vide, toujours du fond.
 
 DONNÉES :
 {profils_txt}
@@ -402,40 +411,40 @@ DONNÉES :
 """
 
     prompt_a = base + """STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
-1. LETTRE D'OUVERTURE (3 paragraphes — ce que ce jour de naissance révèle, l'énergie fondamentale, ce qu'il/elle porte comme lumière)
-2. SON CHEMIN DE VIE (3 paragraphes — mission profonde, ce qu'il/elle est venu apprendre et incarner, comment ce chemin se manifestera)
-3. SES DONS NATURELS (3 paragraphes — ce qui lui vient facilement, forces innées, scènes concrètes d'enfance)
-4. SES ZONES DE CROISSANCE (2 paragraphes — apprentissages qui l'attendront, zones manquantes avec douceur et espoir)
+1. LETTRE D'OUVERTURE (3 paragraphes, tutoiement — ce que ce jour de naissance révèle, ton énergie fondamentale, ce que tu portes comme lumière)
+2. TON CHEMIN DE VIE (3 paragraphes, tutoiement — ta mission profonde, ce que tu es venu·e apprendre et incarner, comment ce chemin se manifestera)
+3. TES DONS NATURELS (3 paragraphes, tutoiement — ce qui te vient facilement, tes forces innées, scènes concrètes d'enfance)
+4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement — les apprentissages qui t'attendront, zones manquantes avec douceur et espoir)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
   "lettre": "<p>...</p><p>...</p><p>...</p>",
   "sections": [
-    {"titre": "Son chemin de vie", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "Ses dons naturels", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "Ses zones de croissance", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"}
+    {"titre": "Ton chemin de vie", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "Tes dons naturels", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "Tes zones de croissance", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"}
   ]
 }"""
 
     prompt_b = base + """STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
-5. SON CIEL NATAL (3 paragraphes — Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse du tempérament)
-6. LES GRANDES ÉTAPES (2 paragraphes — années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation)
-7. POUR VOUS, PARENTS (3 paragraphes — comment accompagner cet enfant, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler)
-8. UN MOT POUR LUI QUAND IL SERA GRAND (1 paragraphe long — écrit directement à l'enfant, chaleureux, profond, porteur d'espoir)
+5. TON CIEL NATAL (3 paragraphes, tutoiement — Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse de ton tempérament)
+6. TES GRANDES ÉTAPES (2 paragraphes, tutoiement — tes années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation)
+7. POUR VOUS, PARENTS (3 paragraphes, s'adresse aux parents avec "vous" — comment accompagner cet enfant, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler)
+8. UN MOT POUR TOI, PLUS TARD (1 paragraphe long, tutoiement — écrit directement à l'enfant qui lira ce mot en grandissant, chaleureux, profond, porteur d'espoir)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
-    {"titre": "Son ciel natal", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "Les grandes étapes", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"},
+    {"titre": "Ton ciel natal", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "Tes grandes étapes", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"},
     {"titre": "Pour vous, parents", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
   ],
   "mantras": [{"prenom": "...", "texte": "...", "note": "..."}],
   "message_final": "<p>...</p>"
 }"""
 
-    a = _appel_claude_chunk(prompt_a, max_tokens=6000)
-    b = _appel_claude_chunk(prompt_b, max_tokens=6000)
+    a = _appel_claude_chunk(prompt_a, max_tokens=8000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=8000)
 
     if not a or not b:
         print("⚠️ Un chunk Naissance a échoué — fallback")
@@ -495,8 +504,8 @@ def appeler_claude(offre, profils_txt, type_analyse='adulte'):
 8. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)""",
     }
     structure = structures.get(offre, structures['famille'])
-    mots_cible = "8 000 et 10 000" if offre == 'famille' else "4 500 et 6 000"
-    max_tokens_appel = 12000 if offre == 'famille' else 8000
+    mots_cible = "9 000 et 11 000" if offre == 'famille' else "6 000 et 8 000"
+    max_tokens_appel = 15000 if offre == 'famille' else 11000
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
@@ -504,7 +513,7 @@ ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
 LONGUEUR IMPERATIVE :
-- Chaque paragraphe = MINIMUM 5-6 lignes de prose dense.
+- Chaque paragraphe = MINIMUM 6-7 lignes de prose dense.
 - Respecte EXACTEMENT le nombre de paragraphes indiqué.
 - Le livret complet doit atteindre entre {mots_cible} mots.
 - Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données.
@@ -618,9 +627,10 @@ ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
 LONGUEUR IMPERATIVE :
-- Chaque paragraphe = MINIMUM 5-6 lignes de prose dense.
+- Chaque paragraphe = MINIMUM 6-7 lignes de prose dense.
 - Respecte EXACTEMENT le nombre de paragraphes indiqué.
-- Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données.
+- Cette partie (CHUNK A) doit atteindre environ 3000-3500 mots.
+- Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données — jamais de remplissage vide, toujours du fond.
 
 STYLE OBLIGATOIRE :
 - Tutoiement systematique, chaleureux, direct
@@ -650,6 +660,11 @@ Portrait individuel personne 2 : 4 paragraphes — idem, avec ses specificites p
     prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
 ANNÉE EN COURS : {annee_courante}
+
+LONGUEUR IMPERATIVE :
+- Chaque paragraphe = MINIMUM 6-7 lignes de prose dense.
+- Cette partie (CHUNK B) doit atteindre environ 2800-3300 mots.
+- Si tu as l'impression d'avoir dit l'essentiel, creuse encore : ajoute un exemple concret, une image, une connexion entre données.
 
 STYLE OBLIGATOIRE :
 - Tutoiement systematique, chaleureux, direct
@@ -692,7 +707,7 @@ Message final : 2 paragraphes chaleureux et porteurs d'espoir."""
     data_a = None
     for t in range(3):
         try:
-            data_a = _appel_claude_chunk(prompt_a, max_tokens=6000)
+            data_a = _appel_claude_chunk(prompt_a, max_tokens=8000)
             if data_a:
                 break
         except Exception as e:
@@ -706,7 +721,7 @@ Message final : 2 paragraphes chaleureux et porteurs d'espoir."""
     data_b = None
     for t in range(3):
         try:
-            data_b = _appel_claude_chunk(prompt_b, max_tokens=6000)
+            data_b = _appel_claude_chunk(prompt_b, max_tokens=8000)
             if data_b:
                 break
         except Exception as e:
@@ -834,7 +849,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p>"
 }"""
 
-    a = _appel_claude_chunk(prompt_a, max_tokens=6000)
+    a = _appel_claude_chunk(prompt_a, max_tokens=8000)
     b = _appel_claude_chunk(prompt_b, max_tokens=16000)
     c = _appel_claude_chunk(prompt_c, max_tokens=3000)
 
@@ -936,6 +951,14 @@ body{background:var(--noir);color:var(--creme);font-family:'Cormorant Garamond',
 .light-line{width:0;height:1px;background:linear-gradient(to right,transparent,var(--or),transparent);margin:2rem auto;transition:width 1.5s ease;}
 .light-line.visible{width:120px;}
 footer{border-top:1px solid rgba(201,168,76,.08);padding:2.5rem;text-align:center;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.25em;color:var(--dim);}
+.wheel-section{text-align:center;}
+.wheel-wrap-web{width:280px;height:280px;margin:0 auto 2rem;}
+.wheel-wrap-web svg{width:100%;height:100%;filter:drop-shadow(0 0 24px rgba(201,168,76,.25));}
+.wheel-legend-web{max-width:420px;margin:0 auto;text-align:left;}
+.wheel-legend-row-web{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid rgba(201,168,76,.1);font-family:'Jost',sans-serif;}
+.wheel-legend-row-web:last-child{border-bottom:none;}
+.wheel-legend-planet-web{font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;color:var(--cuivre);}
+.wheel-legend-value-web{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--creme);font-style:italic;}
 @media(max-width:768px){.section{padding:4rem 1.4rem;}.lettre{padding:2rem 1.6rem;}}
 """
 
@@ -971,7 +994,7 @@ SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="htt
 <circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="5.1s" repeatCount="indefinite"><mpath href="#sgPath7"/></animateMotion></circle>
 </svg>"""
 
-def generer_html(offre, clients, narratif):
+def generer_html(offre, clients, narratif, astros=None):
     annee = date.today().year
     if offre == 'solo':
         noms = f"{clients[0]['prenom']} {clients[0].get('nom','')}"
@@ -983,7 +1006,10 @@ def generer_html(offre, clients, narratif):
         noms = " · ".join(c['prenom'] for c in clients)
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
 
-    nb = 2 + len(narratif.get('sections',[])) + 1 + 1
+    n_sections = len(narratif.get('sections',[]))
+    wheel_astros = [(c, a) for c, a in zip(clients, astros or []) if a and a.get('planetes')]
+    n_wheel = len(wheel_astros)
+    nb = 2 + n_sections + n_wheel + 1 + 1
     nav = "\n".join(
         f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
         for i in range(nb)
@@ -1002,6 +1028,35 @@ def generer_html(offre, clients, narratif):
   </div>
 </section>"""
 
+    # Pages "Thème astral" — même roue et mêmes données réelles que le PDF imprimable,
+    # pour que l'analyse en ligne montre exactement la même chose.
+    wheel_html = ""
+    for i, (c, astro) in enumerate(wheel_astros):
+        wheel_svg = build_natal_wheel_svg(astro['planetes'], astro.get('ascendant'))
+        legend_rows = "".join(
+            f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">{PLANET_LABEL.get(nom, nom.upper())}</span>'
+            f'<span class="wheel-legend-value-web">{d.get("signe","?")} · {d.get("degre",0)}°</span></div>'
+            for nom, d in astro['planetes'].items()
+        )
+        asc = astro.get('ascendant')
+        asc_row = ''
+        if asc and asc.get('signe'):
+            asc_deg_str = f' · {asc["degre"]}°' if asc.get('degre') else ''
+            asc_row = (f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">ASCENDANT</span>'
+                       f'<span class="wheel-legend-value-web">{asc["signe"]}{asc_deg_str}</span></div>')
+        _de = "d'" if c['prenom'][:1].lower() in 'aeiouyhéèêàâîïôû' else "de "
+        titre_wheel = f"Le thème astral {_de}{c['prenom']}" if offre in ('couple','famille','prestige') else "Ton thème astral"
+        wheel_html += f"""
+<section class="section section-sep wheel-section" id="s{2+n_sections+i}">
+  <div class="reveal">
+    <span class="s-eyebrow">Carte du ciel</span>
+    <h2 class="s-title s-title-center">{titre_wheel}</h2>
+    <div class="light-line" style="margin:0 auto 2.5rem;"></div>
+    <div class="wheel-wrap-web">{wheel_svg}</div>
+    <div class="wheel-legend-web">{legend_rows}{asc_row}</div>
+  </div>
+</section>"""
+
     mantras_html = ""
     for i, m in enumerate(narratif.get('mantras',[])):
         sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
@@ -1013,7 +1068,7 @@ def generer_html(offre, clients, narratif):
   <p class="mantra-note">{m.get('note','')}</p>
 </div>"""
 
-    sm = 2 + len(narratif.get('sections',[]))
+    sm = 2 + n_sections + n_wheel
     sf = sm + 1
     sid_list = json.dumps([f's{i}' for i in range(nb)])
 
@@ -1066,6 +1121,8 @@ def generer_html(offre, clients, narratif):
 </section>
 
 {sections_html}
+
+{wheel_html}
 
 <section class="section section-sep" id="s{sm}">
   <div class="reveal">
@@ -1211,11 +1268,10 @@ body {
   gap: 0;
 }
 .cover-logo {
-  width: 210mm;
+  width: 70mm;
   height: auto;
-  max-height: 210mm;
-  margin-bottom: .6cm;
-  margin-top: -1cm;
+  max-height: 45mm;
+  margin-bottom: 1cm;
   opacity: .98;
   object-fit: contain;
 }
@@ -1236,6 +1292,11 @@ body {
   page-break-before: always;
   padding: 0 0 1.5cm;
   min-height: 240mm;
+}
+/* Modificateur réservé aux pages courtes par nature (roue astrale, mantra,
+   séparateur) — jamais aux pages de prose : celles-ci se remplissent avec
+   davantage de texte, pas en centrant le vide. */
+.section-newpage.center-page {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1245,7 +1306,7 @@ body {
 .section-title { font-family: 'Cinzel', serif; font-size: 18pt; font-weight: 400; color: var(--or); margin-bottom: .6cm; letter-spacing: .08em; line-height: 1.4; }
 .light-line { width: 50px; height: 1px; background: var(--or); margin: .6cm 0 1.3cm; opacity: .5; }
 
-.prose { font-size: 11.5pt; line-height: 1.95; color: var(--encre); }
+.prose { font-size: 14pt; line-height: 2.3; color: var(--encre); }
 .prose p { margin-bottom: .6cm; text-align: justify; text-indent: 1.2em; orphans: 3; widows: 3; }
 .prose p:last-child { margin-bottom: 0; }
 .prose em { color: var(--cuivre); font-style: italic; }
@@ -1409,9 +1470,17 @@ body {
 """
 
 def _get_logo_b64():
-    """Retourne le logo base64 — d'abord la version embarquée, sinon depuis static/."""
+    """Retourne le logo base64 — d'abord la version embarquée (validée), sinon depuis static/.
+    Si la chaîne embarquée est corrompue/tronquée (ex. copier-coller cassé lors d'un déploiement),
+    on ne veut jamais un logo invisible en silence : on retombe sur le symbole ✦."""
     if LOGO_B64_EMBEDDED:
-        return LOGO_B64_EMBEDDED
+        try:
+            raw = base64.b64decode(LOGO_B64_EMBEDDED, validate=True)
+            if raw[:8] == b'\x89PNG\r\n\x1a\n':
+                return LOGO_B64_EMBEDDED
+            print("[logo] LOGO_B64_EMBEDDED invalide (signature PNG absente) — fallback")
+        except Exception as e:
+            print(f"[logo] LOGO_B64_EMBEDDED corrompu : {e} — fallback")
     candidats = [
         os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'logo-main.png'),
         os.path.join(os.getcwd(), 'static', 'logo-main.png'),
@@ -1490,9 +1559,10 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 asc_deg_str = f' · {asc["degre"]}°' if asc.get('degre') else ''
                 asc_row = (f'<div class="wheel-legend-row"><span class="wheel-legend-planet">ASCENDANT</span>'
                            f'<span class="wheel-legend-value">{asc["signe"]}{asc_deg_str}</span></div>')
-            titre_wheel = f"Le thème astral de {c['prenom']}" if offre in ('couple','famille','prestige') else "Ton thème astral"
+            _de = "d'" if c['prenom'][:1].lower() in 'aeiouyhéèêàâîïôû' else "de "
+            titre_wheel = f"Le thème astral {_de}{c['prenom']}" if offre in ('couple','famille','prestige') else "Ton thème astral"
             wheel_pages_html += f"""
-<div class="section-newpage wheel-page">
+<div class="section-newpage center-page wheel-page">
   <span class="eyebrow">Carte du ciel</span>
   <h2 class="section-title" style="text-align:center">{titre_wheel}</h2>
   <div class="light-line" style="margin:.5cm auto .6cm;"></div>
@@ -1598,21 +1668,21 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
 {wheel_pages_html}
 
-<div class="section-newpage">
+<div class="section-newpage center-page">
   <span class="eyebrow">Mots pour avancer</span>
   <h2 class="section-title" style="text-align:center">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra personnel'}</h2>
   <div class="light-line" style="margin:.5cm auto 1cm;"></div>
   {mantras_html}
 </div>
 
-<div class="section-newpage">
+<div class="section-newpage center-page">
   {chapter_end_html}
 </div>
 
 <div class="carnet-cover">
   <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
   <h2 class="carnet-cover-title">{'Carnet de Vie' if est_naissance else "Carnet d'Intégration"}</h2>
-  <p class="carnet-cover-sub">{f'Un carnet qui grandit avec {prenom_enfant} · À ouvrir à chaque étape de sa vie' if est_naissance else ('Vos réflexions · Vos prises de conscience · Votre chemin' if offre in ('couple','famille','prestige') else 'Tes réflexions · Tes prises de conscience · Ton chemin')}</p>
+  <p class="carnet-cover-sub">{f'Un carnet qui grandit avec toi, {prenom_enfant} · À ouvrir à chaque étape de ta vie' if est_naissance else ('Vos réflexions · Vos prises de conscience · Votre chemin' if offre in ('couple','famille','prestige') else 'Tes réflexions · Tes prises de conscience · Ton chemin')}</p>
   <div style="width:60px;height:1px;background:#C9A84C;margin:2cm auto;opacity:.5;"></div>
   <p style="font-size:9pt;color:rgba(245,237,216,.4);letter-spacing:.2em;font-family:'Jost',sans-serif">À imprimer · À compléter à la main</p>
 </div>
@@ -1784,7 +1854,7 @@ def webhook():
                 lettre = narratif.get("lettre", "")
                 if "erreur technique" in lettre.lower() or "en cours de préparation" in lettre.lower():
                     raise ValueError("Narratif invalide — fallback d'erreur détecté après parsing JSON")
-                html = generer_html(offre, clients, narratif)
+                html = generer_html(offre, clients, narratif, astros_clients)
                 pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
                 envoyer_email(html, pdf, clients, offre, email_client)
                 print(f"✅ Livret {offre} envoyé à {email_client}")
