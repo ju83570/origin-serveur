@@ -1382,17 +1382,16 @@ du centre, plus sa lecture est intime.</p>
   </div>
 </section>
 
-<section class="section section-sep" id="s1">
+{('''<section class="section section-sep" id="s1">
   <div class="reveal">
     <span class="s-eyebrow">Avant tout</span>
-    <h2 class="s-title">{'Une lettre pour vous' if offre in ('couple','famille','prestige') else 'Une lettre pour toi'}</h2>
+    <h2 class="s-title">Une lettre pour vous</h2>
     <div class="light-line"></div>
     <div class="lettre">
-      <div class="prose">{narratif_solo_lettre}</div>
-      <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
+      <div class="prose">''' + narratif_solo_lettre + '''</div>
     </div>
   </div>
-</section>
+</section>''') if narratif_solo_lettre else ''}
 
 {sections_html}
 
@@ -2028,15 +2027,14 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <p class="cover-meta">{cover_meta}</p>
 </div>
 
-<div class="section-newpage first-page">
+{('''<div class="section-newpage first-page">
   <span class="eyebrow">Avant tout</span>
-  <h2 class="section-title">{'Une lettre pour vous' if offre in ('couple','famille','prestige') else 'Une lettre pour toi'}</h2>
+  <h2 class="section-title">Une lettre pour vous</h2>
   <div class="light-line"></div>
   <div class="lettre">
-    <div class="prose">{_lettre_pdf}</div>
-    <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
+    <div class="prose">''' + _lettre_pdf + '''</div>
   </div>
-</div>
+</div>''') if _lettre_pdf else ''}
 
 {sections_html}
 
