@@ -1333,10 +1333,11 @@ du centre, plus sa lecture est intime.</p>
     mantras_html = ""
     for i, m in enumerate(narratif_mantras):
         sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
+        prenom_html = f'<p class="mantra-prenom">{m["prenom"].upper()}</p>' if m.get("prenom") else ""
         mantras_html += f"""{sep}
 <div class="mantra-wrap reveal-scale">
   <div class="mantra-bg"></div>
-  <p class="mantra-prenom">{m['prenom'].upper()}</p>
+  {prenom_html}
   <p class="mantra-txt shimmer">{m['texte']}</p>
   <p class="mantra-note">{m.get('note','')}</p>
 </div>"""
