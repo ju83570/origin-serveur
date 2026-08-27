@@ -1393,7 +1393,7 @@ def generer_html(offre, clients, narratif, astros=None):
     <p class="cover-names">{noms}</p>
     <p class="cover-tagline">{tagline}</p>
     <div class="cover-ligne"></div>
-    <p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>
+    <p class="cover-meta">{'Numérologie · Astrologie · Transgénérationnel' if offre in ('famille', 'prestige') else 'Numérologie · Astrologie · Lectures croisées'}</p>
   </div>
   <div class="scroll-hint">
     <span>Découvrir</span>
@@ -1976,7 +1976,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         )
 
     # Tagline de couverture : Solo sans transgénérationnel
-    cover_meta = "Numérologie · Astrologie · Lectures croisées" if offre == 'solo' else "Numérologie · Astrologie · Transgénérationnel"
+    cover_meta = "Numérologie · Astrologie · Transgénérationnel" if offre in ('famille', 'prestige') else "Numérologie · Astrologie · Lectures croisées"
 
     # Section cycles — Solo : 1 personne / Couple-Famille-Prestige : adultes uniquement
     cycles_section_html = ""
