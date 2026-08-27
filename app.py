@@ -137,6 +137,98 @@ def annee_perso_detaillee(j, m):
     return ap, theme, energie, focus
 
 
+def calcul_cycles_vie(j, m, a):
+    """Calcule les grandes étapes numériques sur 20 ans et génère le HTML de la section."""
+    annee_ref = date.today().year
+
+    def ap_annee(annee):
+        return reduire(j + m + reduire(sum(int(d) for d in str(annee))))
+
+    _, p4, _ = pinnacles(j, m, a)
+
+    sens = {
+        1:  ("Nouveau départ", "L'énergie d'initiation s'ouvre. Ce qui commence cette année porte la marque de tout ce qui précède. C'est le moment des premières pierres, pas des coups d'éclat."),
+        2:  ("Alliance et gestation", "Année de patience et de construction intérieure. Ce qui mûrit en silence cette année prend racine profondément."),
+        3:  ("Expression retrouvée", "L'énergie créative et communicante s'allume. Une porte s'ouvre vers la légèreté, vers ce qui fait plaisir, vers une forme d'expression longtemps mise de côté."),
+        4:  ("Construction de fond", "Année de travail patient, de fondation, de structure. Rien de spectaculaire — mais ce qui se construit ici tient dans le temps."),
+        5:  ("Pivot et liberté", "Année de transformation et de mouvement. L'énergie pousse vers le changement, vers les décisions qui ouvrent des espaces. Le moment des choix courageux."),
+        6:  ("Ancrage et responsabilité", "Après le mouvement, l'année 6 demande de stabiliser — les liens, les engagements, ce qui a été choisi. Une année de soin et de consolidation."),
+        7:  ("Approfondissement", "Année de retrait intérieur, de quête de sens. Ce qui mûrit en 7 n'est pas visible de l'extérieur — mais c'est là que la compréhension s'installe durablement."),
+        8:  ("Récolte", "L'énergie de puissance et de reconnaissance s'active. Si le travail des années précédentes a été fait avec intégrité, cette année peut en révéler la mesure."),
+        9:  ("Bilan et lâcher-prise", "Fin de cycle. L'année 9 demande de ne pas retenir ce qui est terminé. Ce qui se dissout libère quelque chose pour le cycle suivant."),
+        11: ("Illumination", "Nombre maître. Année d'une intensité rare — entre inspiration élevée et pression intérieure forte. Ce qui s'ouvre ici peut dépasser ce qu'on anticipait."),
+        22: ("Bâtisseur maître", "Nombre maître — le plus exigeant du cycle. L'énergie appelle à penser et construire à très grande échelle. Ce qui se fait en 22 a une portée qui dépasse souvent l'intention initiale."),
+        33: ("Maître de l'amour universel", "Nombre maître rare. Année d'une profondeur exceptionnelle, tournée vers le service et la transmission."),
+    }
+
+    etapes = []
+    for an in range(annee_ref, annee_ref + 21):
+        n = ap_annee(an)
+        age = an - a
+        marquant = n in (1, 5, 8, 9, 11, 22, 33)
+        if n == p4:
+            marquant = True
+        if marquant:
+            etapes.append((an, age, n))
+
+    etapes = etapes[:6]
+    if not etapes:
+        return ""
+
+    cards_html = ""
+    for an, age, n in etapes:
+        titre_type, texte = sens.get(n, ("Année notable", "Une année qui mérite attention."))
+        is_now = (an == annee_ref)
+        if n in (22, 11, 33):
+            card_class = "cycle-maitre"
+        elif n in (1, 9):
+            card_class = "cycle-charniere"
+        elif n == 5:
+            card_class = "cycle-pivot"
+        elif n == 8:
+            card_class = "cycle-recolte"
+        else:
+            card_class = "cycle-fond"
+
+        _, p_num, _ = pinnacles(j, m, a)
+        notes_res = []
+        if n == p4:
+            notes_res.append(f"en résonance avec ton Pinnacle permanent {p4}")
+        cdv = chemin_de_vie(j, m, a)
+        if n == cdv:
+            notes_res.append(f"en résonance avec ton Chemin de vie {cdv}")
+        res_txt = f" <em>({', '.join(notes_res)})</em>" if notes_res else ""
+
+        now_badge = ' <span style="background:var(--or);color:#0A0908;padding:.1rem .4rem;border-radius:2px;font-size:.45rem;letter-spacing:.2em;margin-left:.5rem;font-family:\'Jost\',sans-serif;">MAINTENANT</span>' if is_now else ""
+
+        cards_html += f"""
+<div class="cycle-card {card_class}">
+  <div class="cycle-header">
+    <div class="cycle-year">{an}{now_badge}</div>
+    <div class="cycle-age">{age} ans</div>
+    <div class="cycle-num">Année personnelle {n}</div>
+  </div>
+  <div class="cycle-label-type">{titre_type}{res_txt}</div>
+  <p class="cycle-text">{texte}</p>
+</div>"""
+
+    section_html = f"""
+<div class="section-newpage chapter" id="s-cycles">
+  <span class="eyebrow">Numérologie des cycles · {annee_ref}–{annee_ref + 20}</span>
+  <h2 class="section-title">Les grandes étapes qui viennent</h2>
+  <div class="light-line"></div>
+  <div class="prose">
+    <p>En numérologie, chaque année de vie porte une vibration propre. Elle ne détermine pas les événements — elle colore le terrain, indique le type d'énergie disponible. Certaines années sont silencieuses, de construction intérieure. D'autres sont des années de bascule, de récolte ou d'épreuve — elles méritent d'être connues à l'avance.</p>
+    <p>Ce qui suit n'est pas un horoscope. C'est une lecture de ta structure temporelle propre, calculée à partir de ta date de naissance. Les étapes signalées sont celles qui ont une intensité particulière sur les vingt prochaines années.</p>
+  </div>
+  <div class="cycles-grid">
+    {cards_html}
+  </div>
+</div>"""
+
+    return section_html
+
+
 VILLES_FR = {
     "paris":(48.8566,2.3522),"marseille":(43.2965,5.3698),"lyon":(45.7640,4.8357),
     "nice":(43.7102,7.2620),"toulouse":(43.6047,1.4442),"bordeaux":(44.8378,-0.5792),
@@ -469,39 +561,65 @@ def appeler_claude(offre, profils_txt, type_analyse='adulte'):
     annee_courante = date.today().year
     structures = {
         'solo': """
-1. LETTRE D'OUVERTURE (3 paragraphes — accroche sur ce qui rend cette personne unique, reference aux nombres et planetes, chaleur et profondeur)
-2. PORTRAIT NUMEROLOGIQUE (4 paragraphes — chemin de vie, expression/intime/realisation croises, annee perso avec theme et focus, pinnacle actuel)
-3. PORTRAIT ASTROLOGIQUE (3 paragraphes — Soleil+Lune narrativises ensemble, planetes personnelles Mercure+Venus+Mars, synthese du theme natal)
-4. FORCES ET CROISSANCE (2 paragraphes — dominants comme forces celebrees, manquants comme zones d'invitation avec exemples concrets)
-5. OMBRES VERS LUMIERES (2 transformations — situation concrete vecue + bascule + lumiere + phrase a dire a voix haute)
-6. MANTRA PERSONNEL (1 mantra + note explicative de 2-3 lignes)
-7. MESSAGE FINAL (2 paragraphes — elan vers l'avenir, chaleureux et concret)""",
+LE PRINCIPE ABSOLU : Le client ne sait pas ce que tu utilises pour le lire. Il ne voit jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle", "transit". Ces outils sont ton matériau de travail — pas le texte livré. Tu les utilises pour voir, puis tu écris ce que tu vois, en prose vivante. Le client doit se sentir vu, pas analysé.
+
+STRUCTURE (4 mouvements, titres libres — choisis des titres poétiques adaptés à CE profil, jamais techniques) :
+
+1. QUI TU ES (4-5 paragraphes) — Un portrait complet et vivant de cette personne. Chaque paragraphe apporte une couche nouvelle : comment cette personne fonctionne, ce qui la porte, ce qui la freine, ce qu'elle dégage sans s'en rendre compte, ce qui la distingue profondément. Chaque affirmation est ancrée dans le profil complet lu en croisant toutes les données — mais rien de cela n'apparaît dans le texte. Pas de "ton chemin de vie est...", pas de "ton Soleil en...". Juste : cette personne.
+
+2. CE QUE TU TRAVERSES EN CE MOMENT (3 paragraphes) — La période actuelle lue dans le profil : ce qui est en train de se jouer, l'énergie disponible, les tensions entre ce que cette personne veut et ce qu'elle est. Concret, immersif, ancré dans le présent. JAMAIS prédictif — descriptif de ce qui est déjà là.
+
+3. TES ZONES DE FORCE ET DE CROISSANCE (3 paragraphes) — Ce que cette personne porte comme forces naturelles, les zones qui lui résistent encore, les transformations à portée de main. Bienveillant mais précis — des situations universelles mais impossibles à donner à quelqu'un d'autre tellement elles collent à CE profil.
+
+4. CE QUE TU PORTES VERS DEMAIN (2 paragraphes) — Un élan vers la suite. Ce qui se dégage, ce qui s'ouvre. Chaleureux, porteur d'élan. JAMAIS de prédictions certaines.""",
         'couple': """
-1. LETTRE D'OUVERTURE (3 paragraphes — ce qui rend cette rencontre unique, resonances entre leurs deux themes)
-2. PORTRAIT INDIVIDUEL PERSONNE 1 (4 paragraphes — numerologie complete, astrologie, annee perso, pinnacle)
-3. PORTRAIT INDIVIDUEL PERSONNE 2 (4 paragraphes — idem, avec ses specificites propres)
-4. CE QUE VOUS CREEZ ENSEMBLE (3 paragraphes — resonances des chiffres croises, dynamique de couple, zones de friction et de complementarite)
-5. OMBRES VERS LUMIERES (2 tensions de couple — situation concrete + bascule + lumiere + phrase commune)
-6. MANTRAS (un par personne + un mantra commun)
-7. MESSAGE FINAL (2 paragraphes)""",
+LE PRINCIPE ABSOLU : Le couple ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau — pas le texte livré. Tu les utilises pour voir, puis tu écris ce que tu vois.
+
+STRUCTURE (5 mouvements, titres libres — poétiques, adaptés à CE couple, jamais techniques) :
+
+1. CE QUE VOUS ÊTES L'UN POUR L'AUTRE (4 paragraphes) — Ce que cette rencontre révèle des deux profils lus ensemble. Ce que chacun porte, ce que l'autre éveille, ce que leur combinaison crée. Prose vivante, aucun terme technique visible.
+
+2. QUI TU ES, [Personne 1] (4 paragraphes) — Portrait immersif de cette personne lu dans l'ensemble de son profil. Comment elle fonctionne, ce qui la porte, ce qui la freine, ce qu'elle dégage. Impossible à donner à quelqu'un d'autre.
+
+3. QUI TU ES, [Personne 2] (4 paragraphes) — Même profondeur, ton distinct. JAMAIS de copier-coller de la structure du portrait 1.
+
+4. CE QUE VOUS TRAVERSEZ EN CE MOMENT (3 paragraphes) — La période actuelle lue dans les deux profils croisés : ce qui est en train de se jouer pour chacun, pour eux deux ensemble, les tensions et les ouvertures. Descriptif du présent, JAMAIS prédictif.
+
+5. CE QUE VOUS PORTEZ VERS DEMAIN (2 paragraphes) — Un élan vers la suite. Ce qui se dégage pour eux ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
         'famille': """
-1. LETTRE D'OUVERTURE (4 paragraphes longs — ce qui rend ce foyer unique, les resonances entre membres, ce que cette famille porte comme mission collective)
-2. PORTRAIT DE CHAQUE MEMBRE (4 paragraphes denses par personne — numerologie + astrologie + annee perso + pinnacle — chaque membre traite avec la meme profondeur)
-3. DYNAMIQUE FAMILIALE (4 paragraphes denses — ce que chacun apporte au collectif, les tensions creatives, les complementarites, les roles non dits)
-4. HERITAGES ET TRANSMISSION (4 paragraphes denses — patterns qui se repetent, loyautes invisibles, ce qui a ete transmis sans le vouloir, ce qui cherche a se liberer)
-5. COMMENT ACCOMPAGNER CHAQUE ENFANT — LE COEUR DU LIVRET (section la plus importante, a traiter avec un soin maximal : pour CHAQUE enfant du foyer, 1 paragraphe dense et distinct — jamais la meme approche copiee-collee d'un enfant a l'autre. Pour chaque enfant : ce que son theme revele de sa nature profonde et de sa sensibilite propre ; en quoi cette nature peut differer de celle du parent ou d'un frere/soeur, et pourquoi l'education ne peut pas etre identique pour chacun ; des conseils concrets, pratiques et actionnables — jamais vagues — sur la posture a adopter avec CET enfant precisement pour qu'il se sente compris et non juge ; comment eviter de lui transmettre malgre soi les schemas et loyautes invisibles identifies en section 4 ; comment, avec comprehension et amour, l'aider a devenir la meilleure version de lui-meme plutot que de le faire rentrer dans un moule. Termine cette section par un paragraphe de synthese sur l'art d'adapter sa parentalite a chaque enfant sans perdre la cohesion du foyer.)
-6. OMBRES VERS LUMIERES (3 tensions familiales, 1 paragraphe dense chacune : situation concrete + bascule + lumiere + phrase)
-7. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de foyer commun)
-8. MESSAGE FINAL (3 paragraphes longs — vision de ce que ce foyer peut devenir, chaleureux et porteur d'espoir)""",
+LE PRINCIPE ABSOLU : La famille ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau — pas le texte livré.
+
+STRUCTURE (6 mouvements, titres libres — poétiques, adaptés à CE foyer, jamais techniques) :
+
+1. CE QUE CE FOYER PORTE (4 paragraphes) — Ce qui rend ce foyer unique, lu dans l'ensemble des profils croisés. Ce que cette famille crée ensemble, ce qu'elle transmet, ce qu'elle cherche. Prose vivante, immersive, aucun terme technique.
+
+2. QUI TU ES, [chaque membre] (4 paragraphes par personne) — Portrait immersif de chaque membre lu dans son profil complet. Ton distinct pour chacun. Impossible à donner à quelqu'un d'autre. JAMAIS de sous-sections numérologie / astrologie séparées dans le texte.
+
+3. CE QUI SE PASSE ENTRE VOUS (4 paragraphes) — La dynamique du foyer lue dans les profils croisés : ce que chacun apporte, ce que l'autre éveille, les tensions créatives, les complémentarités, les rôles non dits. Prose vivante.
+
+4. CE QUI SE TRANSMET SANS LE VOULOIR (4 paragraphes) — Les patterns, les loyautés invisibles, ce qui cherche à se libérer. Ancré dans les profils réels, JAMAIS de scènes inventées.
+
+5. COMMENT ÊTRE AVEC CHAQUE ENFANT (section la plus importante — pour CHAQUE enfant, 1 paragraphe dense et distinct) — Ce que cet enfant est vraiment, lu dans son profil ; en quoi il diffère ; comment être avec lui plutôt que sur lui ; ce qu'on peut lui transmettre de vivant. Termine par un paragraphe de synthèse sur l'art d'adapter sa posture sans perdre la cohésion du foyer.
+
+6. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes) — Un élan vers la suite pour ce foyer. Vision de ce qu'ils peuvent devenir ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
         'prestige': """
-1. LETTRE D'OUVERTURE (4 paragraphes longs — a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission)
-2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (4 paragraphes denses par personne — numerologie + astrologie + annee perso — chaque membre traite avec la meme profondeur)
-3. LES RACINES — LECTURE DES PARENTS DES DEUX ADULTES (5 paragraphes denses — profil de chaque parent, ce que chaque lignee a transmis, les schemas dominants de chaque branche familiale)
-4. L'HERITAGE INVISIBLE (4 paragraphes denses — repetitions sur 3 generations, silences familiaux, loyautes inconscientes, blessures transmises, ce qui cherche a se liberer a travers le foyer actuel)
-5. CE QUI PEUT SE DENOUER (3 paragraphes denses — pistes concretes de liberation pour chaque membre et pour le foyer, ce que cette generation peut transformer pour les suivantes)
-6. OMBRES VERS LUMIERES (3 tensions transgenationnelles, 1 paragraphe dense chacune : pattern concret observe sur plusieurs generations + bascule + lumiere + phrase de liberation)
-7. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de lignee commun qui honore les racines et ouvre vers l'avenir)
-8. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)""",
+LE PRINCIPE ABSOLU : La famille ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau sur 3 générations — pas le texte livré.
+
+STRUCTURE (7 mouvements, titres libres — poétiques, adaptés à CETTE lignée, jamais techniques) :
+
+1. LE FIL QUI RELIE (4 paragraphes) — Ce qui traverse cette lignée sur 3 générations, lu dans les profils croisés. Ce que cette famille porte comme mission, comme blessure, comme beauté. Prose vivante, aucun terme technique.
+
+2. QUI TU ES, [chaque membre du foyer] (4 paragraphes par personne) — Portrait immersif de chaque membre lu dans son profil complet. Ton distinct pour chacun. JAMAIS de sous-sections séparées dans le texte.
+
+3. CE QUE LES RACINES PORTENT (5 paragraphes) — Ce que chaque lignée parentale a transmis, lu dans les profils des parents des deux adultes. Ce qui arrive jusqu'ici sans qu'on l'ait choisi. Prose vivante, aucun terme technique.
+
+4. CE QUI SE RÉPÈTE SANS LE SAVOIR (4 paragraphes) — Les patterns sur 3 générations, les loyautés inconscientes, les schémas qui cherchent à se libérer. Ancré dans les profils réels, JAMAIS de scènes inventées.
+
+5. COMMENT ÊTRE AVEC CHAQUE ENFANT (section la plus importante — pour CHAQUE enfant, 1 paragraphe dense et distinct) — Ce que cet enfant est vraiment ; en quoi il diffère ; comment être avec lui ; ce qu'on peut lui transmettre de vivant plutôt que de répété. Termine par une synthèse sur l'art d'adapter sa posture.
+
+6. CE QUI PEUT SE DÉNOUER MAINTENANT (3 paragraphes) — Ce que cette génération peut transformer pour les suivantes. Pistes concrètes, ancrées dans les profils. Prose de libération, pas de culpabilisation.
+
+7. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes) — Un élan vers la suite pour cette lignée. Vision de ce qu'elle peut devenir. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
     }
     structure = structures.get(offre, structures['famille'])
     mots_cible = "9 000 et 11 000" if offre == 'famille' else "6 000 et 8 000"
@@ -527,12 +645,21 @@ STYLE OBLIGATOIRE :
 - Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
 - Ton bienveillant mais direct sur les zones d'ombre
 
-UTILISATION DES DONNEES ENRICHIES :
-- L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement
-- Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer par des situations de vie concretes
-- Les chiffres manquants = zones de croissance a explorer avec bienveillance
-- Le pinnacle actuel = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
-- Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
+REGLES ABSOLUES (violations = livret inutilisable) :
+- JAMAIS de positions planetaires au degre exact (ni "Mars a 12 degres du Lion", ni aucune position chiffree)
+- JAMAIS de matrices ou tableaux de chiffres
+- JAMAIS de scenes biographiques inventees (enfance, reunion, rupture, deuil — sauf si fourni par le client)
+- JAMAIS de predictions certaines ("cette annee tu vas...", "Jupiter te promet...")
+- JAMAIS de references a la ville natale comme lieu de vie actuel suppose
+- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]" — pas "Pinnacle actuel"
+- Offre SOLO uniquement : pas de Transgenérationnel dans la couverture
+
+UTILISATION DES DONNÉES :
+- Toutes les données ci-dessous sont ton matériau de lecture — elles n'apparaissent jamais dans le texte livré
+- L'année personnelle, son énergie, ses tensions : traduis-les en description de ce que vit la personne
+- Les dominants et manquants numériques : traduis-les en traits de caractère, postures, situations de vie
+- Le thème natal : traduis-le en façon d'être, pas en positions planétaires
+- Tout croiser, tout fondre — la prose doit être indissociable de son auteur
 
 DONNÉES :
 {profils_txt}
@@ -542,17 +669,17 @@ STRUCTURE :
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {{
-  "lettre": "<p>...</p>",
   "sections": [
-    {{"titre": "...", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"}},
-    ...
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}}
   ],
-  "mantras": [
-    {{"prenom": "...", "texte": "...", "note": "..."}},
-    ...
-  ],
-  "message_final": "<p>...</p>"
-}}"""
+  "mantra": {{"texte": "...", "note": "..."}},
+  "message_final": "<p>...</p><p>...</p>"
+}}
+
+Les titres sont libres et poétiques — adaptés à CE profil. Pas de "Portrait", pas de "Synthèse", pas de titre générique."""
 
     import time
     last_exception = None
@@ -641,21 +768,28 @@ STYLE OBLIGATOIRE :
 - Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
 - Ton bienveillant mais direct sur les zones d'ombre
 
+REGLES ABSOLUES :
+- JAMAIS de positions planetaires au degre exact
+- JAMAIS de matrices ou tableaux de chiffres
+- JAMAIS de scenes biographiques inventees
+- JAMAIS de predictions certaines
+- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]"
+
 DONNÉES :
 {profils_txt}
 
 CHUNK A — retourne UNIQUEMENT ce JSON valide, sans markdown :
 {{
-  "lettre": "<p>...</p><p>...</p><p>...</p>",
   "sections": [
-    {{"titre": "Portrait de [Personne 1]", "eyebrow": "Qui tu es vraiment", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "Portrait de [Personne 2]", "eyebrow": "Qui tu es vraiment", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}
   ]
 }}
 
-Lettre d'ouverture : 3 paragraphes — ce qui rend cette rencontre unique, resonances entre leurs deux themes.
-Portrait individuel personne 1 : 4 paragraphes — numerologie complete, astrologie, annee perso, pinnacle.
-Portrait individuel personne 2 : 4 paragraphes — idem, avec ses specificites propres."""
+Mouvement 1 — Ce que vous êtes l'un pour l'autre : 4 paragraphes immersifs, aucun terme technique, titre poétique libre.
+Mouvement 2 — Portrait de Personne 1 : 4 paragraphes, titre poétique libre avec prénom. Prose immersive, aucun terme technique.
+Mouvement 3 — Portrait de Personne 2 : 4 paragraphes, titre poétique libre avec prénom. Ton distinct. JAMAIS de copier-coller."""
 
     prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
@@ -672,14 +806,21 @@ STYLE OBLIGATOIRE :
 - Profond, immersif, utilise les prenoms regulierement
 - Nomme des situations concretes, des emotions precises
 
+REGLES ABSOLUES :
+- JAMAIS de positions planetaires au degre exact
+- JAMAIS de matrices ou tableaux de chiffres
+- JAMAIS de scenes biographiques inventees
+- JAMAIS de predictions certaines
+- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]"
+
 DONNÉES :
 {profils_txt}
 
 CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
 {{
   "sections": [
-    {{"titre": "Ce que vous créez ensemble", "eyebrow": "Votre alchimie", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "Ombres vers Lumières", "eyebrow": "Vos zones de transformation", "contenu": "<p>...</p><p>...</p>"}}
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}}
   ],
   "mantras": [
     {{"prenom": "[Personne 1]", "texte": "...", "note": "..."}},
@@ -691,8 +832,8 @@ CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p><p>...</p>"
 }}
 
-Ce que vous créez ensemble : 3 paragraphes — resonances des chiffres croises, dynamique de couple, zones de friction et de complementarite.
-Ombres vers Lumières : 2 tensions de couple — situation concrete + bascule + lumiere + phrase commune (1 paragraphe dense chacune).
+Mouvement 4 — Ce que vous traversez en ce moment : 3 paragraphes, titre poétique libre. Descriptif du présent des deux profils croisés. JAMAIS prédictif.
+Mouvement 5 — Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
 Mantras — RÈGLES STRICTES, 5 mantras au total :
 - Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil — célèbre ce qu'elle EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
 - Mantra 2 [Personne 1] : ancré dans son chiffre manquant ou sa Lune/Ascendant — une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout".
@@ -700,7 +841,7 @@ Mantras — RÈGLES STRICTES, 5 mantras au total :
 - Mantra 4 [Personne 2] : idem, ancré dans son chiffre manquant ou sa Lune/Ascendant. Doit nommer quelque chose de précis à elle.
 - Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils — cite les chiffres ou planètes des deux, nomme la tension créatrice entre eux. Pas un mantra générique sur l'amour.
 Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra, quels chiffres/planètes l'ancrent.
-Message final : 2 paragraphes chaleureux et porteurs d'espoir."""
+Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predictions certaines."""
 
     import time
     # Chunk A
@@ -787,11 +928,18 @@ STYLE OBLIGATOIRE :
 - Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
 - Ton bienveillant mais direct sur les zones d'ombre
 
+REGLES ABSOLUES :
+- JAMAIS de positions planetaires au degre exact
+- JAMAIS de matrices ou tableaux de chiffres
+- JAMAIS de scenes biographiques inventees (evocation universelle ancree dans le profil)
+- JAMAIS de predictions certaines
+- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]"
+
 UTILISATION DES DONNEES ENRICHIES :
 - L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement
 - Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer
 - Les chiffres manquants = zones de croissance a explorer avec bienveillance
-- Le pinnacle actuel = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
+- Le pinnacle permanent = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
 - Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
 
 DONNÉES :
@@ -805,49 +953,64 @@ def appeler_claude_prestige(profils_txt):
 
     prompt_a = pre("3000-3500") + """
 STRUCTURE (rediger uniquement ces 3 parties) :
-1. LETTRE D'OUVERTURE (4 paragraphes longs — a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission)
-2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (4 paragraphes denses par personne — numerologie + astrologie + annee perso — chaque membre traite avec la meme profondeur)
-3. LES RACINES — LECTURE DES PARENTS DES DEUX ADULTES (5 paragraphes denses — profil de chaque parent, ce que chaque lignee a transmis, les schemas dominants de chaque branche familiale)
+1. LETTRE D'OUVERTURE (4 paragraphes longs — a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission, le fil invisible qui relie les generations)
+2. PORTRAIT NUMEROLOGIQUE DE CHAQUE MEMBRE DU FOYER (3 paragraphes denses par personne — chemin de vie, expression/intime croises, annee perso et pinnacle permanent. Narratif pur, JAMAIS de tableau. Ton distinct pour chacun.)
+3. PORTRAIT ASTROLOGIQUE DE CHAQUE MEMBRE DU FOYER (2 paragraphes denses par personne — Soleil/Lune, planetes personnelles, synthese. JAMAIS de degres ni positions chiffrees. Ton distinct pour chacun.)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
-  "lettre": "<p>...</p>",
   "sections": [
-    {"titre": "Portrait de chaque membre du foyer", "eyebrow": "...", "contenu": "<p>...</p>..."},
-    {"titre": "Les racines", "eyebrow": "...", "contenu": "<p>...</p>..."}
+    {"titre": "...", "contenu": "<p>...</p>..."},
+    {"titre": "...", "contenu": "<p>...</p>..."},
+    {"titre": "...", "contenu": "<p>...</p>..."}
   ]
-}"""
+}
+
+Mouvement 1 — Le fil qui relie : 4 paragraphes, titre poétique libre. Ce que cette lignée porte, lu dans les profils croisés.
+Mouvement 2 — Portrait de chaque membre : 4 paragraphes par personne, titres poétiques avec prénom. Prose immersive, aucun terme technique.
+"""
 
     prompt_b = pre("3500-4500") + """
 STRUCTURE (rediger uniquement ces 4 parties) :
-1. L'HERITAGE INVISIBLE (4 paragraphes denses — repetitions sur 3 generations, silences familiaux, loyautes inconscientes, blessures transmises, ce qui cherche a se liberer a travers le foyer actuel)
-2. COMMENT ACCOMPAGNER CHAQUE ENFANT — LE COEUR DU LIVRET (pour CHAQUE enfant du foyer, 1 paragraphe dense et distinct — nature profonde, conseils concrets et actionnables, comment eviter de transmettre les schemas identifies, comment l'aider a devenir la meilleure version de lui-meme. Termine par un paragraphe de synthese.)
-3. CE QUI PEUT SE DENOUER (3 paragraphes denses — pistes concretes de liberation pour chaque membre et pour le foyer)
-4. OMBRES VERS LUMIERES (3 tensions transgenerationnelles, 1 paragraphe dense chacune : pattern concret + bascule + lumiere + phrase de liberation)
+1. LES RACINES — LECTURE DES PARENTS DES DEUX ADULTES (5 paragraphes denses — profil unifié numérologie + astrologie de chaque parent, ce que chaque lignée a transmis, les schémas dominants de chaque branche. JAMAIS de sections séparées numérologie / astrologie.)
+2. L'HÉRITAGE INVISIBLE (4 paragraphes denses — répétitions sur 3 générations lues dans les profils complets, loyautés inconscientes, ce qui cherche à se libérer. Ancré dans les profils réels, JAMAIS de scènes inventées.)
+3. COMMENT ACCOMPAGNER CHAQUE ENFANT — LE CŒUR DU LIVRET (pour CHAQUE enfant, 1 paragraphe dense et distinct — lecture unifiée de sa nature profonde ; conseils concrets et actionnables ; comment éviter de transmettre les schémas. Termine par un paragraphe de synthèse.)
+4. CE QUI PEUT SE DÉNOUER (3 paragraphes denses — pistes concrètes de libération pour chaque membre et pour le foyer)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
-    {"titre": "L'heritage invisible", "eyebrow": "...", "contenu": "<p>...</p>..."},
-    {"titre": "Comment accompagner chaque enfant", "eyebrow": "...", "contenu": "<p>...</p>..."},
-    {"titre": "Ce qui peut se denouer", "eyebrow": "...", "contenu": "<p>...</p>..."},
-    {"titre": "Ombres vers lumieres", "eyebrow": "...", "contenu": "<p>...</p>..."}
+    {"titre": "...", "contenu": "<p>...</p>..."},
+    {"titre": "...", "contenu": "<p>...</p>..."},
+    {"titre": "...", "contenu": "<p>...</p>..."},
+    {"titre": "...", "contenu": "<p>...</p>..."}
   ]
+
+Mouvement 3 — Ce que les racines portent : 5 paragraphes, titre poétique libre. Profils parentaux lus en prose, aucun terme technique.
+Mouvement 4 — Ce qui se répète sans le savoir : 4 paragraphes, titre poétique libre. Patterns sur 3 générations, JAMAIS de scènes inventées.
+Mouvement 5 — Comment être avec chaque enfant : 1 paragraphe dense par enfant + synthèse. Titre poétique libre.
+Mouvement 6 — Ce qui peut se dénouer : 3 paragraphes, titre poétique libre. Pistes de libération, prose bienveillante.
 }"""
 
     prompt_c = pre("1200-1800") + """
 STRUCTURE (rediger uniquement ces 2 parties) :
-1. MANTRAS (un par membre du foyer ancre dans son profil + un mantra de lignee commun qui honore les racines et ouvre vers l'avenir)
-2. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer)
+1. OMBRES VERS LUMIERES (3 tensions transgenerationnelles, 1 paragraphe dense chacune : pattern concret observe sur plusieurs generations + bascule + lumiere + phrase de liberation. JAMAIS de scenes biographiques inventees. JAMAIS de predictions certaines.)
+2. MANTRAS (un par membre du foyer ancre dans son profil numerologique et astrologique + un mantra de lignee commun qui honore les racines et ouvre vers l'avenir. Chaque mantra : phrase poétique courte + note 2-3 lignes qui explique quels chiffres/planetes l'ancrent.)
+3. MESSAGE FINAL (3 paragraphes longs — ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer. JAMAIS de predictions certaines.)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
+  "sections": [
+    {"titre": "...", "contenu": "<p>...</p>..."}
+  ],
   "mantras": [
-    {"prenom": "...", "texte": "...", "note": "..."},
-    ...
+    {"prenom": "...", "texte": "...", "note": "..."}
   ],
   "message_final": "<p>...</p>"
-}"""
+}
+
+Mouvement 7 — Ce que vous portez vers demain : 3 paragraphes, titre poétique libre. Élan, espoir, transmission consciente. JAMAIS de prédictions.
+"""
 
     a = _appel_claude_chunk(prompt_a, max_tokens=8000)
     b = _appel_claude_chunk(prompt_b, max_tokens=16000)
@@ -859,7 +1022,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 
     return {
         "lettre": a.get("lettre", ""),
-        "sections": (a.get("sections") or []) + (b.get("sections") or []),
+        "sections": (a.get("sections") or []) + (b.get("sections") or []) + (c.get("sections") or []),
         "mantras": c.get("mantras") or [{"prenom": "Vous", "texte": "Votre lecture est en cours de préparation.", "note": ""}],
         "message_final": c.get("message_final", ""),
     }
@@ -1007,7 +1170,16 @@ def generer_html(offre, clients, narratif, astros=None):
         noms = " · ".join(c['prenom'] for c in clients)
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
 
-    sections_list = narratif.get('sections', [])
+    # Pour solo immersif : pas de lettre séparée, mantra unique, sections sans eyebrow
+    if offre == 'solo':
+        sections_list = narratif.get('sections', [])
+        # Injecter lettre vide (pas de bloc lettre séparé en solo immersif)
+        narratif_solo_lettre = narratif.get('lettre', '')
+        narratif_mantras = [narratif['mantra']] if narratif.get('mantra') else narratif.get('mantras', [])
+    else:
+        sections_list = narratif.get('sections', [])
+        narratif_solo_lettre = narratif.get('lettre', '')
+        narratif_mantras = narratif.get('mantras', [])
     n_sections = len(sections_list)
     wheel_astros = [(c, a) for c, a in zip(clients, astros or []) if a and a.get('planetes')]
 
@@ -1102,7 +1274,7 @@ du centre, plus sa lecture est intime.</p>
 </section>"""
 
     mantras_html = ""
-    for i, m in enumerate(narratif.get('mantras',[])):
+    for i, m in enumerate(narratif_mantras):
         sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
         mantras_html += f"""{sep}
 <div class="mantra-wrap reveal-scale">
@@ -1158,7 +1330,7 @@ du centre, plus sa lecture est intime.</p>
     <h2 class="s-title">{'Une lettre pour vous' if offre in ('couple','famille','prestige') else 'Une lettre pour toi'}</h2>
     <div class="light-line"></div>
     <div class="lettre">
-      <div class="prose">{narratif.get('lettre','')}</div>
+      <div class="prose">{narratif_solo_lettre}</div>
       <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
     </div>
   </div>
@@ -1431,6 +1603,22 @@ body {
 .final-origin { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .55em; color: var(--cuivre); }
 
 /* Carnet d'intégration */
+.cycles-grid{display:flex;flex-direction:column;gap:.5cm;margin:1cm 0;}
+.cycle-card{border-left:3pt solid rgba(201,168,76,.35);padding:.5cm .7cm;background:rgba(201,168,76,.04);break-inside:avoid;}
+.cycle-pivot{border-left-color:#C9A84C;background:rgba(201,168,76,.08);}
+.cycle-recolte{border-left-color:#B97333;background:rgba(185,115,51,.06);}
+.cycle-charniere{border-left-color:rgba(201,168,76,.55);}
+.cycle-maitre{border-left-color:#9B7FD4;background:rgba(155,127,212,.05);}
+.cycle-fond{border-left-color:rgba(201,168,76,.25);}
+.cycle-header{display:flex;align-items:baseline;gap:.5cm;margin-bottom:.15cm;flex-wrap:wrap;}
+.cycle-year{font-family:'Cinzel',serif;font-size:11pt;color:#5A3E10;letter-spacing:.05em;}
+.cycle-age{font-size:7pt;letter-spacing:.2em;color:rgba(90,62,16,.4);font-family:'Jost',sans-serif;text-transform:uppercase;}
+.cycle-num{font-size:7pt;letter-spacing:.15em;color:#B97333;font-family:'Jost',sans-serif;}
+.cycle-label-type{font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:rgba(90,62,16,.35);margin-bottom:.3cm;display:block;font-family:'Jost',sans-serif;}
+.cycle-pivot .cycle-label-type{color:rgba(185,115,51,.65);}
+.cycle-recolte .cycle-label-type{color:rgba(185,115,51,.65);}
+.cycle-maitre .cycle-label-type{color:rgba(120,90,180,.65);}
+.cycle-text{font-size:10.5pt;line-height:1.85;color:rgba(44,30,10,.82);margin:0;}
 .carnet-cover { page: cover; display:flex; flex-direction:column; align-items:center; justify-content:center; height:297mm; padding:3cm 2cm; background:#0A0A08; color:var(--creme); text-align:center; page-break-after:always; overflow:hidden; }
 .carnet-cover-title { font-family:'Cinzel',serif; font-size:28pt; letter-spacing:.18em; color:var(--or); margin-bottom:.8cm; }
 .carnet-cover-sub { font-family:'Cormorant Garamond',serif; font-size:13pt; font-style:italic; color:rgba(245,237,216,.7); }
@@ -1591,6 +1779,12 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     seed_footer_html = f'<div id="seed-footer">{seed_footer_svg}</div>'
 
     sections = narratif.get('sections', [])
+    if offre == 'solo':
+        _mantras_pdf = [narratif['mantra']] if narratif.get('mantra') else narratif.get('mantras', [])
+        _lettre_pdf = narratif.get('lettre', '')
+    else:
+        _mantras_pdf = narratif.get('mantras', [])
+        _lettre_pdf = narratif.get('lettre', '')
 
     # Associe chaque roue astrale à la section qui parle déjà de cette personne
     # (portrait, ciel natal...) plutôt que de l'isoler en annexe technique après
@@ -1684,7 +1878,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </div>"""
 
     mantras_html = ""
-    for i, m in enumerate(narratif.get('mantras', [])):
+    for i, m in enumerate(_mantras_pdf):
         sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
         mantras_html += f"""{sep}
 <div class="mantra-block">
@@ -1750,6 +1944,15 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             _carnet_page(f"Réflexion {i+1} · ORIGIN", q) for i, q in enumerate(questions_list)
         )
 
+    # Tagline de couverture : Solo sans transgénérationnel
+    cover_meta = "Numérologie · Astrologie · Lectures croisées" if offre == 'solo' else "Numérologie · Astrologie · Transgénérationnel"
+
+    # Section cycles (Solo uniquement)
+    cycles_section_html = ""
+    if offre == 'solo' and clients:
+        c0 = clients[0]
+        cycles_section_html = calcul_cycles_vie(c0['jour'], c0['mois'], c0['annee'])
+
     html_print = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1764,7 +1967,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   {logo_html}
   <p class="cover-names">{noms_display}</p>
   <div class="cover-ligne"></div>
-  <p class="cover-meta">Numérologie · Astrologie · Transgénérationnel</p>
+  <p class="cover-meta">{cover_meta}</p>
 </div>
 
 <div class="section-newpage first-page">
@@ -1772,12 +1975,14 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <h2 class="section-title">{'Une lettre pour vous' if offre in ('couple','famille','prestige') else 'Une lettre pour toi'}</h2>
   <div class="light-line"></div>
   <div class="lettre">
-    <div class="prose">{narratif.get('lettre','')}</div>
+    <div class="prose">{_lettre_pdf}</div>
     <p class="lettre-signature">ORIGIN · {'Lecture de couple' if offre == 'couple' else 'Lecture de famille' if offre in ('famille','prestige') else 'Lecture personnalisée'} {annee}</p>
   </div>
 </div>
 
 {sections_html}
+
+{cycles_section_html}
 
 {wheel_pages_html}
 
