@@ -1238,7 +1238,6 @@ def generer_html(offre, clients, narratif, astros=None):
         narratif_solo_lettre = narratif.get('lettre', '')
         narratif_mantras = narratif.get('mantras', [])
     n_sections = len(sections_list)
-    wheel_astros = [(c, a) for c, a in zip(clients, astros or []) if a and a.get('planetes')]
 
     # Comme dans le PDF : on rattache la roue à la section qui parle déjà de cette
     # personne (portrait / ciel natal) plutôt que de l'isoler en annexe technique
@@ -1262,38 +1261,8 @@ def generer_html(offre, clients, narratif, astros=None):
                 return i
         return None
 
-    def _wheel_block_web(c, astro):
-        wheel_svg = build_natal_wheel_svg(astro['planetes'], astro.get('ascendant'))
-        legend_rows = "".join(
-            f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">{PLANET_LABEL.get(nom, nom.upper())}</span>'
-            f'<span class="wheel-legend-value-web">{d.get("signe","?")} · {d.get("degre",0)}°</span></div>'
-            for nom, d in astro['planetes'].items()
-        )
-        asc = astro.get('ascendant')
-        asc_row = ''
-        if asc and asc.get('signe'):
-            asc_deg_str = f' · {asc["degre"]}°' if asc.get('degre') else ''
-            asc_row = (f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">ASCENDANT</span>'
-                       f'<span class="wheel-legend-value-web">{asc["signe"]}{asc_deg_str}</span></div>')
-        return f"""
-<p class="wheel-caption-web">Voici la carte du ciel telle qu'elle se dessinait à la naissance de {c['prenom']} : chaque planète
-occupe un signe et un degré précis (de 0° à 30°) — une empreinte unique de ce moment-là. Plus une planète est proche
-du centre, plus sa lecture est intime.</p>
-<div class="wheel-wrap-web">{wheel_svg}</div>
-<div class="wheel-legend-web">{legend_rows}{asc_row}</div>"""
 
-    used_sections = set()
-    embedded_wheel = {}
-    leftover_wheels = []
-    for c, astro in wheel_astros:
-        idx = _match_section_index_web(c['prenom'], used_sections)
-        if idx is not None:
-            used_sections.add(idx)
-            embedded_wheel[idx] = _wheel_block_web(c, astro)
-        else:
-            leftover_wheels.append((c, astro))
-
-    n_wheel_standalone = len(leftover_wheels)
+    n_wheel_standalone = 0
     nb = 2 + n_sections + n_wheel_standalone + 1 + 1
     nav = "\n".join(
         f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
@@ -1310,25 +1279,13 @@ du centre, plus sa lecture est intime.</p>
     <h2 class="s-title">{sec.get('titre','')}</h2>
     <div class="light-line"></div>
     <div class="prose">{sec.get('contenu','')}</div>
-    {embedded_wheel.get(i, '')}
   </div>
 </section>"""
 
     # Pages "Thème astral" de secours — uniquement pour les personnes dont aucune
     # section ne pouvait servir d'ancrage (fallback, ne devrait presque jamais arriver).
     wheel_html = ""
-    for i, (c, astro) in enumerate(leftover_wheels):
-        _de = "d'" if c['prenom'][:1].lower() in 'aeiouyhéèêàâîïôû' else "de "
-        titre_wheel = f"Le thème astral {_de}{c['prenom']}" if offre in ('couple','famille','prestige') else "Ton thème astral"
-        wheel_html += f"""
-<section class="section section-sep wheel-section" id="s{2+n_sections+i}">
-  <div class="reveal">
-    <span class="s-eyebrow">Carte du ciel</span>
-    <h2 class="s-title s-title-center">{titre_wheel}</h2>
-    <div class="light-line" style="margin:0 auto 2.5rem;"></div>
-    {_wheel_block_web(c, astro)}
-  </div>
-</section>"""
+    wheel_html = ""
 
     mantras_html = ""
     for i, m in enumerate(narratif_mantras):
@@ -1867,72 +1824,27 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 return i
         return None
 
-    def _wheel_block(c, astro):
-        wheel_svg = build_natal_wheel_svg(astro['planetes'], astro.get('ascendant'))
-        legend_rows = "".join(
-            f'<div class="wheel-legend-row"><span class="wheel-legend-planet">{PLANET_LABEL.get(nom, nom.upper())}</span>'
-            f'<span class="wheel-legend-value">{d.get("signe","?")} · {d.get("degre",0)}°</span></div>'
-            for nom, d in astro['planetes'].items()
-        )
-        asc = astro.get('ascendant')
-        asc_row = ''
-        if asc and asc.get('signe'):
-            asc_deg_str = f' · {asc["degre"]}°' if asc.get('degre') else ''
-            asc_row = (f'<div class="wheel-legend-row"><span class="wheel-legend-planet">ASCENDANT</span>'
-                       f'<span class="wheel-legend-value">{asc["signe"]}{asc_deg_str}</span></div>')
-        return f"""
-<div class="wheel-block">
-  <p class="wheel-caption">Voici la carte du ciel telle qu'elle se dessinait à la naissance de {c['prenom']} : chaque planète
-  occupe un signe et un degré précis (de 0° à 30°) — une empreinte unique de ce moment-là. Le cercle extérieur indique
-  le signe ; la position du point à l'intérieur de ce signe indique son degré exact. Plus une planète est proche du
-  centre, plus sa lecture est intime.</p>
-  <div class="wheel-wrap">{wheel_svg}</div>
-  <div class="wheel-legend">{legend_rows}{asc_row}</div>
-</div>"""
 
-    astro_by_client = list(zip(clients, astros or []))
-    used_sections = set()
-    embedded_wheel = {}   # section index -> wheel html
-    leftover_wheels = []  # (client, astro) not matched to any section
-    for c, astro in astro_by_client:
-        if not astro or not astro.get('planetes'):
-            continue
-        idx = _match_section_index(c['prenom'], used_sections)
-        if idx is not None:
-            used_sections.add(idx)
-            embedded_wheel[idx] = _wheel_block(c, astro)
-        else:
-            leftover_wheels.append((c, astro))
 
     sections_html = ""
     for i, sec in enumerate(sections):
         # Pas de marque de fin après un chapitre qui embarque déjà la roue : la
         # légende conclut le chapitre visuellement, ajouter "· · ·" ne ferait
         # que risquer d'orpheliner ce petit signe seul sur une nouvelle page.
-        close_mark = '' if i in embedded_wheel else '<div class="chapter-close">· · ·</div>'
+        close_mark = '<div class="chapter-close">· · ·</div>'
         sections_html += f"""
 <div class="section-newpage chapter">
   <span class="eyebrow">{sec.get('eyebrow','')}</span>
   <h2 class="section-title">{sec.get('titre','')}</h2>
   <div class="light-line"></div>
   <div class="prose">{sec.get('contenu','')}</div>
-  {embedded_wheel.get(i, '')}
   {close_mark}
 </div>"""
 
     # Pages "Thème astral" de secours — uniquement pour les personnes dont aucune
     # section ne pouvait servir d'ancrage (fallback, ne devrait presque jamais arriver).
     wheel_pages_html = ""
-    for c, astro in leftover_wheels:
-        _de = "d'" if c['prenom'][:1].lower() in 'aeiouyhéèêàâîïôû' else "de "
-        titre_wheel = f"Le thème astral {_de}{c['prenom']}" if offre in ('couple','famille','prestige') else "Ton thème astral"
-        wheel_pages_html += f"""
-<div class="section-newpage center-page wheel-page">
-  <span class="eyebrow">Carte du ciel</span>
-  <h2 class="section-title" style="text-align:center">{titre_wheel}</h2>
-  <div class="light-line" style="margin:.5cm auto .6cm;"></div>
-  {_wheel_block(c, astro)}
-</div>"""
+    wheel_pages_html = ""
 
     mantras_html = ""
     for i, m in enumerate(_mantras_pdf):
@@ -2040,7 +1952,6 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
 {cycles_section_html}
 
-{wheel_pages_html}
 
 <div class="section-newpage center-page">
   <span class="eyebrow">Mots pour avancer</span>
