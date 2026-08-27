@@ -764,6 +764,8 @@ DONNÉES :
 """
 
     prompt_a = base + """
+LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2800-3500 mots. Si tu as dit l'essentiel, creuse encore — ajoute une image concrète, une situation de vie, une nuance que seul ce profil peut porter.
+
 CHUNK A — retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
@@ -772,10 +774,20 @@ CHUNK A — retourne UNIQUEMENT ce JSON valide, sans markdown :
   ]
 }
 
-Mouvement 1 — QUI TU ES (titre poétique libre, 4 paragraphes) : portrait complet et vivant. Ce qui porte cette personne, ce qui la freine, ce qu'elle dégage sans s'en rendre compte. Prose indissociable de son auteur.
-Mouvement 2 — CE QUE TU TRAVERSES EN CE MOMENT (titre poétique libre, 3 paragraphes) : la période actuelle lue dans le profil. Descriptif du présent. JAMAIS prédictif."""
+Mouvement 1 — QUI TU ES (titre poétique libre, 4 paragraphes longs) :
+- §1 : ce qui caractérise fondamentalement cette personne — son rapport au monde, à l'existence, aux autres. Très concret, très ancré, impossible à généraliser.
+- §2 : son intelligence, sa façon de traiter le réel, ce qui se passe dans sa tête que les autres ne voient pas. Précis, intime.
+- §3 : ce qu'elle dégage sans s'en rendre compte — son impact sur les autres, l'atmosphère qu'elle crée, ce que les gens ressentent en sa présence.
+- §4 : ce qui la freine, les tensions internes, les paradoxes qu'elle habite. Courageux et bienveillant — nommer sans ménager, sans blesser.
+
+Mouvement 2 — CE QUE TU TRAVERSES EN CE MOMENT (titre poétique libre, 3 paragraphes longs) :
+- §1 : la qualité de la période actuelle — sa texture, son énergie, ce qui la caractérise au quotidien.
+- §2 : ce qui est en train de se jouer intérieurement, les mouvements souterrains, les réalignements en cours.
+- §3 : comment naviguer dans cette période — ce qu'elle demande, ce qu'elle révèle, ce qu'elle promet sans le promettre."""
 
     prompt_b = base + """
+LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2500-3000 mots hors mantra et message final.
+
 CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
@@ -786,13 +798,20 @@ CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p><p>...</p>"
 }
 
-Mouvement 3 — TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes) : forces naturelles, zones de résistance, transformations à portée. Bienveillant mais précis.
-Mouvement 4 — CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes) : élan vers la suite. Chaleureux. JAMAIS de prédictions certaines.
-Mantra : phrase poétique courte (max 15 mots) ancrée dans le profil + note 2 lignes.
-Message final : 2 paragraphes d'élan."""
+Mouvement 3 — TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes longs) :
+- §1 : les forces naturelles — ce qui vient facilement, ce qui la distingue vraiment. Célébrer avec précision, pas avec des généralités.
+- §2 : les zones de résistance et angles morts — ce qui résiste, ce qui coince, ce qu'elle évite sans le savoir. Nommer avec courage et bienveillance.
+- §3 : la transformation à portée — ce qui est déjà en train de changer, ce qui cherche à émerger, le prochain seuil.
 
-    a = _appel_claude_chunk(prompt_a, max_tokens=6000)
-    b = _appel_claude_chunk(prompt_b, max_tokens=5000)
+Mouvement 4 — CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
+- §1 : un élan vers la suite — ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
+- §2 : une note finale qui lui donne confiance dans sa propre trajectoire. Chaleureux, ancré, jamais vague ni prédictif.
+
+Mantra : une phrase poétique courte (max 15 mots) impossible à donner à quelqu'un d'autre + note de 3 lignes qui explique pourquoi CE mantra pour CE profil précisément.
+Message final : 2 paragraphes qui donnent envie de refermer le livret avec le sentiment d'avoir été profondément vu."""
+
+    a = _appel_claude_chunk(prompt_a, max_tokens=9000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=8000)
 
     return {
         "sections": (a.get("sections") or []) + (b.get("sections") or []),
