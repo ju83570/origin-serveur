@@ -557,6 +557,8 @@ def appeler_claude(offre, profils_txt, type_analyse='adulte'):
         return appeler_claude_prestige(profils_txt)
     if offre == 'couple':
         return appeler_claude_couple(profils_txt)
+    if offre == 'solo':
+        return appeler_claude_solo(profils_txt)
 
     annee_courante = date.today().year
     structures = {
@@ -742,6 +744,61 @@ FALLBACK_NARRATIF = {
     "mantras": [{"prenom": "Vous", "texte": "Votre lecture est en cours de préparation.", "note": ""}],
     "message_final": "<p>Nous avons bien reçu vos informations et préparons votre livret. Il vous sera envoyé sous 24h.</p>"
 }
+
+
+def appeler_claude_solo(profils_txt):
+    """Solo en 2 chunks pour éviter la troncature JSON."""
+    import datetime
+    annee_courante = datetime.date.today().year
+
+    base = f"""Tu es le moteur narratif d'ORIGIN. Lecture personnalisée — numérologie, astrologie, lectures croisées.
+
+ANNÉE EN COURS : {annee_courante}
+
+LE PRINCIPE ABSOLU : Le client ne voit jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle", "transit". Ces outils sont ton matériau de lecture — pas le texte livré. Tu les utilises pour voir, puis tu écris ce que tu vois en prose vivante.
+
+STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), aucune liste, aucun terme technique visible. Titres libres et poétiques, adaptés à CE profil.
+
+DONNÉES :
+{profils_txt}
+"""
+
+    prompt_a = base + """
+CHUNK A — retourne UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "sections": [
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
+  ]
+}
+
+Mouvement 1 — QUI TU ES (titre poétique libre, 4 paragraphes) : portrait complet et vivant. Ce qui porte cette personne, ce qui la freine, ce qu'elle dégage sans s'en rendre compte. Prose indissociable de son auteur.
+Mouvement 2 — CE QUE TU TRAVERSES EN CE MOMENT (titre poétique libre, 3 paragraphes) : la période actuelle lue dans le profil. Descriptif du présent. JAMAIS prédictif."""
+
+    prompt_b = base + """
+CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "sections": [
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "contenu": "<p>...</p><p>...</p>"}
+  ],
+  "mantra": {"texte": "...", "note": "..."},
+  "message_final": "<p>...</p><p>...</p>"
+}
+
+Mouvement 3 — TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes) : forces naturelles, zones de résistance, transformations à portée. Bienveillant mais précis.
+Mouvement 4 — CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes) : élan vers la suite. Chaleureux. JAMAIS de prédictions certaines.
+Mantra : phrase poétique courte (max 15 mots) ancrée dans le profil + note 2 lignes.
+Message final : 2 paragraphes d'élan."""
+
+    a = _appel_claude_chunk(prompt_a, max_tokens=6000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=5000)
+
+    return {
+        "sections": (a.get("sections") or []) + (b.get("sections") or []),
+        "mantra": b.get("mantra", {"texte": "", "note": ""}),
+        "message_final": b.get("message_final", ""),
+    }
 
 
 def appeler_claude_couple(profils_txt):
