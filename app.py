@@ -622,8 +622,8 @@ STRUCTURE (7 mouvements, titres libres — poétiques, adaptés à CETTE lignée
 7. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes) — Un élan vers la suite pour cette lignée. Vision de ce qu'elle peut devenir. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
     }
     structure = structures.get(offre, structures['famille'])
-    mots_cible = "9 000 et 11 000" if offre == 'famille' else "6 000 et 8 000"
-    max_tokens_appel = 15000 if offre == 'famille' else 11000
+    mots_cible = "9 000 et 11 000" if offre == 'famille' else "4 500 et 6 000"
+    max_tokens_appel = 16000 if offre == 'famille' else 14000
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
@@ -2169,9 +2169,15 @@ def webhook():
         def generer():
             try:
                 narratif = appeler_claude(offre, profils_txt, type_analyse)
-                lettre = narratif.get("lettre", "")
-                if "erreur technique" in lettre.lower() or "en cours de préparation" in lettre.lower():
-                    raise ValueError("Narratif invalide — fallback d'erreur détecté après parsing JSON")
+                # Validation : sections présentes
+                if not narratif.get("sections"):
+                    raise ValueError("Narratif invalide — aucune section générée")
+                # Détecter fallbacks d'erreur dans lettre ou premières sections
+                _check = narratif.get("lettre", "") + " ".join(
+                    s.get("contenu", "") for s in narratif.get("sections", [])[:2]
+                )
+                if "erreur technique" in _check.lower() or "en cours de préparation" in _check.lower():
+                    raise ValueError("Narratif invalide — fallback d erreur détecté après parsing JSON")
                 html = generer_html(offre, clients, narratif, astros_clients)
                 pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
                 envoyer_email(html, pdf, clients, offre, email_client)
