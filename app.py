@@ -1287,6 +1287,49 @@ def generer_html(offre, clients, narratif, astros=None):
     wheel_html = ""
     wheel_html = ""
 
+    # Cycles de vie — tous formats
+    cycles_web_html = ""
+
+    def _wrap_cycle_web(bloc, section_id="s-cycles"):
+        inner = bloc.replace('<div class="section-newpage chapter" id="s-cycles">', '').strip()
+        if inner.endswith('</div>'):
+            inner = inner[:-6].strip()
+        return f"""<section class="section section-sep" id="{section_id}">
+  <div class="reveal">{inner}</div>
+</section>"""
+
+    if offre == 'solo' and clients:
+        bloc = calcul_cycles_vie(clients[0]['jour'], clients[0]['mois'], clients[0]['annee'])
+        if bloc:
+            cycles_web_html = _wrap_cycle_web(bloc)
+
+    elif offre == 'couple' and clients:
+        for idx, cl in enumerate(clients[:2]):
+            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
+            if bloc:
+                prenom = cl['prenom']
+                bloc = bloc.replace('Les grandes étapes qui viennent', f'Les grandes étapes de {prenom}')
+                cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-{idx}")
+
+    elif offre in ('famille', 'prestige') and clients:
+        adultes = [c for c in clients if c.get('annee', 2010) < (date.today().year - 16)][:2]
+        for idx, cl in enumerate(adultes):
+            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
+            if bloc:
+                prenom = cl['prenom']
+                bloc = bloc.replace('Les grandes étapes qui viennent', f'Les grandes étapes de {prenom}')
+                cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-{idx}")
+        if offre == 'prestige':
+            parents = [c for c in clients if c.get('role') in ('parent','pere','mere','grand-parent')]
+            if not parents:
+                parents = [c for c in clients[2:] if c.get('annee', 2010) < 1975]
+            for idx, cl in enumerate(parents[:2]):
+                bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
+                if bloc:
+                    prenom = cl['prenom']
+                    bloc = bloc.replace('Les grandes étapes qui viennent', f'Le chemin de {prenom}')
+                    cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-parent-{idx}")
+
     mantras_html = ""
     for i, m in enumerate(narratif_mantras):
         sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
@@ -1916,11 +1959,62 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     # Tagline de couverture : Solo sans transgénérationnel
     cover_meta = "Numérologie · Astrologie · Lectures croisées" if offre == 'solo' else "Numérologie · Astrologie · Transgénérationnel"
 
-    # Section cycles (Solo uniquement)
+    # Section cycles — Solo : 1 personne / Couple-Famille-Prestige : adultes uniquement
     cycles_section_html = ""
+
     if offre == 'solo' and clients:
         c0 = clients[0]
         cycles_section_html = calcul_cycles_vie(c0['jour'], c0['mois'], c0['annee'])
+
+    elif offre == 'couple' and clients:
+        for cl in clients[:2]:
+            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
+            if bloc:
+                # Remplacer le titre de section par un titre personnalisé
+                prenom = cl['prenom']
+                bloc = bloc.replace(
+                    '<span class="eyebrow">Numérologie des cycles',
+                    f'<span class="eyebrow">Cycles de {prenom}'
+                ).replace(
+                    '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
+                    f'<h2 class="section-title">Les grandes étapes de {prenom}</h2>'
+                )
+                cycles_section_html += bloc
+
+    elif offre in ('famille', 'prestige') and clients:
+        # Adultes = les 2 premiers clients (convention app)
+        adultes = [c for c in clients if c.get('annee', 2010) < (date.today().year - 16)][:2]
+        for cl in adultes:
+            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
+            if bloc:
+                prenom = cl['prenom']
+                bloc = bloc.replace(
+                    '<span class="eyebrow">Numérologie des cycles',
+                    f'<span class="eyebrow">Cycles de {prenom}'
+                ).replace(
+                    '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
+                    f'<h2 class="section-title">Les grandes étapes de {prenom}</h2>'
+                )
+                cycles_section_html += bloc
+
+        # Prestige : cycles des parents (lignée)
+        if offre == 'prestige':
+            parents = [c for c in clients if c.get('role') in ('parent', 'pere', 'mere', 'grand-parent')]
+            if not parents:
+                # Fallback : clients au-delà des 2 adultes du foyer avec annee < 1980
+                parents = [c for c in clients[2:] if c.get('annee', 2010) < 1975]
+            for cl in parents[:2]:
+                bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
+                if bloc:
+                    prenom = cl['prenom']
+                    bloc = bloc.replace(
+                        '<span class="eyebrow">Numérologie des cycles',
+                        f'<span class="eyebrow">Lignée · Cycles de {prenom}'
+                    ).replace(
+                        '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
+                        f'<h2 class="section-title">Le chemin de {prenom}</h2>'
+                    )
+                    cycles_section_html += bloc
 
     html_print = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -1939,6 +2033,17 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <p class="cover-meta">{cover_meta}</p>
 </div>
 
+
+<div class="section-newpage center-page" style="justify-content:center;display:flex;flex-direction:column;align-items:center;padding:3cm 2.5cm;">
+  <span class="eyebrow" style="margin-bottom:1cm;">La démarche ORIGIN</span>
+  <div class="light-line" style="margin:0 auto 1.2cm;"></div>
+  <div class="prose" style="text-align:left;max-width:14cm;">
+    <p>Ce livret est le fruit d'une lecture croisée : numérologie, astrologie, et lecture des cycles de vie. Ces trois approches ne se substituent pas l'une à l'autre — elles se répondent, se complètent, révèlent ensemble ce qu'aucune ne pourrait montrer seule.</p>
+    <p>Ce que tu tiens entre les mains n'est pas un horoscope, ni un portrait psychologique, ni une prédiction. C'est une carte — la tienne. Elle montre le terrain, les reliefs, les zones d'ombre et les lignes de force. Ce que tu en fais t'appartient entièrement.</p>
+    <p>Pour en tirer le meilleur : lis lentement. Laisse résonner ce qui résonne. Note ce qui te surprend. Reviens dans quelques semaines — certaines choses prennent du temps à se déposer.</p>
+  </div>
+  <div class="light-line" style="margin:1.2cm auto 0;"></div>
+</div>
 {('''<div class="section-newpage first-page">
   <span class="eyebrow">Avant tout</span>
   <h2 class="section-title">Une lettre pour vous</h2>
@@ -1953,11 +2058,11 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 {cycles_section_html}
 
 
-<div class="section-newpage center-page">
-  <span class="eyebrow">Mots pour avancer</span>
-  <h2 class="section-title" style="text-align:center">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra personnel'}</h2>
-  <div class="light-line" style="margin:.5cm auto 1cm;"></div>
+<div class="section-newpage center-page" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:270mm;">
+  <span class="eyebrow" style="margin-bottom:.8cm;">{'Vos mantras' if offre in ('couple','famille','prestige') else 'Ton mantra'}</span>
+  <div class="light-line" style="margin:0 auto 1.5cm;width:4cm;"></div>
   {mantras_html}
+  <div class="light-line" style="margin:1.5cm auto 0;width:4cm;"></div>
 </div>
 
 <div class="section-newpage center-page">
@@ -1965,7 +2070,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </div>
 
 <div class="carnet-cover">
-  <p style="font-family:'Cinzel',serif;font-size:7pt;letter-spacing:.5em;text-transform:uppercase;color:#B97333;margin-bottom:1.5cm">ORIGIN · Carnet personnel</p>
+  <img src="data:image/jpeg;base64,{LOGO_B64_EMBEDDED}" style="width:55mm;height:55mm;object-fit:contain;margin-bottom:1cm;" alt="ORIGIN">
   <h2 class="carnet-cover-title">{'Carnet de Vie' if est_naissance else "Carnet d'Intégration"}</h2>
   <p class="carnet-cover-sub">{f'Un carnet qui grandit avec toi, {prenom_enfant} · À ouvrir à chaque étape de ta vie' if est_naissance else ('Vos réflexions · Vos prises de conscience · Votre chemin' if offre in ('couple','famille','prestige') else 'Tes réflexions · Tes prises de conscience · Ton chemin')}</p>
   <div style="width:60px;height:1px;background:#C9A84C;margin:2cm auto;opacity:.5;"></div>
