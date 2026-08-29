@@ -2214,6 +2214,18 @@ def webhook():
         type_analyse = data.get('type_analyse', 'adulte').lower()
         email_client = data.get('email', '')
 
+        # L'offre "naissance" est structurellement une offre à une seule
+        # personne (comme "solo") : toutes les branches offre=='solo' plus
+        # bas (couverture, mantra, PDF...) doivent s'appliquer telles quelles.
+        # On la normalise donc ici en 'solo' pour la structure, et on force
+        # type_analyse='naissance' pour que le contenu (récit + carnet PDF)
+        # reste bien celui du Livret de Naissance — cf. appeler_claude() qui
+        # teste type_analyse en priorité, et generer_pdf_imprimable() qui
+        # calcule est_naissance = (type_analyse == 'naissance').
+        if offre == 'naissance':
+            offre = 'solo'
+            type_analyse = 'naissance'
+
         clients = []
         if offre == 'solo':
             clients = [{
