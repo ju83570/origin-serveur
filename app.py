@@ -18,6 +18,28 @@ LOGO_B64_EMBEDDED = "iVBORw0KGgoAAAANSUhEUgAABLAAAAImCAYAAABDznOrAAEAAElEQVR4nOz
 
 from weasyprint import HTML as WeasyprintHTML
 
+def safe_int(val, default):
+    try:
+        return int(val) if val is not None and val != '' else default
+    except:
+        return default
+
+def parse_heure(val):
+    """Parse un champ heure HTML (HH:MM ou H) → retourne (heure_int, minute_int) ou (None, 0)"""
+    if not val:
+        return None, 0
+    val = str(val).strip()
+    if ':' in val:
+        parts = val.split(':')
+        try:
+            return int(parts[0]), int(parts[1]) if len(parts) > 1 else 0
+        except:
+            return None, 0
+    try:
+        return int(val), 0
+    except:
+        return None, 0
+
 TIMEZONE_MAP = {
     'france': 'Europe/Paris', 'fr': 'Europe/Paris',
     'belgique': 'Europe/Brussels', 'suisse': 'Europe/Zurich',
@@ -395,9 +417,12 @@ def fmt_profil(p):
     else:
         pin_str += " (dernier cycle, permanent)"
 
+    genre = p.get('genre', '')
+    genre_str = f" — {genre}" if genre else ""
+
     lines = [
-        f"PROFIL : {pr} {nm}",
-        f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}",
+        f"PROFIL : {pr} {nm}{genre_str}",
+        f"Né le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}" if genre == 'Homme' else f"Née le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}" if genre == 'Femme' else f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}",
         "",
         "NUMÉROLOGIE",
         f"  Chemin de vie : {label_nombre(num['cdv'])}",
@@ -581,7 +606,7 @@ STRUCTURE (5 mouvements, titres libres — poétiques, adaptés à CE couple, ja
 
 1. CE QUE VOUS ÊTES L'UN POUR L'AUTRE (4 paragraphes) — Ce que cette rencontre révèle des deux profils lus ensemble. Ce que chacun porte, ce que l'autre éveille, ce que leur combinaison crée. Prose vivante, aucun terme technique visible.
 
-2. QUI TU ES, [Personne 1] (4 paragraphes) — Portrait immersif de cette personne lu dans l'ensemble de son profil. Comment elle fonctionne, ce qui la porte, ce qui la freine, ce qu'elle dégage. Impossible à donner à quelqu'un d'autre.
+2. QUI TU ES, [Personne 1] (4 paragraphes) — Portrait immersif de cette personne lu dans l'ensemble de son profil. Comment cette personne fonctionne, ce qui la/le porte, ce qui la/le freine, ce qu'elle/il dégage. Impossible à donner à quelqu'un d'autre. Accorde selon le genre indiqué dans les données.
 
 3. QUI TU ES, [Personne 2] (4 paragraphes) — Même profondeur, ton distinct. JAMAIS de copier-coller de la structure du portrait 1.
 
@@ -775,15 +800,16 @@ CHUNK A — retourne UNIQUEMENT ce JSON valide, sans markdown :
 }
 
 Mouvement 1 — QUI TU ES (titre poétique libre, 4 paragraphes longs) :
+IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence tout au long du texte.
 - §1 : ce qui caractérise fondamentalement cette personne — son rapport au monde, à l'existence, aux autres. Très concret, très ancré, impossible à généraliser.
 - §2 : son intelligence, sa façon de traiter le réel, ce qui se passe dans sa tête que les autres ne voient pas. Précis, intime.
-- §3 : ce qu'elle dégage sans s'en rendre compte — son impact sur les autres, l'atmosphère qu'elle crée, ce que les gens ressentent en sa présence.
-- §4 : ce qui la freine, les tensions internes, les paradoxes qu'elle habite. Courageux et bienveillant — nommer sans ménager, sans blesser.
+- §3 : ce que cette personne dégage sans s'en rendre compte — son impact sur les autres, l'atmosphère qu'elle/il crée, ce que les gens ressentent en sa présence.
+- §4 : ce qui freine cette personne, les tensions internes, les paradoxes qu'elle/il habite. Courageux et bienveillant — nommer sans ménager, sans blesser.
 
 Mouvement 2 — CE QUE TU TRAVERSES EN CE MOMENT (titre poétique libre, 3 paragraphes longs) :
 - §1 : la qualité de la période actuelle — sa texture, son énergie, ce qui la caractérise au quotidien.
 - §2 : ce qui est en train de se jouer intérieurement, les mouvements souterrains, les réalignements en cours.
-- §3 : comment naviguer dans cette période — ce qu'elle demande, ce qu'elle révèle, ce qu'elle promet sans le promettre."""
+- §3 : comment naviguer dans cette période — ce qu'elle/il demande, ce qu'elle/il révèle, ce qu'elle/il promet sans le promettre."""
 
     prompt_b = base + """
 LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2500-3000 mots hors mantra et message final.
@@ -799,13 +825,14 @@ CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
 }
 
 Mouvement 3 — TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes longs) :
-- §1 : les forces naturelles — ce qui vient facilement, ce qui la distingue vraiment. Célébrer avec précision, pas avec des généralités.
-- §2 : les zones de résistance et angles morts — ce qui résiste, ce qui coince, ce qu'elle évite sans le savoir. Nommer avec courage et bienveillance.
+RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les données (Homme/Femme).
+- §1 : les forces naturelles — ce qui vient facilement, ce qui distingue vraiment cette personne. Célébrer avec précision, pas avec des généralités.
+- §2 : les zones de résistance et angles morts — ce qui résiste, ce qui coince, ce que cette personne évite sans le savoir. Nommer avec courage et bienveillance.
 - §3 : la transformation à portée — ce qui est déjà en train de changer, ce qui cherche à émerger, le prochain seuil.
 
 Mouvement 4 — CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite — ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
-- §2 : une note finale qui lui donne confiance dans sa propre trajectoire. Chaleureux, ancré, jamais vague ni prédictif.
+- §2 : une note finale qui donne confiance à cette personne dans sa propre trajectoire. Chaleureux, ancré, jamais vague ni prédictif.
 
 Mantra : une phrase poétique courte (max 15 mots) impossible à donner à quelqu'un d'autre + note de 3 lignes qui explique pourquoi CE mantra pour CE profil précisément.
 Message final : 2 paragraphes qui donnent envie de refermer le livret avec le sentiment d'avoir été profondément vu."""
@@ -863,6 +890,7 @@ CHUNK A — retourne UNIQUEMENT ce JSON valide, sans markdown :
   ]
 }}
 
+GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence dans chaque portrait.
 Mouvement 1 — Ce que vous êtes l'un pour l'autre : 4 paragraphes immersifs, aucun terme technique, titre poétique libre.
 Mouvement 2 — Portrait de Personne 1 : 4 paragraphes, titre poétique libre avec prénom. Prose immersive, aucun terme technique.
 Mouvement 3 — Portrait de Personne 2 : 4 paragraphes, titre poétique libre avec prénom. Ton distinct. JAMAIS de copier-coller."""
@@ -910,11 +938,12 @@ CHUNK B — retourne UNIQUEMENT ce JSON valide, sans markdown :
 
 Mouvement 4 — Ce que vous traversez en ce moment : 3 paragraphes, titre poétique libre. Descriptif du présent des deux profils croisés. JAMAIS prédictif.
 Mouvement 5 — Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
+GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
 Mantras — RÈGLES STRICTES, 5 mantras au total :
-- Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil — célèbre ce qu'elle EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
+- Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil — célèbre ce que cette personne EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
 - Mantra 2 [Personne 1] : ancré dans son chiffre manquant ou sa Lune/Ascendant — une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout".
 - Mantra 3 [Personne 2] : idem, ancré dans son chiffre dominant ou son Soleil. Différent du mantra de Personne 1 en ton et en contenu.
-- Mantra 4 [Personne 2] : idem, ancré dans son chiffre manquant ou sa Lune/Ascendant. Doit nommer quelque chose de précis à elle.
+- Mantra 4 [Personne 2] : idem, ancré dans son chiffre manquant ou sa Lune/Ascendant. Doit nommer quelque chose de précis et unique à cette personne.
 - Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils — cite les chiffres ou planètes des deux, nomme la tension créatrice entre eux. Pas un mantra générique sur l'amour.
 Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra, quels chiffres/planètes l'ancrent.
 Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predictions certaines."""
@@ -1017,6 +1046,8 @@ UTILISATION DES DONNEES ENRICHIES :
 - Les chiffres manquants = zones de croissance a explorer avec bienveillance
 - Le pinnacle permanent = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
 - Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
+
+GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, participes passés et pronoms en conséquence dans chaque portrait individuel. Ne jamais utiliser "elle/la" pour un homme ni "il/le" pour une femme.
 
 DONNÉES :
 {profils_txt}
@@ -2228,54 +2259,59 @@ def webhook():
 
         clients = []
         if offre == 'solo':
+            _h1, _m1 = parse_heure(data.get('heure1'))
             clients = [{
                 'prenom': data.get('prenom1', ''),
                 'nom':    data.get('nom1', ''),
+                'genre':  data.get('genre1', ''),
                 'jour':   int(data.get('jour1', 1)),
                 'mois':   int(data.get('mois1', 1)),
                 'annee':  int(data.get('annee1', 1990)),
                 'ville':  data.get('ville1', 'Paris'),
-                'heure':  int(data['heure1']) if data.get('heure1') else None,
-                'minute': int(data.get('minute1', 0)),
+                'heure':  _h1,
+                'minute': _m1,
                 'asc_force': data.get('asc1') or None,
             }]
         elif offre in ('couple', 'famille', 'prestige'):
+            _h1, _m1 = parse_heure(data.get('heure1'))
             clients.append({
                 'prenom': data.get('prenom1',''),
                 'nom':    data.get('nom1',''),
+                'genre':  data.get('genre1',''),
                 'jour':   int(data.get('jour1',1)),
                 'mois':   int(data.get('mois1',1)),
                 'annee':  int(data.get('annee1',1990)),
                 'ville':  data.get('ville1','Paris'),
-                'heure':  int(data['heure1']) if data.get('heure1') else None,
-                'minute': int(data.get('minute1',0)),
+                'heure':  _h1,
+                'minute': _m1,
                 'asc_force': data.get('asc1') or None,
             })
+            _h2, _m2 = parse_heure(data.get('heure2'))
             clients.append({
                 'prenom': data.get('prenom2',''),
                 'nom':    data.get('nom2',''),
+                'genre':  data.get('genre2',''),
                 'jour':   int(data.get('jour2',1)),
                 'mois':   int(data.get('mois2',1)),
                 'annee':  int(data.get('annee2',1990)),
                 'ville':  data.get('ville2','Paris'),
-                'heure':  int(data['heure2']) if data.get('heure2') else None,
-                'minute': int(data.get('minute2',0)),
+                'heure':  _h2,
+                'minute': _m2,
                 'asc_force': data.get('asc2') or None,
             })
             for i in range(3, 7):
                 if data.get(f'prenom{i}'):
-                    def safe_int(val, default):
-                        try: return int(val) if val is not None and val != '' else default
-                        except: return default
+                    _hi, _mi = parse_heure(data.get(f'heure{i}'))
                     clients.append({
                         'prenom': data.get(f'prenom{i}',''),
                         'nom':    data.get(f'nom{i}',''),
+                        'genre':  data.get(f'genre{i}',''),
                         'jour':   safe_int(data.get(f'jour{i}'), 1),
                         'mois':   safe_int(data.get(f'mois{i}'), 1),
                         'annee':  safe_int(data.get(f'annee{i}'), 2000),
                         'ville':  data.get(f'ville{i}',''),
-                        'heure':  int(data[f'heure{i}']) if data.get(f'heure{i}') else None,
-                        'minute': safe_int(data.get(f'minute{i}'), 0),
+                        'heure':  _hi,
+                        'minute': _mi,
                         'asc_force': data.get(f'asc{i}') or None,
                         'filiation': data.get(f'filiation{i}',''),
                     })
