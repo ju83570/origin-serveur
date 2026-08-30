@@ -1335,12 +1335,6 @@ def generer_html(offre, clients, narratif, astros=None):
 
 
     n_wheel_standalone = 0
-    n_cycles = 1 if cycles_web_html else 0
-    nb = 2 + n_sections + n_wheel_standalone + n_cycles + 1 + 1
-    nav = "\n".join(
-        f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
-        for i in range(nb)
-    )
 
     sections_html = ""
     for i, sec in enumerate(sections_list):
@@ -1355,9 +1349,6 @@ def generer_html(offre, clients, narratif, astros=None):
   </div>
 </section>"""
 
-    # Pages "Thème astral" de secours — uniquement pour les personnes dont aucune
-    # section ne pouvait servir d'ancrage (fallback, ne devrait presque jamais arriver).
-    wheel_html = ""
     wheel_html = ""
 
     # Cycles de vie — tous formats
@@ -1402,6 +1393,14 @@ def generer_html(offre, clients, narratif, astros=None):
                     prenom = cl['prenom']
                     bloc = bloc.replace('Les grandes étapes qui viennent', f'Le chemin de {prenom}')
                     cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-parent-{idx}")
+
+    # n_cycles calculé APRÈS construction de cycles_web_html
+    n_cycles = 1 if cycles_web_html else 0
+    nb = 2 + n_sections + n_wheel_standalone + n_cycles + 1 + 1
+    nav = "\n".join(
+        f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
+        for i in range(nb)
+    )
 
     mantras_html = ""
     for i, m in enumerate(narratif_mantras):
