@@ -517,6 +517,8 @@ TON ET POSTURE :
 
 ANNÉE EN COURS : {annee_courante}
 
+GENRE : le genre de l'enfant est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, participes passés et pronoms en conséquence dans l'intégralité du texte. Ne jamais utiliser "elle/la" pour un garçon ni "il/le" pour une fille. Les tournures inclusives (venu·e, il/elle) sont interdites — choisis le bon accord selon le genre fourni.
+
 LONGUEUR IMPERATIVE :
 - Chaque paragraphe = MINIMUM 6-7 lignes de prose dense. Tout en prose narrative, zéro liste.
 - Le livret complet (lettre + toutes les sections) doit atteindre entre 6500 et 8500 mots.
@@ -592,9 +594,11 @@ LE PRINCIPE ABSOLU : Le client ne sait pas ce que tu utilises pour le lire. Il n
 
 STRUCTURE (4 mouvements, titres libres — choisis des titres poétiques adaptés à CE profil, jamais techniques) :
 
-1. QUI TU ES (4-5 paragraphes) — Un portrait complet et vivant de cette personne. Chaque paragraphe apporte une couche nouvelle : comment cette personne fonctionne, ce qui la porte, ce qui la freine, ce qu'elle dégage sans s'en rendre compte, ce qui la distingue profondément. Chaque affirmation est ancrée dans le profil complet lu en croisant toutes les données — mais rien de cela n'apparaît dans le texte. Pas de "ton chemin de vie est...", pas de "ton Soleil en...". Juste : cette personne.
+GENRE : le genre est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence.
 
-2. CE QUE TU TRAVERSES EN CE MOMENT (3 paragraphes) — La période actuelle lue dans le profil : ce qui est en train de se jouer, l'énergie disponible, les tensions entre ce que cette personne veut et ce qu'elle est. Concret, immersif, ancré dans le présent. JAMAIS prédictif — descriptif de ce qui est déjà là.
+1. QUI TU ES (4-5 paragraphes) — Un portrait complet et vivant de cette personne. Chaque paragraphe apporte une couche nouvelle : comment cette personne fonctionne, ce qui la/le porte, ce qui la/le freine, ce qu'elle/il dégage sans s'en rendre compte, ce qui la/le distingue profondément. Chaque affirmation est ancrée dans le profil complet lu en croisant toutes les données — mais rien de cela n'apparaît dans le texte. Pas de "ton chemin de vie est...", pas de "ton Soleil en...". Juste : cette personne.
+
+2. CE QUE TU TRAVERSES EN CE MOMENT (3 paragraphes) — La période actuelle lue dans le profil : ce qui est en train de se jouer, l'énergie disponible, les tensions entre ce que cette personne veut et ce qu'elle/il est. Concret, immersif, ancré dans le présent. JAMAIS prédictif — descriptif de ce qui est déjà là.
 
 3. TES ZONES DE FORCE ET DE CROISSANCE (3 paragraphes) — Ce que cette personne porte comme forces naturelles, les zones qui lui résistent encore, les transformations à portée de main. Bienveillant mais précis — des situations universelles mais impossibles à donner à quelqu'un d'autre tellement elles collent à CE profil.
 
