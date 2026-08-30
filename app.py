@@ -476,7 +476,7 @@ STRUCTURE :
 1. LETTRE D'OUVERTURE (3 paragraphes — ce que ce jour de naissance révèle, l'énergie fondamentale de cet enfant, ce qu'il/elle porte comme lumière)
 2. SON CHEMIN DE VIE (3 paragraphes — mission profonde, ce qu'il/elle est venu apprendre et incarner, comment ce chemin se manifestera dans son enfance puis plus tard)
 3. SES DONS NATURELS (3 paragraphes — ce qui lui vient facilement, ses forces innées issues des nombres dominants, des situations concrètes d'enfance où ces dons apparaîtront)
-4. SES ZONES DE CROISSANCE (2 paragraphes — les apprentissages qui l'attendront, zones manquantes traitées avec douceur et espoir, sans dramatiser)
+4. SES ZONES DE CROISSANCE (2 paragraphes — les apprentissages qui l'attendront, traités avec douceur et espoir, sans dramatiser — ne jamais citer de "nombres manquants" ni de "chiffres absents" dans le texte)
 5. SON CIEL NATAL (3 paragraphes — Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse du tempérament et de la sensibilité propre à cet enfant)
 6. LES GRANDES ÉTAPES (2 paragraphes — ses années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation prévisibles)
 7. POUR VOUS, PARENTS (3 paragraphes — comment accompagner cet enfant selon son profil précis, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler et comment éviter de projeter)
@@ -533,7 +533,7 @@ DONNÉES :
 1. LETTRE D'OUVERTURE (3 paragraphes, tutoiement — ce que ce jour de naissance révèle, ton énergie fondamentale, ce que tu portes comme lumière)
 2. TON CHEMIN DE VIE (3 paragraphes, tutoiement — ta mission profonde, ce que tu es venu·e apprendre et incarner, comment ce chemin se manifestera)
 3. TES DONS NATURELS (3 paragraphes, tutoiement — ce qui te vient facilement, tes forces innées, scènes concrètes d'enfance)
-4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement — les apprentissages qui t'attendront, zones manquantes avec douceur et espoir)
+4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement — les apprentissages qui t'attendront, avec douceur et espoir — ne jamais citer de "nombres manquants" ni de "chiffres absents" dans le texte)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
@@ -688,7 +688,7 @@ REGLES ABSOLUES (violations = livret inutilisable) :
 UTILISATION DES DONNÉES :
 - Toutes les données ci-dessous sont ton matériau de lecture — elles n'apparaissent jamais dans le texte livré
 - L'année personnelle, son énergie, ses tensions : traduis-les en description de ce que vit la personne
-- Les dominants et manquants numériques : traduis-les en traits de caractère, postures, situations de vie
+- Les dominants et lacunes numériques : traduis-les en traits de caractère, postures, situations de vie — ne jamais citer "chiffres manquants" ni "nombres absents" dans le texte livré
 - Le thème natal : traduis-le en façon d'être, pas en positions planétaires
 - Tout croiser, tout fondre — la prose doit être indissociable de son auteur
 
@@ -945,9 +945,9 @@ Mouvement 5 — Ce que vous portez vers demain : 2 paragraphes, titre poétique 
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
 Mantras — RÈGLES STRICTES, 5 mantras au total :
 - Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil — célèbre ce que cette personne EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
-- Mantra 2 [Personne 1] : ancré dans son chiffre manquant ou sa Lune/Ascendant — une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout".
+- Mantra 2 [Personne 1] : ancré dans sa Lune/Ascendant ou une zone de résistance de son profil — une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout". Ne pas citer de "chiffre manquant" dans le texte du mantra.
 - Mantra 3 [Personne 2] : idem, ancré dans son chiffre dominant ou son Soleil. Différent du mantra de Personne 1 en ton et en contenu.
-- Mantra 4 [Personne 2] : idem, ancré dans son chiffre manquant ou sa Lune/Ascendant. Doit nommer quelque chose de précis et unique à cette personne.
+- Mantra 4 [Personne 2] : idem, ancré dans sa Lune/Ascendant ou une zone de résistance de son profil. Doit nommer quelque chose de précis et unique à cette personne. Ne pas citer de "chiffre manquant" dans le texte du mantra.
 - Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils — cite les chiffres ou planètes des deux, nomme la tension créatrice entre eux. Pas un mantra générique sur l'amour.
 Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra, quels chiffres/planètes l'ancrent.
 Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predictions certaines."""
@@ -1047,7 +1047,7 @@ REGLES ABSOLUES :
 UTILISATION DES DONNEES ENRICHIES :
 - L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement
 - Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer
-- Les chiffres manquants = zones de croissance a explorer avec bienveillance
+- Les chiffres manquants = zones de croissance a explorer avec bienveillance — ne jamais les nommer comme "chiffres manquants" ou "nombres absents" dans le texte livré au client
 - Le pinnacle permanent = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
 - Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
 
