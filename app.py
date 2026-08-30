@@ -1335,7 +1335,8 @@ def generer_html(offre, clients, narratif, astros=None):
 
 
     n_wheel_standalone = 0
-    nb = 2 + n_sections + n_wheel_standalone + 1 + 1
+    n_cycles = 1 if cycles_web_html else 0
+    nb = 2 + n_sections + n_wheel_standalone + n_cycles + 1 + 1
     nav = "\n".join(
         f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
         for i in range(nb)
@@ -1415,7 +1416,7 @@ def generer_html(offre, clients, narratif, astros=None):
 </div>"""
 
 
-    sm = 2 + n_sections + n_wheel_standalone
+    sm = 2 + n_sections + n_wheel_standalone + n_cycles
     sf = sm + 1
     sid_list = json.dumps([f's{i}' for i in range(nb)])
 
@@ -1469,6 +1470,8 @@ def generer_html(offre, clients, narratif, astros=None):
 {sections_html}
 
 {wheel_html}
+
+{cycles_web_html}
 
 <section class="section section-sep" id="s{sm}">
   <div class="reveal">
