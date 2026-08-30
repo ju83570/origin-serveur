@@ -40,6 +40,25 @@ def parse_heure(val):
     except:
         return None, 0
 
+def parse_heure_minute(data, i):
+    """Lit l'heure de naissance de la personne i.
+    merci.html envoie l'heure et la minute déjà séparées en deux champs
+    (heureN = heure, minuteN = minute) — on les lit directement en priorité.
+    Fallback sur parse_heure() pour rester compatible avec un éventuel appel
+    qui enverrait encore un seul champ "HH:MM".
+    Avant ce correctif, heureN était re-parsé seul via parse_heure(), qui ne
+    trouve pas de ":" dans une simple heure entière et retombe donc toujours
+    sur minute=0 — les minutes saisies par le client étaient silencieusement
+    perdues, ce qui faussait le calcul de l'Ascendant.
+    """
+    heure_val = data.get(f'heure{i}')
+    minute_val = data.get(f'minute{i}')
+    if minute_val not in (None, ''):
+        h = safe_int(heure_val, None)
+        m = safe_int(minute_val, 0)
+        return h, m
+    return parse_heure(heure_val)
+
 TIMEZONE_MAP = {
     'france': 'Europe/Paris', 'fr': 'Europe/Paris',
     'belgique': 'Europe/Brussels', 'suisse': 'Europe/Zurich',
@@ -476,7 +495,7 @@ STRUCTURE :
 1. LETTRE D'OUVERTURE (3 paragraphes — ce que ce jour de naissance révèle, l'énergie fondamentale de cet enfant, ce qu'il/elle porte comme lumière)
 2. SON CHEMIN DE VIE (3 paragraphes — mission profonde, ce qu'il/elle est venu apprendre et incarner, comment ce chemin se manifestera dans son enfance puis plus tard)
 3. SES DONS NATURELS (3 paragraphes — ce qui lui vient facilement, ses forces innées issues des nombres dominants, des situations concrètes d'enfance où ces dons apparaîtront)
-4. SES ZONES DE CROISSANCE (2 paragraphes — les apprentissages qui l'attendront, traités avec douceur et espoir, sans dramatiser — ne jamais citer de "nombres manquants" ni de "chiffres absents" dans le texte)
+4. SES ZONES DE CROISSANCE (2 paragraphes — les apprentissages qui l'attendront, zones manquantes traitées avec douceur et espoir, sans dramatiser)
 5. SON CIEL NATAL (3 paragraphes — Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse du tempérament et de la sensibilité propre à cet enfant)
 6. LES GRANDES ÉTAPES (2 paragraphes — ses années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation prévisibles)
 7. POUR VOUS, PARENTS (3 paragraphes — comment accompagner cet enfant selon son profil précis, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler et comment éviter de projeter)
@@ -533,7 +552,7 @@ DONNÉES :
 1. LETTRE D'OUVERTURE (3 paragraphes, tutoiement — ce que ce jour de naissance révèle, ton énergie fondamentale, ce que tu portes comme lumière)
 2. TON CHEMIN DE VIE (3 paragraphes, tutoiement — ta mission profonde, ce que tu es venu·e apprendre et incarner, comment ce chemin se manifestera)
 3. TES DONS NATURELS (3 paragraphes, tutoiement — ce qui te vient facilement, tes forces innées, scènes concrètes d'enfance)
-4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement — les apprentissages qui t'attendront, avec douceur et espoir — ne jamais citer de "nombres manquants" ni de "chiffres absents" dans le texte)
+4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement — les apprentissages qui t'attendront, zones manquantes avec douceur et espoir)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
@@ -688,7 +707,7 @@ REGLES ABSOLUES (violations = livret inutilisable) :
 UTILISATION DES DONNÉES :
 - Toutes les données ci-dessous sont ton matériau de lecture — elles n'apparaissent jamais dans le texte livré
 - L'année personnelle, son énergie, ses tensions : traduis-les en description de ce que vit la personne
-- Les dominants et lacunes numériques : traduis-les en traits de caractère, postures, situations de vie — ne jamais citer "chiffres manquants" ni "nombres absents" dans le texte livré
+- Les dominants et manquants numériques : traduis-les en traits de caractère, postures, situations de vie
 - Le thème natal : traduis-le en façon d'être, pas en positions planétaires
 - Tout croiser, tout fondre — la prose doit être indissociable de son auteur
 
@@ -945,9 +964,9 @@ Mouvement 5 — Ce que vous portez vers demain : 2 paragraphes, titre poétique 
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
 Mantras — RÈGLES STRICTES, 5 mantras au total :
 - Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil — célèbre ce que cette personne EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
-- Mantra 2 [Personne 1] : ancré dans sa Lune/Ascendant ou une zone de résistance de son profil — une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout". Ne pas citer de "chiffre manquant" dans le texte du mantra.
+- Mantra 2 [Personne 1] : ancré dans son chiffre manquant ou sa Lune/Ascendant — une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout".
 - Mantra 3 [Personne 2] : idem, ancré dans son chiffre dominant ou son Soleil. Différent du mantra de Personne 1 en ton et en contenu.
-- Mantra 4 [Personne 2] : idem, ancré dans sa Lune/Ascendant ou une zone de résistance de son profil. Doit nommer quelque chose de précis et unique à cette personne. Ne pas citer de "chiffre manquant" dans le texte du mantra.
+- Mantra 4 [Personne 2] : idem, ancré dans son chiffre manquant ou sa Lune/Ascendant. Doit nommer quelque chose de précis et unique à cette personne.
 - Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils — cite les chiffres ou planètes des deux, nomme la tension créatrice entre eux. Pas un mantra générique sur l'amour.
 Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra, quels chiffres/planètes l'ancrent.
 Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predictions certaines."""
@@ -1047,7 +1066,7 @@ REGLES ABSOLUES :
 UTILISATION DES DONNEES ENRICHIES :
 - L'annee personnelle, son theme et son focus sont deja calcules — developpe-les narrativement
 - Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer
-- Les chiffres manquants = zones de croissance a explorer avec bienveillance — ne jamais les nommer comme "chiffres manquants" ou "nombres absents" dans le texte livré au client
+- Les chiffres manquants = zones de croissance a explorer avec bienveillance
 - Le pinnacle permanent = le grand cycle de vie traverse — relie-le a ce que la personne vit concretement aujourd'hui
 - Croise TOUJOURS numerologie + astrologie — ne traite jamais une donnee de facon isolee
 
@@ -1335,6 +1354,11 @@ def generer_html(offre, clients, narratif, astros=None):
 
 
     n_wheel_standalone = 0
+    nb = 2 + n_sections + n_wheel_standalone + 1 + 1
+    nav = "\n".join(
+        f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
+        for i in range(nb)
+    )
 
     sections_html = ""
     for i, sec in enumerate(sections_list):
@@ -1349,6 +1373,9 @@ def generer_html(offre, clients, narratif, astros=None):
   </div>
 </section>"""
 
+    # Pages "Thème astral" de secours — uniquement pour les personnes dont aucune
+    # section ne pouvait servir d'ancrage (fallback, ne devrait presque jamais arriver).
+    wheel_html = ""
     wheel_html = ""
 
     # Cycles de vie — tous formats
@@ -1394,14 +1421,6 @@ def generer_html(offre, clients, narratif, astros=None):
                     bloc = bloc.replace('Les grandes étapes qui viennent', f'Le chemin de {prenom}')
                     cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-parent-{idx}")
 
-    # n_cycles calculé APRÈS construction de cycles_web_html
-    n_cycles = 1 if cycles_web_html else 0
-    nb = 2 + n_sections + n_wheel_standalone + n_cycles + 1 + 1
-    nav = "\n".join(
-        f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
-        for i in range(nb)
-    )
-
     mantras_html = ""
     for i, m in enumerate(narratif_mantras):
         sep = '<div class="ornament"><div class="ornament-line"></div><span class="ornament-symbol">✦</span><div class="ornament-line"></div></div>' if i > 0 else ''
@@ -1415,7 +1434,7 @@ def generer_html(offre, clients, narratif, astros=None):
 </div>"""
 
 
-    sm = 2 + n_sections + n_wheel_standalone + n_cycles
+    sm = 2 + n_sections + n_wheel_standalone
     sf = sm + 1
     sid_list = json.dumps([f's{i}' for i in range(nb)])
 
@@ -1469,8 +1488,6 @@ def generer_html(offre, clients, narratif, astros=None):
 {sections_html}
 
 {wheel_html}
-
-{cycles_web_html}
 
 <section class="section section-sep" id="s{sm}">
   <div class="reveal">
@@ -2265,7 +2282,7 @@ def webhook():
 
         clients = []
         if offre == 'solo':
-            _h1, _m1 = parse_heure(data.get('heure1'))
+            _h1, _m1 = parse_heure_minute(data, 1)
             clients = [{
                 'prenom': data.get('prenom1', ''),
                 'nom':    data.get('nom1', ''),
@@ -2279,7 +2296,7 @@ def webhook():
                 'asc_force': data.get('asc1') or None,
             }]
         elif offre in ('couple', 'famille', 'prestige'):
-            _h1, _m1 = parse_heure(data.get('heure1'))
+            _h1, _m1 = parse_heure_minute(data, 1)
             clients.append({
                 'prenom': data.get('prenom1',''),
                 'nom':    data.get('nom1',''),
@@ -2292,7 +2309,7 @@ def webhook():
                 'minute': _m1,
                 'asc_force': data.get('asc1') or None,
             })
-            _h2, _m2 = parse_heure(data.get('heure2'))
+            _h2, _m2 = parse_heure_minute(data, 2)
             clients.append({
                 'prenom': data.get('prenom2',''),
                 'nom':    data.get('nom2',''),
@@ -2305,9 +2322,9 @@ def webhook():
                 'minute': _m2,
                 'asc_force': data.get('asc2') or None,
             })
-            for i in range(3, 7):
+            for i in range(3, 11):
                 if data.get(f'prenom{i}'):
-                    _hi, _mi = parse_heure(data.get(f'heure{i}'))
+                    _hi, _mi = parse_heure_minute(data, i)
                     clients.append({
                         'prenom': data.get(f'prenom{i}',''),
                         'nom':    data.get(f'nom{i}',''),
