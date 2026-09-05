@@ -79,6 +79,22 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 BREVO_SMTP_LOGIN  = os.environ.get("BREVO_SMTP_LOGIN", "")
 BREVO_SMTP_KEY    = os.environ.get("BREVO_SMTP_KEY", "")
 EMAIL_DEST        = os.environ.get("EMAIL_DEST", "")
+GSHEET_WEBHOOK    = os.environ.get("GSHEET_WEBHOOK", "")
+
+
+def log_client_gsheet(email, prenom, offre, date_str):
+    """Envoie les donnees client vers Google Sheet via Apps Script webhook."""
+    if not GSHEET_WEBHOOK:
+        return
+    try:
+        requests.post(GSHEET_WEBHOOK, json={
+            "email": email,
+            "prenom": prenom,
+            "offre": offre,
+            "date": date_str
+        }, timeout=10)
+    except Exception as e:
+        print(f"[gsheet] Erreur log client : {e}")
 
 MAITRES = {11, 22, 33}
 SIGNES = ['Bélier','Taureau','Gémeaux','Cancer','Lion','Vierge',
@@ -422,6 +438,8 @@ def fmt_profil(p):
     heure_str = f"{p['heure']:02d}h{p.get('minute',0):02d}" if p.get('heure') is not None else "heure inconnue"
     filiation = p.get('filiation', '')
     filiation_str = f"\n  Filiation     : {filiation}" if filiation else ""
+    fratrie = p.get('fratrie', '')
+    fratrie_str = f"\n  Fratrie       : {fratrie}" if fratrie else ""
 
     chiffres = analyse_chiffres(j, m, a)
     num_pin, val_pin, reste_pin = pinnacles(j, m, a)
@@ -441,7 +459,7 @@ def fmt_profil(p):
 
     lines = [
         f"PROFIL : {pr} {nm}{genre_str}",
-        f"Né le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}" if genre == 'Homme' else f"Née le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}" if genre == 'Femme' else f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}",
+        f"Né le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}{fratrie_str}" if genre == 'Homme' else f"Née le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}{fratrie_str}" if genre == 'Femme' else f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}{fratrie_str}",
         "",
         "NUMÉROLOGIE",
         f"  Chemin de vie : {label_nombre(num['cdv'])}",
@@ -658,6 +676,8 @@ TON ET POSTURE :
 ANNÉE EN COURS : {annee_courante}
 
 GENRE : le genre de l'enfant est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, participes passés et pronoms en conséquence dans l'intégralité du texte. Ne jamais utiliser "elle/la" pour un garçon ni "il/le" pour une fille. Les tournures inclusives (venu·e, il/elle) sont interdites -- choisis le bon accord selon le genre fourni.
+
+RÈGLE ABSOLUE -- FRATRIE : Ne jamais inventer de frères ou sœurs, de fratrie, ou de "ton frère"/"ta sœur" si ces informations ne sont pas explicitement présentes dans les données. Si une fratrie est indiquée dans les données, tu peux en parler. Sinon, n'en mentionne jamais l'existence -- même comme exemple.
 
 LONGUEUR IMPERATIVE :
 - Chaque paragraphe = MINIMUM 6-7 lignes de prose dense. Tout en prose narrative, zéro liste.
@@ -2434,8 +2454,11 @@ def webhook():
         # teste type_analyse en priorité, et generer_pdf_imprimable() qui
         # calcule est_naissance = (type_analyse == 'naissance').
         if offre == 'naissance':
+            offre_label = 'naissance'
             offre = 'solo'
             type_analyse = 'naissance'
+        else:
+            offre_label = offre
 
         clients = []
         if offre in ('solo', 'vocation'):
@@ -2451,6 +2474,7 @@ def webhook():
                 'heure':  _h1,
                 'minute': _m1,
                 'asc_force': data.get('asc1') or None,
+                'fratrie':  data.get('fratrie1', ''),
             }]
         elif offre in ('couple', 'famille', 'prestige'):
             _h1, _m1 = parse_heure_minute(data, 1)
@@ -2518,8 +2542,10 @@ def webhook():
                     raise ValueError("Narratif invalide -- fallback d erreur détecté après parsing JSON")
                 html = generer_html(offre, clients, narratif, astros_clients)
                 pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
-                envoyer_email(html, pdf, clients, offre, email_client)
+                envoyer_email(html, pdf, clients, offre_label, email_client)
                 print(f"✅ Livret {offre} envoyé à {email_client}")
+                prenoms_log = " & ".join(c['prenom'] for c in clients)
+                log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
             except Exception as ex:
                 print(f"ERREUR génération : {ex}")
                 import traceback; traceback.print_exc()
