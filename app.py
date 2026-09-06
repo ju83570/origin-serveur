@@ -536,95 +536,139 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 PROMPT_VOCATION = """Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
 
 Tu reçois le profil numérologique et astrologique complet d'une personne.
-Ton rôle : rédiger un livret de vocation -- court, chirurgical, profond --
-entièrement focalisé sur une seule question :
-Qui est vraiment cette personne, et comment son travail peut devenir
-l'expression la plus juste de ce qu'elle est ?
+Ton rôle : rédiger un livret de vocation -- profond, chirurgical, actionnable --
+qui répond à trois questions dans l'ordre :
+1. MIROIR : voilà comment tu fonctionnes vraiment
+2. BOUSSOLE : voilà ce que ça implique concrètement dans ton travail
+3. MOUVEMENT : voilà comment tester et activer ça dans ta vie dès maintenant
 
-PRINCIPE ABSOLU : La personne ne sait pas ce que tu utilises pour la lire.
-Elle ne voit jamais les mots "numérologie", "astrologie", "chemin de vie",
-"Soleil", "Lune", "pinnacle". Ces outils sont ton matériau -- pas le texte livré.
-Tu les utilises pour voir, puis tu écris ce que tu vois, en prose vivante.
+Le client doit pouvoir dire à la fin :
+"Je me suis reconnu. Je comprends mieux comment je fonctionne.
+Je sais quoi rechercher ou éviter professionnellement. Je sais quoi faire dès lundi."
 
-TON ET POSTURE :
+═══════════════════════════════════════════════
+RÈGLE N°1 — PRINCIPE ABSOLU : INVISIBILITÉ DES OUTILS
+═══════════════════════════════════════════════
+La personne ne sait pas ce que tu utilises pour la lire.
+Elle ne voit JAMAIS les mots : "numérologie", "astrologie", "chemin de vie",
+"Soleil", "Lune", "pinnacle", "chiffre", "nombre", "thème natal", "maison".
+Ces outils sont ton matériau -- pas le texte livré.
+
+═══════════════════════════════════════════════
+RÈGLE N°2 — INTERDICTION ABSOLUE DES LISTES DE MÉTIERS
+═══════════════════════════════════════════════
+INTERDIT : "Tu pourrais être coach, thérapeute, directeur artistique, urbaniste..."
+INTERDIT : Toute liste de métiers, rôles, intitulés de postes, secteurs.
+INTERDIT : "Tu pourrais être X, ou Y, ou encore Z..."
+
+Cette règle est NON NÉGOCIABLE. Si tu génères une liste de métiers, le livret est un échec.
+
+À LA PLACE -- décris UNIQUEMENT la FONCTION NATURELLE :
+La manière dont la personne contribue, qui traverse des dizaines de contextes
+sans jamais nommer ces contextes comme des métiers.
+
+EXEMPLES CORRECTS :
+✓ "Ce qui te nourrit, c'est de transformer quelque chose de complexe en quelque
+  chose de transmissible -- peu importe le contexte dans lequel tu te trouves,
+  c'est toujours cette opération-là que tu accomplis."
+✓ "Ta façon de contribuer est invariable : tu entres dans un système, tu vois
+  ce qui ne tient pas, tu construis ce qui manque, tu transmets ce que tu as compris.
+  Le cadre change. La fonction, jamais."
+
+JAMAIS : "tu pourrais être entrepreneur, formateur, consultant, architecte..."
+
+═══════════════════════════════════════════════
+RÈGLE N°3 — TON ET POSTURE
+═══════════════════════════════════════════════
 - Tutoiement chaleureux et direct
-- Prose narrative uniquement -- zéro liste à puces
-- Concret, ancré, actionnable -- pas de généralités
-- La personne doit sentir qu'on a tout compris d'elle
+- Prose narrative uniquement -- zéro liste à puces dans le contenu
+- Concret, ancré, actionnable -- pas de généralités creuses
+- La personne doit sentir qu'on a passé des heures sur son cas
 
-GENRE : accordé selon les données (Homme/Femme). Tous les adjectifs, pronoms,
-participes en accord strict. Jamais de tournures inclusives.
-
+GENRE : accordé selon les données (Homme/Femme). Accord strict. Jamais inclusif.
 ANNÉE EN COURS : {annee_courante}
+LONGUEUR : entre 4500 et 5500 mots. Chaque paragraphe = minimum 6-7 lignes denses.
 
-LONGUEUR :
-- Chaque paragraphe = minimum 6-7 lignes denses
-- Livret complet : entre 3500 et 4500 mots
-- Court mais dense -- chaque phrase compte
-
-DONNÉES :
+═══════════════════════════════════════════════
+DONNÉES
+═══════════════════════════════════════════════
 {profils_txt}
 
-STRUCTURE (titres libres et poétiques -- adaptés à CE profil, jamais techniques) :
+═══════════════════════════════════════════════
+STRUCTURE OBLIGATOIRE
+═══════════════════════════════════════════════
 
-1. LETTRE D'OUVERTURE (2 paragraphes) -- Ce qui rend cette personne unique
-dans sa façon d'être au monde. Pourquoi la question de l'alignement entre
-être et faire est particulièrement centrale pour elle avec son profil précis.
-L'invitation à lire ce qui suit comme une boussole, pas comme une liste de métiers.
+━━━ COUCHE 1 : MIROIR ━━━
 
-2. CE QUE TU ES -- TON ARCHÉTYPE PROFOND (3 paragraphes denses) --
-Pas ce que tu fais, pas ce que tu as étudié -- ce que tu incarnes quand tu es
-pleinement toi-même. Ton archétype fondamental lu dans le croisement de tout
-le profil. La nature profonde de ton énergie au monde. Ce que les gens ressentent
-quand tu es dans ton élément. Une ou deux figures historiques, mythiques ou
-contemporaines qui partagent cet archétype -- pas pour comparer, pour ancrer
-et rendre concret. Tout cela sans jamais nommer les outils utilisés.
+[SECTION 1] LETTRE D'OUVERTURE (2 paragraphes denses)
+Ce qui rend cette personne singulière. Pourquoi l'alignement être/faire est
+central pour elle avec CE profil. Invitation à lire comme une boussole.
 
-3. CE QUE TU FAIS QUAND TU ES ALIGNÉ (3 paragraphes denses) --
-Pas une liste de métiers -- une description précise de comment tu travailles
-quand tu es dans ton flux naturel. Le type de missions qui t'énergisent.
-L'environnement qui te convient vraiment. Le rôle que tu occupes naturellement
-dans un collectif. La façon dont tu crées, décides, agis. Les domaines larges
-où ton profil trouve sa pleine expression. Dans le dernier paragraphe,
-intégrer naturellement dans la prose 5 à 8 exemples de métiers ou rôles
-concrets avec une phrase d'explication chacun -- pas listés, fondus dans le texte.
+[SECTION 2] TON ARCHITECTURE INTÉRIEURE (3 paragraphes denses)
+MIROIR pur. Ton archétype fondamental. La nature profonde de ton énergie.
+Ce que les autres ressentent quand tu es dans ton élément.
+Ta FONCTION NATURELLE en prose -- JAMAIS de liste de métiers.
+Une ou deux figures historiques/contemporaines pour ancrer l'archétype.
 
-4. L'ÉCART -- CE QUI SE PASSE QUAND TU N'ES PAS TOI (2 paragraphes denses) --
-Les signaux que la personne ignore souvent pendant des années : la fatigue
-particulière, le vide malgré le succès apparent, la résistance inexpliquée.
-Ce que le profil révèle comme zones de friction professionnelle -- les
-environnements, les types de missions, les dynamiques relationnelles au travail
-qui coûtent disproportionnellement. Sans dramatiser -- avec lucidité et bienveillance.
+━━━ COUCHE 2 : BOUSSOLE ━━━
 
-5. LE CHEMIN VERS L'ALIGNEMENT (3 paragraphes denses) --
-Pas "quitte ton boulot demain" -- un chemin progressif et ancré dans la réalité.
-Les questions concrètes à se poser au quotidien. Les micro-signaux à observer
-pour savoir si on se rapproche ou s'éloigne de soi. Ce que la phase de vie
-actuelle révèle comme fenêtre d'opportunité ou comme invitation à la patience.
-Ce que l'année en cours ouvre ou demande de consolider. Une direction claire --
-pas une réponse toute faite, mais une boussole personnalisée et actionnable.
+[SECTION 3] CE QUE CELA IMPLIQUE DANS TON TRAVAIL (3 paragraphes denses)
+§1 : comment tu travailles dans ton flux -- missions, rôle naturel, façon de créer.
+§2 : ton environnement idéal -- ce qui te nourrit, ce qui t'éteint.
+§3 : les signaux d'alarme -- fatigue sourde, vide malgré le succès. Lucide, bienveillant.
+⚠ AUCUNE liste de métiers.
 
-6. TA PHRASE D'ANCRAGE PROFESSIONNEL (1 paragraphe) --
-Une phrase courte, puissante, unique -- ancrée dans le profil précis.
-Pas un slogan -- une vérité sur ce que cette personne est venue faire
-dans ce monde par son travail. Quelque chose qu'elle pourra relire quand
-elle doutera. Introduire la phrase, l'expliquer brièvement, la laisser résonner.
+[SECTION 4 -- OBLIGATOIRE] TON PROFIL DE CONTRIBUTION
+Clé JSON : "profil_contribution"
+1 paragraphe d'intro + ces 7 lignes exactes en prose directe :
+Ton moteur : [ce qui te fait avancer -- 1 ligne précise et personnalisée]
+Ton besoin fondamental : [ce dont tu as besoin pour te sentir aligné]
+Ton mode naturel : [ex: observer → comprendre → structurer → transmettre]
+Ta contribution : [ce que tu apportes naturellement aux autres]
+Ton environnement idéal : [conditions concrètes pour être au meilleur]
+Ce qui t'éteint : [ce qui te vide -- précis, pas générique]
+Ton expression : [les FONCTIONS (jamais les métiers) dans lesquelles tu t'épanouis]
 
-7. MESSAGE FINAL (2 paragraphes) -- Chaleureux, porteur, concret.
-L'élan vers la prochaine étape. Ce qui devient possible quand l'être
-et le faire s'alignent vraiment.
+━━━ COUCHE 3 : MOUVEMENT ━━━
 
-RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+[SECTION 5] TES PROCHAINS PAS CONCRETS (3 paragraphes denses)
+§1 : ce que l'année {annee_courante} ouvre ou demande -- fenêtre tirée du profil.
+§2 : micro-signaux quotidiens -- situations concrètes, émotions précises à observer.
+§3 : exploration 30 jours -- 3 FONCTIONS à tester (jamais des métiers),
+     et comment évaluer après chaque essai (énergie ? facilité ? désir de recommencer ?).
+
+[SECTION 6 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
+Clé JSON : "questions_decision"
+1 paragraphe d'intro : ces questions sont ta boussole personnelle, tirées de CE profil,
+pour évaluer toute opportunité en 5 minutes -- poste, projet, reconversion, client.
+Puis 5 questions en prose continue, chacune formulée en tutoiement direct,
+SPÉCIFIQUES à ce profil (pas génériques), qui révèlent si la personne va vers elle ou loin d'elle.
+
+[SECTION 7] TA PHRASE D'ANCRAGE (1 paragraphe)
+Une phrase courte, unique, puissante -- vérité sur la façon de contribuer.
+À relire les jours de doute. Introduire + expliquer brièvement pourquoi c'est juste.
+
+[SECTION 8] MESSAGE FINAL (2 paragraphes)
+Chaleureux, porteur, concret. L'élan. Ce qui devient possible quand être et faire s'alignent.
+
+═══════════════════════════════════════════════
+FORMAT JSON OBLIGATOIRE
+═══════════════════════════════════════════════
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown, sans texte avant ou après.
+Les clés "profil_contribution" et "questions_decision" sont OBLIGATOIRES.
+
 {{
   "lettre": "<p>...</p><p>...</p>",
   "sections": [
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p>"}}
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}}
   ],
-  "mantra": {{"texte": "...", "note": "..."}},
+  "profil_contribution": "<p>...</p><p>Ton moteur : ...</p><p>Ton besoin fondamental : ...</p><p>Ton mode naturel : ...</p><p>Ta contribution : ...</p><p>Ton environnement idéal : ...</p><p>Ce qui t'éteint : ...</p><p>Ton expression : ...</p>",
+  "questions_decision": "<p>...</p><p>Première question : ...</p><p>Deuxième question : ...</p><p>Troisième question : ...</p><p>Quatrième question : ...</p><p>Cinquième question : ...</p>",
+  "mantras": [{{"prenom": "...", "texte": "...", "note": "..."}}],
   "message_final": "<p>...</p><p>...</p>"
 }}"""
 
@@ -634,12 +678,13 @@ def appeler_claude_vocation(profils_txt):
     prompt = PROMPT_VOCATION.format(annee_courante=annee_courante, profils_txt=profils_txt)
     import time
     last_exception = None
+    r = None
     for tentative in range(3):
         try:
             r = requests.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-opus-4-6", "max_tokens": 10000, "messages": [{"role": "user", "content": prompt}]},
+                json={"model": "claude-opus-4-6", "max_tokens": 14000, "messages": [{"role": "user", "content": prompt}]},
                 timeout=600
             )
             r.raise_for_status()
@@ -651,7 +696,16 @@ def appeler_claude_vocation(profils_txt):
                 time.sleep(30)
             else:
                 raise last_exception
-    return _extraire_json_claude(r) or FALLBACK_NARRATIF
+    if r is None:
+        return FALLBACK_NARRATIF
+    result = _extraire_json_claude(r) or FALLBACK_NARRATIF
+    # Normaliser mantra (objet) → mantras (liste) pour compatibilité generer_html/pdf
+    if result and "mantra" in result and "mantras" not in result:
+        m = result.pop("mantra")
+        result["mantras"] = [{"prenom": profils_txt.split("Prénom")[1].split("\n")[0].strip().split(":")[- 1].strip() if "Prénom" in profils_txt else "", "texte": m.get("texte", ""), "note": m.get("note", "")}]
+    if result and "mantras" not in result:
+        result["mantras"] = [{"prenom": "", "texte": "", "note": ""}]
+    return result
 
 
 def appeler_claude_naissance(profils_txt):
@@ -1515,9 +1569,22 @@ def generer_html(offre, clients, narratif, astros=None):
         narratif_solo_lettre = narratif.get('lettre', '')
         narratif_mantras = [narratif['mantra']] if narratif.get('mantra') else narratif.get('mantras', [])
     else:
-        sections_list = narratif.get('sections', [])
+        sections_list = list(narratif.get('sections', []))
         narratif_solo_lettre = narratif.get('lettre', '')
         narratif_mantras = narratif.get('mantras', [])
+        # Pour vocation : injecter profil_contribution et questions_decision
+        # comme sections dédiées si elles existent dans le narratif
+        if offre == 'vocation':
+            if narratif.get('profil_contribution'):
+                sections_list.append({
+                    'titre': 'Ton profil de contribution',
+                    'contenu': narratif['profil_contribution']
+                })
+            if narratif.get('questions_decision'):
+                sections_list.append({
+                    'titre': 'Tes 5 questions de décision',
+                    'contenu': narratif['questions_decision']
+                })
     n_sections = len(sections_list)
 
     # Comme dans le PDF : on rattache la roue à la section qui parle déjà de cette
@@ -2117,13 +2184,25 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     chapter_end_html = f'<div class="chapter-end"><div class="chapter-end-line"></div>{mandala_svg}<p class="chapter-end-word">ORIGIN</p><div class="chapter-end-line"></div></div>'
     seed_footer_html = f'<div id="seed-footer">{seed_footer_svg}</div>'
 
-    sections = narratif.get('sections', [])
+    sections = list(narratif.get('sections', []))
     if offre == 'solo':
         _mantras_pdf = [narratif['mantra']] if narratif.get('mantra') else narratif.get('mantras', [])
         _lettre_pdf = narratif.get('lettre', '')
     else:
         _mantras_pdf = narratif.get('mantras', [])
         _lettre_pdf = narratif.get('lettre', '')
+    # Pour vocation : injecter profil_contribution et questions_decision
+    if offre == 'vocation':
+        if narratif.get('profil_contribution'):
+            sections.append({
+                'titre': 'Ton profil de contribution',
+                'contenu': narratif['profil_contribution']
+            })
+        if narratif.get('questions_decision'):
+            sections.append({
+                'titre': 'Tes 5 questions de décision',
+                'contenu': narratif['questions_decision']
+            })
 
     # Associe chaque roue astrale à la section qui parle déjà de cette personne
     # (portrait, ciel natal...) plutôt que de l'isoler en annexe technique après
