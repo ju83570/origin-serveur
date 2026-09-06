@@ -835,17 +835,31 @@ GENRE : le genre est indiqué dans les données (Homme/Femme). Accorde TOUS les 
         'couple': """
 LE PRINCIPE ABSOLU : Le couple ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau -- pas le texte livré. Tu les utilises pour voir, puis tu écris ce que tu vois.
 
-STRUCTURE (5 mouvements, titres libres -- poétiques, adaptés à CE couple, jamais techniques) :
+STRUCTURE (7 mouvements, titres libres -- poétiques, adaptés à CE couple, jamais techniques) :
 
-1. CE QUE VOUS ÊTES L'UN POUR L'AUTRE (4 paragraphes) -- Ce que cette rencontre révèle des deux profils lus ensemble. Ce que chacun porte, ce que l'autre éveille, ce que leur combinaison crée. Prose vivante, aucun terme technique visible.
+1. CE QUE VOUS ÊTES L'UN POUR L'AUTRE (4 paragraphes) -- Ce que cette rencontre révèle des deux profils lus ensemble. Ce que chacun porte, ce que l'autre éveille, ce que leur combinaison crée. La compatibilité vibratoire et émotionnelle lue dans les profils croisés -- les forces naturelles du lien, les zones de friction créatrice. Prose vivante, aucun terme technique visible.
 
 2. QUI TU ES, [Personne 1] (4 paragraphes) -- Portrait immersif de cette personne lu dans l'ensemble de son profil. Comment cette personne fonctionne, ce qui la/le porte, ce qui la/le freine, ce qu'elle/il dégage. Impossible à donner à quelqu'un d'autre. Accorde selon le genre indiqué dans les données.
 
 3. QUI TU ES, [Personne 2] (4 paragraphes) -- Même profondeur, ton distinct. JAMAIS de copier-coller de la structure du portrait 1.
 
-4. CE QUE VOUS TRAVERSEZ EN CE MOMENT (3 paragraphes) -- La période actuelle lue dans les deux profils croisés : ce qui est en train de se jouer pour chacun, pour eux deux ensemble, les tensions et les ouvertures. Descriptif du présent, JAMAIS prédictif.
+4. CE QUE VOUS ÊTES VENUS APPRENDRE L'UN DE L'AUTRE (3 paragraphes) --
+Ce que les deux profils croisés révèlent comme contrat profond entre ces deux personnes.
+Ce qu'ils sont venus s'apprendre mutuellement -- les leçons que chacun incarne pour l'autre.
+Les zones de tension possibles lues dans les profils : non pas des défauts à corriger, mais des invitations à grandir. Ce que leur lien cherche à accomplir au-delà de l'amour quotidien.
+Les patterns qui pourraient se rejouer s'ils ne les nomment pas -- et comment leur profil combiné leur donne les ressources pour les transformer.
+Formulé avec profondeur et bienveillance -- jamais comme un verdict, toujours comme une invitation.
 
-5. CE QUE VOUS PORTEZ VERS DEMAIN (2 paragraphes) -- Un élan vers la suite. Ce qui se dégage pour eux ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
+5. CE QUE VOUS TRAVERSEZ EN CE MOMENT (3 paragraphes) -- La période actuelle lue dans les deux profils croisés : ce qui est en train de se jouer pour chacun, pour eux deux ensemble, les tensions et les ouvertures. Descriptif du présent, JAMAIS prédictif.
+
+6. VOTRE MÉTÉO RELATIONNELLE EN {annee_courante} (3 paragraphes) --
+Ce que l'année {annee_courante} apporte spécifiquement à CE couple, lu dans les cycles des deux profils croisés.
+Premier paragraphe : ce que cette année demande à chacun individuellement -- et comment ces deux dynamiques personnelles interagissent dans leur relation.
+Deuxième paragraphe : les fenêtres d'opportunité de l'année pour leur lien -- les périodes où leur énergie commune est la plus portante, ce qu'ils peuvent construire ensemble cette année.
+Troisième paragraphe : les zones de vigilance -- les moments où leurs cycles respectifs pourraient créer des frictions, et comment les naviguer avec conscience plutôt que les subir.
+JAMAIS de prédictions certaines. Toujours ancré dans les profils réels.
+
+7. CE QUE VOUS PORTEZ VERS DEMAIN (2 paragraphes) -- Un élan vers la suite. Ce qui se dégage pour eux ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
         'famille': """
 LE PRINCIPE ABSOLU : La famille ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau -- pas le texte livré.
 
@@ -916,8 +930,8 @@ Terminer par un paragraphe de synthèse et cette phrase obligatoire reformulée 
 7. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes) -- Un élan vers la suite pour cette lignée. Vision de ce qu'elle peut devenir. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
     }
     structure = structures.get(offre, structures['famille'])
-    mots_cible = "9 000 et 11 000" if offre == 'famille' else "4 500 et 6 000"
-    max_tokens_appel = 16000 if offre == 'famille' else 14000
+    mots_cible = "9 000 et 11 000" if offre == 'famille' else ("6 000 et 8 000" if offre == 'couple' else "4 500 et 6 000")
+    max_tokens_appel = 16000 if offre == 'famille' else (16000 if offre == 'couple' else 14000)
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
@@ -965,6 +979,9 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {{
   "sections": [
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}}
@@ -973,7 +990,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p><p>...</p>"
 }}
 
-Les titres sont libres et poétiques -- adaptés à CE profil. Pas de "Portrait", pas de "Synthèse", pas de titre générique."""
+Les titres sont libres et poétiques -- adaptés à CE couple. Pas de "Portrait", pas de "Synthèse", pas de titre générique."""
 
     import time
     last_exception = None
