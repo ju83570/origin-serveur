@@ -2365,6 +2365,57 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf(presentational_hints=True)
 
+def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client):
+    """Envoie les 2 livrets Bundle (Solo + Vocation) dans un seul email."""
+    prenoms = " & ".join(c['prenom'] for c in clients)
+    date_str = date.today().strftime('%Y%m%d')
+
+    attachments = [
+        {"content": base64.b64encode(html_solo.encode('utf-8')).decode('utf-8'),
+         "name": f"ORIGIN_Solo_{prenoms.replace(' ','_')}_{date_str}.html"},
+        {"content": base64.b64encode(pdf_solo).decode('utf-8'),
+         "name": f"ORIGIN_Solo_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"},
+        {"content": base64.b64encode(html_vocation.encode('utf-8')).decode('utf-8'),
+         "name": f"ORIGIN_Vocation_{prenoms.replace(' ','_')}_{date_str}.html"},
+        {"content": base64.b64encode(pdf_vocation).decode('utf-8'),
+         "name": f"ORIGIN_Vocation_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"},
+    ]
+
+    body_txt = f"""Nouveau Bundle ORIGIN généré automatiquement.
+
+Client(s) : {prenoms}
+Offre : BUNDLE (Solo + Vocation)
+Email client : {email_client}
+Date : {date.today().strftime('%d/%m/%Y')}
+
+Pièces jointes :
+- ORIGIN_Solo_... → livret Solo interactif
+- ORIGIN_Solo_..._imprimable.pdf → Solo version imprimable A4
+- ORIGIN_Vocation_... → livret Vocation interactif
+- ORIGIN_Vocation_..._imprimable.pdf → Vocation version imprimable A4
+
+Valide le contenu puis transfère les 2 livrets au client.
+"""
+
+    payload = {
+        "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
+        "to": [{"email": EMAIL_DEST}],
+        "subject": f"✦ ORIGIN -- Bundle Solo+Vocation -- {prenoms}",
+        "textContent": body_txt,
+        "attachment": attachments
+    }
+
+    r = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={"api-key": BREVO_SMTP_KEY, "content-type": "application/json"},
+        json=payload,
+        timeout=30
+    )
+    print(f"Brevo API response: {r.status_code} -- {r.text[:200]}")
+    r.raise_for_status()
+    print(f"✅ Email Bundle envoyé à {EMAIL_DEST}")
+
+
 def envoyer_email(html_content, pdf_bytes, clients, offre, email_client):
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
@@ -2457,11 +2508,15 @@ def webhook():
             offre_label = 'naissance'
             offre = 'solo'
             type_analyse = 'naissance'
+        elif offre == 'bundle':
+            offre_label = 'bundle'
+            # Le bundle génère 2 livrets : solo + vocation
+            # On garde offre='bundle' pour la branche clients ci-dessous
         else:
             offre_label = offre
 
         clients = []
-        if offre in ('solo', 'vocation'):
+        if offre in ('solo', 'vocation', 'bundle'):
             _h1, _m1 = parse_heure_minute(data, 1)
             clients = [{
                 'prenom': data.get('prenom1', ''),
@@ -2530,22 +2585,43 @@ def webhook():
 
         def generer():
             try:
-                narratif = appeler_claude(offre, profils_txt, type_analyse)
-                # Validation : sections présentes
-                if not narratif.get("sections"):
-                    raise ValueError("Narratif invalide -- aucune section générée")
-                # Détecter fallbacks d'erreur dans lettre ou premières sections
-                _check = narratif.get("lettre", "") + " ".join(
-                    s.get("contenu", "") for s in narratif.get("sections", [])[:2]
-                )
-                if "erreur technique" in _check.lower() or "en cours de préparation" in _check.lower():
-                    raise ValueError("Narratif invalide -- fallback d erreur détecté après parsing JSON")
-                html = generer_html(offre, clients, narratif, astros_clients)
-                pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
-                envoyer_email(html, pdf, clients, offre_label, email_client)
-                print(f"✅ Livret {offre} envoyé à {email_client}")
-                prenoms_log = " & ".join(c['prenom'] for c in clients)
-                log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
+                if offre_label == 'bundle':
+                    # Bundle : générer Solo + Vocation et envoyer ensemble
+                    narratif_solo     = appeler_claude('solo',     profils_txt, type_analyse)
+                    narratif_vocation = appeler_claude('vocation', profils_txt, type_analyse)
+                    for n, lbl in [(narratif_solo, 'solo'), (narratif_vocation, 'vocation')]:
+                        if not n.get('sections'):
+                            raise ValueError(f'Narratif {lbl} invalide -- aucune section générée')
+                        _chk = n.get('lettre', '') + ' '.join(
+                            s.get('contenu', '') for s in n.get('sections', [])[:2]
+                        )
+                        if 'erreur technique' in _chk.lower() or 'en cours de préparation' in _chk.lower():
+                            raise ValueError(f'Narratif {lbl} invalide -- fallback détecté')
+                    html_solo     = generer_html('solo',     clients, narratif_solo,     astros_clients)
+                    pdf_solo      = generer_pdf_imprimable('solo',     clients, narratif_solo,     astros_clients, type_analyse)
+                    html_vocation = generer_html('vocation', clients, narratif_vocation, astros_clients)
+                    pdf_vocation  = generer_pdf_imprimable('vocation', clients, narratif_vocation, astros_clients, type_analyse)
+                    envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client)
+                    print(f'✅ Bundle envoyé à {email_client}')
+                    prenoms_log = ' & '.join(c['prenom'] for c in clients)
+                    log_client_gsheet(email_client, prenoms_log, 'bundle', date.today().strftime('%d/%m/%Y'))
+                else:
+                    narratif = appeler_claude(offre, profils_txt, type_analyse)
+                    # Validation : sections présentes
+                    if not narratif.get("sections"):
+                        raise ValueError("Narratif invalide -- aucune section générée")
+                    # Détecter fallbacks d'erreur dans lettre ou premières sections
+                    _check = narratif.get("lettre", "") + " ".join(
+                        s.get("contenu", "") for s in narratif.get("sections", [])[:2]
+                    )
+                    if "erreur technique" in _check.lower() or "en cours de préparation" in _check.lower():
+                        raise ValueError("Narratif invalide -- fallback d erreur détecté après parsing JSON")
+                    html = generer_html(offre, clients, narratif, astros_clients)
+                    pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
+                    envoyer_email(html, pdf, clients, offre_label, email_client)
+                    print(f"✅ Livret {offre} envoyé à {email_client}")
+                    prenoms_log = " & ".join(c['prenom'] for c in clients)
+                    log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
             except Exception as ex:
                 print(f"ERREUR génération : {ex}")
                 import traceback; traceback.print_exc()
