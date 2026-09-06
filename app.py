@@ -723,15 +723,28 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 }"""
 
     a = _appel_claude_chunk(prompt_a, max_tokens=8000)
-    b = _appel_claude_chunk(prompt_b, max_tokens=8000)
+    b = _appel_claude_chunk(prompt_b, max_tokens=12000)  # FIX: section parents très dense
 
-    if not a or not b:
-        print("⚠️ Un chunk Naissance a échoué -- fallback")
+    # FIX: Valider chaque chunk avant fusion
+    if not a or not a.get("sections"):
+        print("⚠️ Chunk A Naissance invalide ou sections vides -- fallback")
+        return FALLBACK_NARRATIF
+    if not b or not b.get("sections"):
+        print("⚠️ Chunk B Naissance invalide ou sections vides -- retry unique")
+        import time; time.sleep(20)
+        b = _appel_claude_chunk(prompt_b, max_tokens=12000)
+        if not b or not b.get("sections"):
+            print("⚠️ Chunk B Naissance toujours invalide après retry -- fallback")
+            return FALLBACK_NARRATIF
+
+    sections_fusionnees = (a.get("sections") or []) + (b.get("sections") or [])
+    if not sections_fusionnees:
+        print("⚠️ Fusion Naissance : aucune section -- fallback")
         return FALLBACK_NARRATIF
 
     return {
         "lettre": a.get("lettre", ""),
-        "sections": (a.get("sections") or []) + (b.get("sections") or []),
+        "sections": sections_fusionnees,
         "mantras": b.get("mantras") or [{"prenom": "Votre enfant", "texte": "Tu es exactement là où tu dois être.", "note": ""}],
         "message_final": b.get("message_final", ""),
     }
