@@ -345,6 +345,102 @@ def calc_theme(j, m, a, ville, heure=None, minute=0, asc_force=None):
     asc_data = {'signe': asc_force, 'degre': None} if asc_force else None
     return {'planetes':planetes,'ascendant':asc_data}
 
+# ── Transits actuels sur le thème natal ─────────────────────────────────────
+
+PLANETES_LENTES = ['Jupiter', 'Saturne', 'Uranus', 'Neptune']
+ORBE_TRANSIT = 8.0  # degrés
+
+def _lon_planete_today(cls):
+    """Retourne la longitude écliptique d'une planète à la date du jour (midi UTC)."""
+    obs = sw.Observer()
+    obs.lat = '48.8566'; obs.lon = '2.3522'
+    today = date.today()
+    obs.date = f"{today.year}/{today.month}/{today.day} 12"
+    try:
+        p = cls(obs)
+        lon_deg = math.degrees(float(p.hlong))
+        if cls == sw.Sun:
+            lon_deg = (lon_deg + 180) % 360
+        return lon_deg % 360
+    except Exception:
+        return None
+
+def _aspect_str(orbe, type_asp):
+    if type_asp == 'conjonction':
+        intensite = 'forte' if orbe < 3 else 'active'
+    elif type_asp in ('opposition', 'carré'):
+        intensite = 'tendue' if orbe < 4 else 'présente'
+    else:
+        intensite = 'harmonieuse' if orbe < 4 else 'légère'
+    return f"{type_asp} {intensite} (orbe {orbe:.1f}°)"
+
+def calc_transits(planetes_natales, j_naissance, m_naissance, a_naissance):
+    """
+    Calcule les transits majeurs des planètes lentes sur le thème natal.
+    Retourne un bloc texte interne (jamais exposé au client).
+    """
+    aujourd_hui = date.today()
+    age = aujourd_hui.year - a_naissance - (
+        (aujourd_hui.month, aujourd_hui.day) < (m_naissance, j_naissance)
+    )
+
+    lignes = []
+
+    for nom_transit, cls in [
+        ('Jupiter', sw.Jupiter), ('Saturne', sw.Saturn),
+        ('Uranus', sw.Uranus), ('Neptune', sw.Neptune)
+    ]:
+        lon_t = _lon_planete_today(cls)
+        if lon_t is None:
+            continue
+
+        for nom_natal, data_natal in planetes_natales.items():
+            try:
+                idx_natal = SIGNES.index(data_natal['signe'])
+                lon_n = idx_natal * 30 + float(data_natal.get('degre', 0) or 0)
+            except (ValueError, TypeError):
+                continue
+
+            diff = abs(((lon_t - lon_n + 180) % 360) - 180)
+
+            for angle, type_asp in [(0, 'conjonction'), (180, 'opposition'),
+                                     (90, 'carré'), (120, 'trigone'), (60, 'sextile')]:
+                orbe = abs(diff - angle)
+                if orbe <= ORBE_TRANSIT:
+                    # Filtrer les aspects trop mineurs sauf pour conj/opp/carré sur planètes perso
+                    if type_asp in ('trigone', 'sextile') and nom_natal not in ('Soleil', 'Lune', 'Mercure', 'Vénus', 'Mars'):
+                        continue
+                    if nom_transit == nom_natal:
+                        continue
+                    lignes.append(
+                        f"  {nom_transit} en transit : {_aspect_str(orbe, type_asp)} avec {nom_natal} natal"
+                    )
+                    break
+
+    # Cycles de vie majeurs (Saturne, Jupiter)
+    notes = []
+    if 27 <= age <= 30:
+        notes.append("  Retour de Saturne (1er) : phase de structuration identitaire, remise en question des bases")
+    elif 57 <= age <= 60:
+        notes.append("  Retour de Saturne (2e) : bilan de vie, transmission, repositionnement en profondeur")
+    if 40 <= age <= 44:
+        notes.append("  Opposition de Saturne : crise de mi-parcours, confrontation à ce qui n'a pas été construit")
+    if age % 12 in (0, 1):
+        notes.append(f"  Retour de Jupiter (~{age} ans) : année d'expansion, d'opportunités et de renouveau")
+
+    if not lignes and not notes:
+        return ""
+
+    bloc = "\n\nCONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT\n"
+    bloc += "(Ne jamais mentionner planètes, transits ou termes astrologiques dans le texte livré.\n"
+    bloc += "Ces données colorent l'analyse : tensions, cycles, énergie du moment — traduits en prose humaine.)\n"
+    if lignes:
+        bloc += "\nTransits actifs :\n" + "\n".join(lignes)
+    if notes:
+        bloc += "\nCycles de vie :\n" + "\n".join(notes)
+    return bloc
+
+
 # ── Roue du thème astral (SVG) ───────────────────────────────────────────────
 SIGNES_ABBR = ['BÉLIER','TAUREAU','GÉMEAUX','CANCER','LION','VIERGE',
                'BALANCE','SCORPION','SAGITTAIRE','CAPRICORNE','VERSEAU','POISSONS']
@@ -481,6 +577,15 @@ def fmt_profil(p):
         asc = astro['ascendant']
         deg_str = f" {asc['degre']}°" if asc['degre'] else ""
         lines.append(f"  Ascendant  : {asc['signe']}{deg_str}")
+
+    # Transits actuels injectés silencieusement (usage interne prompt uniquement)
+    try:
+        bloc_transits = calc_transits(astro['planetes'], j, m, a)
+        if bloc_transits:
+            lines.append(bloc_transits)
+    except Exception as ex:
+        print(f"[transits] Calcul ignoré : {ex}")
+
     return "\n".join(lines), num, astro
 
 PROMPT_NAISSANCE = """Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
@@ -545,6 +650,15 @@ qui répond à trois questions dans l'ordre :
 Le client doit pouvoir dire à la fin :
 "Je me suis reconnu. Je comprends mieux comment je fonctionne.
 Je sais quoi rechercher ou éviter professionnellement. Je sais quoi faire dès lundi."
+
+═══════════════════════════════════════════════
+RÈGLE N°0 — TRANSITS ACTUELS (CONTEXTE INTERNE)
+═══════════════════════════════════════════════
+Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent
+dans les données, utilise-le pour affiner l'analyse — notamment les sections
+MOUVEMENT et TES PROCHAINS PAS CONCRETS.
+Ces informations colorent le ton, les tensions évoquées, l'énergie de la période.
+JAMAIS exposées : aucun terme planétaire, aucun mot "transit" dans le texte livré.
 
 ═══════════════════════════════════════════════
 RÈGLE N°1 — PRINCIPE ABSOLU : INVISIBILITÉ DES OUTILS
@@ -1066,6 +1180,8 @@ ANNÉE EN COURS : {annee_courante}
 
 LE PRINCIPE ABSOLU : Le client ne voit jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle", "transit". Ces outils sont ton matériau de lecture -- pas le texte livré. Tu les utilises pour voir, puis tu écris ce que tu vois en prose vivante.
 
+CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données ci-dessous, utilise-le pour affiner l'analyse des sections "ce que tu traverses en ce moment" et "ce que tu portes vers demain". Ces éléments colorent la texture de la période, les tensions intérieures, les ouvertures disponibles. JAMAIS exposés dans le texte : aucun terme planétaire, aucun mot "transit".
+
 STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), aucune liste, aucun terme technique visible. Titres libres et poétiques, adaptés à CE profil.
 
 DONNÉES :
@@ -1140,6 +1256,8 @@ def appeler_claude_couple(profils_txt):
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
+CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données, utilise-le pour affiner la lecture de chaque profil et la dynamique de couple — tensions du moment, cycles traversés, énergie disponible. JAMAIS exposé dans le texte : aucun terme planétaire, aucun mot "transit".
+
 LONGUEUR IMPERATIVE :
 - Chaque paragraphe = MINIMUM 6-7 lignes de prose dense.
 - Respecte EXACTEMENT le nombre de paragraphes indiqué.
@@ -1182,6 +1300,8 @@ Mouvement 3 -- Portrait de Personne 2 : 4 paragraphes, titre poétique libre ave
     prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
 ANNÉE EN COURS : {annee_courante}
+
+CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données, utilise-le pour affiner "ce que vous traversez en ce moment" et le message final. JAMAIS exposé : aucun terme planétaire dans le texte livré.
 
 LONGUEUR IMPERATIVE :
 - Chaque paragraphe = MINIMUM 6-7 lignes de prose dense.
