@@ -520,7 +520,7 @@ def build_natal_wheel_svg(planetes, ascendant=None):
     parts.append('</svg>')
     return "".join(parts)
 
-def fmt_profil(p):
+def fmt_profil(p, avec_transits=False):
     j,m,a = p['jour'],p['mois'],p['annee']
     pr,nm = p['prenom'],p.get('nom','')
     num = {
@@ -579,12 +579,14 @@ def fmt_profil(p):
         lines.append(f"  Ascendant  : {asc['signe']}{deg_str}")
 
     # Transits actuels injectés silencieusement (usage interne prompt uniquement)
-    try:
-        bloc_transits = calc_transits(astro['planetes'], j, m, a)
-        if bloc_transits:
-            lines.append(bloc_transits)
-    except Exception as ex:
-        print(f"[transits] Calcul ignoré : {ex}")
+    # Transits injectés uniquement pour Solo, Vocation, Couple, Bundle
+    if avec_transits:
+        try:
+            bloc_transits = calc_transits(astro['planetes'], j, m, a)
+            if bloc_transits:
+                lines.append(bloc_transits)
+        except Exception as ex:
+            print(f"[transits] Calcul ignoré : {ex}")
 
     return "\n".join(lines), num, astro
 
@@ -2807,7 +2809,7 @@ def webhook():
         profils_txt_parts = []
         astros_clients = []
         for c in clients:
-            txt, _, astro = fmt_profil(c)
+            txt, _, astro = fmt_profil(c, avec_transits=(offre_label in {'solo', 'vocation', 'couple', 'bundle'}))
             profils_txt_parts.append(txt)
             astros_clients.append(astro)
         profils_txt = "\n\n".join(profils_txt_parts)
@@ -2884,4 +2886,3 @@ def webhook():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
-
