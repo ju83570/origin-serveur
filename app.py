@@ -59,18 +59,39 @@ def parse_heure_minute(data, i):
         return h, m
     return parse_heure(heure_val)
 
-TIMEZONE_MAP = {
-    'france': 'Europe/Paris', 'fr': 'Europe/Paris',
-    'belgique': 'Europe/Brussels', 'suisse': 'Europe/Zurich',
-    'canada': 'America/Montreal', 'maroc': 'Africa/Casablanca',
-    'espagne': 'Europe/Madrid', 'italie': 'Europe/Rome',
-}
-
-def get_timezone(ville):
-    ville_lower = ville.lower()
-    for k, v in TIMEZONE_MAP.items():
-        if k in ville_lower:
-            return v
+def get_timezone(ville, lat=None, lon=None):
+    """
+    Retourne le nom du fuseau horaire IANA pour une ville.
+    Si lat/lon sont fournis, utilise timezonefinder (précis).
+    Sinon fallback sur une table de mots-clés, puis Europe/Paris.
+    """
+    # 1. timezonefinder (précis, basé sur les coordonnées)
+    if lat is not None and lon is not None:
+        try:
+            from timezonefinder import TimezoneFinder
+            tf = TimezoneFinder()
+            tz = tf.timezone_at(lat=lat, lng=lon)
+            if tz:
+                return tz
+        except Exception as _e:
+            pass
+    # 2. Fallback par mots-clés dans le nom de la ville
+    TIMEZONE_MAP = {
+        'france': 'Europe/Paris',
+        'belgique': 'Europe/Brussels', 'suisse': 'Europe/Zurich',
+        'canada': 'America/Montreal', 'maroc': 'Africa/Casablanca',
+        'espagne': 'Europe/Madrid', 'italie': 'Europe/Rome',
+        'london': 'Europe/London', 'angleterre': 'Europe/London',
+        'new york': 'America/New_York', 'los angeles': 'America/Los_Angeles',
+        'montreal': 'America/Montreal', 'québec': 'America/Montreal',
+        'tokyo': 'Asia/Tokyo', 'japon': 'Asia/Tokyo',
+        'casablanca': 'Africa/Casablanca', 'rabat': 'Africa/Casablanca',
+    }
+    if ville:
+        ville_lower = ville.lower()
+        for k, v in TIMEZONE_MAP.items():
+            if k in ville_lower:
+                return v
     return 'Europe/Paris'
 
 app = Flask(__name__)
@@ -80,6 +101,7 @@ BREVO_SMTP_LOGIN  = os.environ.get("BREVO_SMTP_LOGIN", "")
 BREVO_SMTP_KEY    = os.environ.get("BREVO_SMTP_KEY", "")
 EMAIL_DEST        = os.environ.get("EMAIL_DEST", "")
 GSHEET_WEBHOOK    = os.environ.get("GSHEET_WEBHOOK", "")
+WEBHOOK_SECRET    = os.environ.get("WEBHOOK_SECRET", "")
 
 
 def log_client_gsheet(email, prenom, offre, date_str):
@@ -287,27 +309,32 @@ def calcul_charnieres_prompt(j, m, a, prenom):
 
 
 def calcul_cycles_vie(j, m, a):
-    """Calcule les grandes étapes numériques sur 20 ans et génère le HTML de la section."""
+    """Calcule les grandes étapes vibratoires sur 20 ans et génère le HTML de la section."""
     annee_ref = date.today().year
 
     def ap_annee(annee):
         return reduire(j + m + reduire(sum(int(d) for d in str(annee))))
 
-    _, p4, _ = pinnacles(j, m, a)
+    # Pinnacle ACTUEL (pas forcément p4) selon l'âge
+    num_pin_actuel, val_pin_actuel, _ = pinnacles(j, m, a)
+
+    # p4 = pinnacle permanent (phase finale, > 36-cdv+18 ans)
+    cdv_val = chemin_de_vie(j, m, a)
+    p4 = reduire(j + sum(int(d) for d in str(a)))
 
     sens = {
         1:  ("Nouveau départ", "L'énergie d'initiation s'ouvre. Ce qui commence cette année porte la marque de tout ce qui précède. C'est le moment des premières pierres, pas des coups d'éclat."),
-        2:  ("Alliance et gestation", "Année de patience et de construction intérieure. Ce qui mûrit en silence cette année prend racine profondément."),
-        3:  ("Expression retrouvée", "L'énergie créative et communicante s'allume. Une porte s'ouvre vers la légèreté, vers ce qui fait plaisir, vers une forme d'expression longtemps mise de côté."),
-        4:  ("Construction de fond", "Année de travail patient, de fondation, de structure. Rien de spectaculaire -- mais ce qui se construit ici tient dans le temps."),
-        5:  ("Pivot et liberté", "Année de transformation et de mouvement. L'énergie pousse vers le changement, vers les décisions qui ouvrent des espaces. Le moment des choix courageux."),
-        6:  ("Ancrage et responsabilité", "Après le mouvement, l'année 6 demande de stabiliser -- les liens, les engagements, ce qui a été choisi. Une année de soin et de consolidation."),
-        7:  ("Approfondissement", "Année de retrait intérieur, de quête de sens. Ce qui mûrit en 7 n'est pas visible de l'extérieur -- mais c'est là que la compréhension s'installe durablement."),
-        8:  ("Récolte", "L'énergie de puissance et de reconnaissance s'active. Si le travail des années précédentes a été fait avec intégrité, cette année peut en révéler la mesure."),
-        9:  ("Bilan et lâcher-prise", "Fin de cycle. L'année 9 demande de ne pas retenir ce qui est terminé. Ce qui se dissout libère quelque chose pour le cycle suivant."),
-        11: ("Illumination", "Nombre maître. Année d'une intensité rare -- entre inspiration élevée et pression intérieure forte. Ce qui s'ouvre ici peut dépasser ce qu'on anticipait."),
-        22: ("Bâtisseur maître", "Nombre maître -- le plus exigeant du cycle. L'énergie appelle à penser et construire à très grande échelle. Ce qui se fait en 22 a une portée qui dépasse souvent l'intention initiale."),
-        33: ("Maître de l'amour universel", "Nombre maître rare. Année d'une profondeur exceptionnelle, tournée vers le service et la transmission."),
+        2:  ("Alliance et gestation", "Une période de patience et de construction intérieure. Ce qui mûrit en silence prend racine profondément."),
+        3:  ("Expression retrouvée", "L'énergie créative et communicante s'allume. Une porte s'ouvre vers la légèreté, vers une forme d'expression longtemps mise de côté."),
+        4:  ("Construction de fond", "Une période de travail patient, de fondation, de structure. Rien de spectaculaire — mais ce qui se construit ici tient dans le temps."),
+        5:  ("Pivot et liberté", "Une période de transformation et de mouvement. L'énergie pousse vers le changement, vers les décisions qui ouvrent des espaces."),
+        6:  ("Ancrage et responsabilité", "Après le mouvement, cette période demande de stabiliser — les liens, les engagements, ce qui a été choisi."),
+        7:  ("Approfondissement", "Une période de retrait intérieur, de quête de sens. Ce qui mûrit ici n'est pas visible de l'extérieur — mais c'est là que la compréhension s'installe durablement."),
+        8:  ("Récolte", "L'énergie de puissance et de reconnaissance s'active. Si le travail des années précédentes a été fait avec intégrité, cette période peut en révéler la mesure."),
+        9:  ("Bilan et lâcher-prise", "Fin de cycle. Cette période demande de ne pas retenir ce qui est terminé. Ce qui se dissout libère quelque chose pour la suite."),
+        11: ("Intensité rare", "Une période d'une intensité particulière — entre inspiration élevée et pression intérieure forte. Ce qui s'ouvre ici peut dépasser ce qu'on anticipait."),
+        22: ("Réalisation à grande échelle", "L'énergie appelle à penser et construire au-delà du quotidien. Ce qui se fait ici a une portée qui dépasse souvent l'intention initiale."),
+        33: ("Service et profondeur", "Une période d'une profondeur exceptionnelle, tournée vers le service et la transmission."),
     }
 
     etapes = []
@@ -315,7 +342,8 @@ def calcul_cycles_vie(j, m, a):
         n = ap_annee(an)
         age = an - a
         marquant = n in (1, 5, 8, 9, 11, 22, 33)
-        if n == p4:
+        # Marquer si vibration = pinnacle actuel (pas uniquement p4)
+        if n == val_pin_actuel:
             marquant = True
         if marquant:
             etapes.append((an, age, n))
@@ -326,7 +354,7 @@ def calcul_cycles_vie(j, m, a):
 
     cards_html = ""
     for an, age, n in etapes:
-        titre_type, texte = sens.get(n, ("Année notable", "Une année qui mérite attention."))
+        titre_type, texte = sens.get(n, ("Période notable", "Une période qui mérite attention."))
         is_now = (an == annee_ref)
         if n in (22, 11, 33):
             card_class = "cycle-maitre"
@@ -339,13 +367,12 @@ def calcul_cycles_vie(j, m, a):
         else:
             card_class = "cycle-fond"
 
-        _, p_num, _ = pinnacles(j, m, a)
+        # Résonances : termes neutres, sans jargon technique
         notes_res = []
-        if n == p4:
-            notes_res.append(f"en résonance avec ton Pinnacle permanent {p4}")
-        cdv = chemin_de_vie(j, m, a)
-        if n == cdv:
-            notes_res.append(f"en résonance avec ton Chemin de vie {cdv}")
+        if n == val_pin_actuel:
+            notes_res.append("en écho avec la vibration dominante de ta phase de vie")
+        if n == cdv_val:
+            notes_res.append("en résonance avec ta vibration fondamentale")
         res_txt = f" <em>({', '.join(notes_res)})</em>" if notes_res else ""
 
         now_badge = ' <span style="background:var(--or);color:#0A0908;padding:.1rem .4rem;border-radius:2px;font-size:.45rem;letter-spacing:.2em;margin-left:.5rem;font-family:\'Jost\',sans-serif;">MAINTENANT</span>' if is_now else ""
@@ -355,7 +382,7 @@ def calcul_cycles_vie(j, m, a):
   <div class="cycle-header">
     <div class="cycle-year">{an}{now_badge}</div>
     <div class="cycle-age">{age} ans</div>
-    <div class="cycle-num">Année personnelle {n}</div>
+    <div class="cycle-num">Vibration de l'année · {n}</div>
   </div>
   <div class="cycle-label-type">{titre_type}{res_txt}</div>
   <p class="cycle-text">{texte}</p>
@@ -363,12 +390,12 @@ def calcul_cycles_vie(j, m, a):
 
     section_html = f"""
 <div class="section-newpage chapter" id="s-cycles">
-  <span class="eyebrow">Numérologie des cycles · {annee_ref}–{annee_ref + 20}</span>
+  <span class="eyebrow">Tes grandes étapes · {annee_ref}–{annee_ref + 20}</span>
   <h2 class="section-title">Les grandes étapes qui viennent</h2>
   <div class="light-line"></div>
   <div class="prose">
-    <p>En numérologie, chaque année de vie porte une vibration propre. Elle ne détermine pas les événements -- elle colore le terrain, indique le type d'énergie disponible. Certaines années sont silencieuses, de construction intérieure. D'autres sont des années de bascule, de récolte ou d'épreuve -- elles méritent d'être connues à l'avance.</p>
-    <p>Ce qui suit n'est pas un horoscope. C'est une lecture de ta structure temporelle propre, calculée à partir de ta date de naissance. Les étapes signalées sont celles qui ont une intensité particulière sur les vingt prochaines années.</p>
+    <p>Chaque année de ta vie porte une vibration propre, calculée à partir de ta date de naissance. Elle ne détermine pas les événements — elle colore le terrain, indique le type d'énergie disponible. Certaines années sont silencieuses, de construction intérieure. D'autres sont des années de bascule, de récolte ou d'épreuve — elles méritent d'être connues à l'avance.</p>
+    <p>Ce qui suit n'est pas un horoscope. C'est une lecture de ta structure temporelle propre. Les étapes signalées sont celles qui ont une intensité particulière sur les vingt prochaines années.</p>
   </div>
   <div class="cycles-grid">
     {cards_html}
@@ -389,13 +416,46 @@ VILLES_FR = {
     "avignon":(43.9493,4.8055),"arles":(43.6767,4.6278),"nimes":(43.8367,4.3601),
 }
 
+_GEOCODE_CACHE = {}  # cache mémoire pour éviter les doublons d'appels
+
 def get_coords(ville):
-    key = ville.lower().strip().replace("saint ","saint-")
+    """
+    Retourne (lat, lon) pour une ville.
+    1. Cherche dans VILLES_FR (hardcodée)
+    2. Cherche dans le cache mémoire
+    3. Appelle Nominatim (OpenStreetMap) — gratuit, sans clé
+    4. Fallback Marseille si tout échoue
+    """
+    if not ville:
+        return 43.2965, 5.3698  # Marseille par défaut
+    key = ville.lower().strip().replace("saint ", "saint-")
+    # 1. Table hardcodée
     if key in VILLES_FR:
         return VILLES_FR[key]
     for k, v in VILLES_FR.items():
         if k in key or key in k:
             return v
+    # 2. Cache mémoire
+    if key in _GEOCODE_CACHE:
+        return _GEOCODE_CACHE[key]
+    # 3. Nominatim (OpenStreetMap) — timeout 5s
+    try:
+        import urllib.request, urllib.parse, json as _json
+        query = urllib.parse.urlencode({'q': ville, 'format': 'json', 'limit': 1})
+        url = f'https://nominatim.openstreetmap.org/search?{query}'
+        req = urllib.request.Request(url, headers={'User-Agent': 'ORIGIN-astro/1.0'})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = _json.loads(resp.read().decode())
+        if data:
+            lat = float(data[0]['lat'])
+            lon = float(data[0]['lon'])
+            _GEOCODE_CACHE[key] = (lat, lon)
+            print(f"[geocode] {ville} → lat={lat}, lon={lon}")
+            return lat, lon
+    except Exception as ex:
+        print(f"[geocode] Echec pour '{ville}' : {ex}")
+    # 4. Fallback Marseille
+    print(f"[geocode] Fallback Marseille pour '{ville}'")
     return 43.2965, 5.3698
 
 CORPS_EPHEM = {
@@ -408,34 +468,87 @@ def deg_signe(deg):
     deg = deg % 360
     return SIGNES[int(deg//30)], round(deg%30, 1)
 
+def _lon_ecliptique(p, epoch):
+    """Longitude écliptique géocentrique apparente, exprimée à l'équinoxe de la date."""
+    # PyEphem fournit g_ra/g_dec = position géocentrique apparente, epoch-of-date.
+    # On reconstruit explicitement des coordonnées équatoriales de la même époque
+    # avant conversion en écliptique, afin d'éviter les longitudes héliocentriques.
+    eq = sw.Equatorial(p.g_ra, p.g_dec, epoch=epoch)
+    ecl = sw.Ecliptic(eq, epoch=epoch)
+    return math.degrees(float(ecl.lon)) % 360
+
+
+def _calc_ascendant(obs, lat):
+    """Calcule l'Ascendant tropical à partir du temps sidéral local et de la latitude."""
+    # Formule de l'intersection orientale écliptique/horizon (Meeus).
+    lst = float(obs.sidereal_time())  # radians, temps sidéral local apparent
+    jd = sw.julian_date(obs)
+    T = (jd - 2451545.0) / 36525.0
+    # Obliquité moyenne de l'écliptique, suffisante à cette précision d'affichage.
+    eps_deg = 23.0 + 26.0/60.0 + 21.448/3600.0 - (
+        46.8150*T + 0.00059*T*T - 0.001813*T*T*T
+    ) / 3600.0
+    eps = math.radians(eps_deg)
+    phi = math.radians(float(lat))
+    asc = math.degrees(math.atan2(
+        math.cos(lst),
+        -(math.sin(lst) * math.cos(eps) + math.tan(phi) * math.sin(eps))
+    )) % 360.0
+    signe, degre = deg_signe(asc)
+    return {'signe': signe, 'degre': degre}
+
+
 def calc_theme(j, m, a, ville, heure=None, minute=0, asc_force=None):
     lat, lon = get_coords(ville)
     h = heure if heure is not None else 12
+    minute = safe_int(minute, 0)
+    dt_local = datetime(a, m, j, h, minute)
+
+    # Conversion locale -> UTC avec gestion explicite de l'heure d'été.
     try:
-        dt = datetime(a, m, j, h, minute)
-        tz_name = get_timezone(ville)
-        offset = pytz.timezone(tz_name).localize(dt).utcoffset().total_seconds()/3600
-    except Exception:
-        offset = 1.0
-    heure_utc = h + minute/60 - offset
+        tz_name = get_timezone(ville, lat=lat, lon=lon)
+        tz = pytz.timezone(tz_name)
+        try:
+            aware = tz.localize(dt_local, is_dst=None)
+        except pytz.AmbiguousTimeError:
+            # Heure répétée lors du passage à l'heure d'hiver : convention heure standard.
+            aware = tz.localize(dt_local, is_dst=False)
+        except pytz.NonExistentTimeError:
+            # Heure sautée lors du passage à l'heure d'été : convention heure d'été.
+            aware = tz.localize(dt_local, is_dst=True)
+        dt_utc = aware.astimezone(pytz.UTC)
+    except Exception as exc:
+        raise ValueError(f"Impossible de déterminer le fuseau/UTC pour {ville!r}: {exc}") from exc
+
     obs = sw.Observer()
-    obs.lat = str(lat); obs.lon = str(lon)
-    obs.date = f"{a}/{m}/{j} {heure_utc:.4f}"
+    obs.lat = str(lat)
+    obs.lon = str(lon)
+    obs.date = sw.Date(dt_utc.strftime('%Y/%m/%d %H:%M:%S'))
+    obs.epoch = obs.date
+    obs.pressure = 0  # pas de réfraction atmosphérique pour le thème natal
+
     planetes = {}
     for nom, cls in CORPS_EPHEM.items():
         try:
             p = cls(obs)
-            lon_deg = math.degrees(float(p.hlong))
-            if nom == 'Soleil':
-                lon_deg = (lon_deg + 180) % 360
-            else:
-                lon_deg = lon_deg % 360
+            lon_deg = _lon_ecliptique(p, obs.date)
             s, d = deg_signe(lon_deg)
-            planetes[nom] = {'signe':s,'degre':d}
-        except Exception:
-            planetes[nom] = {'signe':'?','degre':0}
-    asc_data = {'signe': asc_force, 'degre': None} if asc_force else None
-    return {'planetes':planetes,'ascendant':asc_data}
+            planetes[nom] = {'signe': s, 'degre': d}
+        except Exception as exc:
+            print(f"[astro] Position impossible pour {nom}: {exc}")
+            planetes[nom] = {'signe': '?', 'degre': None}
+
+    # Un Ascendant réel n'est calculable que si l'heure de naissance est connue.
+    if heure is not None:
+        try:
+            asc_data = _calc_ascendant(obs, lat)
+        except Exception as exc:
+            print(f"[astro] Ascendant non calculé: {exc}")
+            asc_data = {'signe': asc_force, 'degre': None} if asc_force else None
+    else:
+        asc_data = {'signe': asc_force, 'degre': None} if asc_force else None
+
+    return {'planetes': planetes, 'ascendant': asc_data}
 
 # ── Transits actuels sur le thème natal ─────────────────────────────────────
 
@@ -443,17 +556,14 @@ PLANETES_LENTES = ['Jupiter', 'Saturne', 'Uranus', 'Neptune']
 ORBE_TRANSIT = 8.0  # degrés
 
 def _lon_planete_today(cls):
-    """Retourne la longitude écliptique d'une planète à la date du jour (midi UTC)."""
+    """Retourne la longitude écliptique géocentrique d'une planète à la date du jour (midi UTC)."""
     obs = sw.Observer()
     obs.lat = '48.8566'; obs.lon = '2.3522'
     today = date.today()
     obs.date = f"{today.year}/{today.month}/{today.day} 12"
     try:
         p = cls(obs)
-        lon_deg = math.degrees(float(p.hlong))
-        if cls == sw.Sun:
-            lon_deg = (lon_deg + 180) % 360
-        return lon_deg % 360
+        return _lon_ecliptique(p, obs.date)
     except Exception:
         return None
 
@@ -695,7 +805,8 @@ Tu reçois les données numériques et astrologiques d'un enfant qui vient de na
 Ton rôle : rédiger un carnet d'empreinte de naissance -- un document profond, poétique et concret que les parents liront comme une boussole pour accompagner cet enfant tout au long de sa vie.
 
 TON ET POSTURE :
-- Parle de l'enfant à la troisième personne : "cet enfant", "il/elle" (utilise le prénom très souvent)
+- Parle de l'enfant à la troisième personne (utilise le prénom très souvent)
+- GENRE : le genre de l'enfant est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence dans l'intégralité du texte. Les tournures inclusives ("il/elle", "venu·e") sont INTERDITES -- choisis le bon accord selon le genre fourni
 - Ton contemplatif, lumineux, ancré -- comme une sage-femme de l'âme
 - Jamais de jargon ésotérique brut -- traduis tout en langage humain
 - Les parents doivent ressentir qu'ils tiennent quelque chose de précieux
@@ -718,14 +829,14 @@ DONNÉES :
 {profils_txt}
 
 STRUCTURE :
-1. LETTRE D'OUVERTURE (3 paragraphes -- ce que ce jour de naissance révèle, l'énergie fondamentale de cet enfant, ce qu'il/elle porte comme lumière)
-2. SON CHEMIN DE VIE (3 paragraphes -- mission profonde, ce qu'il/elle est venu apprendre et incarner, comment ce chemin se manifestera dans son enfance puis plus tard)
+1. LETTRE D'OUVERTURE (3 paragraphes -- ce que ce jour de naissance révèle, l'énergie fondamentale de cet enfant, ce qu'il ou elle porte comme lumière -- accorder selon le genre fourni)
+2. SON CHEMIN DE VIE (3 paragraphes -- mission profonde, ce que cet enfant est venu apprendre et incarner -- accorder selon le genre fourni, comment ce chemin se manifestera dans son enfance puis plus tard)
 3. SES DONS NATURELS (3 paragraphes -- ce qui lui vient facilement, ses forces innées issues des nombres dominants, des situations concrètes d'enfance où ces dons apparaîtront)
 4. SES ZONES DE CROISSANCE (2 paragraphes -- les apprentissages qui l'attendront, zones manquantes traitées avec douceur et espoir, sans dramatiser)
 5. SON CIEL NATAL (3 paragraphes -- Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse du tempérament et de la sensibilité propre à cet enfant)
 6. LES GRANDES ÉTAPES (2 paragraphes -- ses années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation prévisibles)
 7. POUR VOUS, PARENTS (3 paragraphes -- comment accompagner cet enfant selon son profil précis, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler et comment éviter de projeter)
-8. UN MOT POUR LUI QUAND IL SERA GRAND (1 paragraphe long -- écrit directement à l'enfant, qu'il/elle pourra lire un jour, chaleureux, profond, porteur d'espoir)
+8. UN MOT POUR LUI QUAND IL SERA GRAND (1 paragraphe long -- écrit directement à l'enfant, qu'il ou elle pourra lire un jour -- accorder selon le genre fourni, chaleureux, profond, porteur d'espoir)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {{
@@ -970,7 +1081,7 @@ enfant, que ses parents liront et lui transmettront comme une boussole tout au l
 
 TON ET POSTURE :
 - Tutoiement systématique : adresse-toi DIRECTEMENT à l'enfant ("tu", "ton", "ta", "toi"), jamais à la troisième personne --
-  comme si ce texte lui était déjà destiné et qu'il/elle le lira en grandissant, même si ce sont ses parents qui le lisent
+  comme si ce texte était déjà destiné à cet enfant et qu'il ou elle le lira en grandissant (accorder selon le genre fourni), même si ce sont ses parents qui le lisent
   les premiers aujourd'hui
 - Utilise son prénom très souvent, mêlé au tutoiement
 - Ton contemplatif, lumineux, ancré -- comme une sage-femme de l'âme
@@ -997,7 +1108,7 @@ DONNÉES :
 
     prompt_a = base + """STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
 1. LETTRE D'OUVERTURE (3 paragraphes, tutoiement -- ce que ce jour de naissance révèle, ton énergie fondamentale, ce que tu portes comme lumière)
-2. TON CHEMIN DE VIE (3 paragraphes, tutoiement -- ta mission profonde, ce que tu es venu·e apprendre et incarner, comment ce chemin se manifestera)
+2. TON CHEMIN DE VIE (3 paragraphes, tutoiement -- ta mission profonde, ce que tu apprends à comprendre et à incarner, comment ce chemin peut se manifester)
 3. TES DONS NATURELS (3 paragraphes, tutoiement -- ce qui te vient facilement, tes forces innées, scènes concrètes d'enfance)
 4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement -- les apprentissages qui t'attendront, zones manquantes avec douceur et espoir)
 
@@ -1026,7 +1137,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "sections": [
     {"titre": "Ton ciel natal", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
     {"titre": "Tes grandes étapes", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "Pour vous, parents", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
+    {"titre": "Pour vous, parents", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}
   ],
   "mantras": [{"prenom": "...", "texte": "...", "note": "..."}],
   "message_final": "<p>...</p>"
@@ -1237,16 +1348,15 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}}
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}}
   ],
-  "mantra": {{"texte": "...", "note": "..."}},
+  "mantras": [{{"prenom": "Famille", "texte": "...", "note": "..."}}],
   "message_final": "<p>...</p><p>...</p>"
 }}
 
-Les titres sont libres et poétiques -- adaptés à CE couple. Pas de "Portrait", pas de "Synthèse", pas de titre générique."""
+Les titres sont libres et poétiques -- adaptés à CE foyer. Pas de "Portrait", pas de "Synthèse", pas de titre générique."""
 
     import time
     last_exception = None
@@ -1268,7 +1378,13 @@ Les titres sont libres et poétiques -- adaptés à CE couple. Pas de "Portrait"
             else:
                 print(f"3 tentatives echouees -- abandon")
                 raise last_exception
-    return _extraire_json_claude(r) or FALLBACK_NARRATIF
+    result = _extraire_json_claude(r)
+    if result and "mantra" in result and "mantras" not in result:
+        m = result.pop("mantra") or {}
+        result["mantras"] = [{"prenom": "Famille", "texte": m.get("texte", ""), "note": m.get("note", "")}]
+    if result and "mantras" not in result:
+        result["mantras"] = []
+    return result or FALLBACK_NARRATIF
 
 
 def _extraire_json_claude(r):
@@ -1378,7 +1494,7 @@ Mouvement 4 -- LES TEMPS QUI VIENNENT (titre poétique libre, 3 paragraphes long
 INSTRUCTION : Si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le pour situer les grandes bascules à venir. Ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Traduire en prose humaine pure.
 - §1 : une ou deux années charnières proches -- la texture de ce qui s'approche, l'invitation de la période. Concret, ancré dans CE profil.
 - §2 : un passage plus lointain mais significatif -- ce que cette personne porte vers une transformation plus profonde dans les 5-10 ans. Formulé avec confiance mais sans certitude.
-- §3 : les ressources de CE profil pour traverser ces temps forts -- ce qu'il/elle porte comme boussole intérieure pour naviguer les bascules à venir.
+- §3 : les ressources de CE profil pour traverser ces temps forts -- ce que cette personne porte comme boussole intérieure pour naviguer les bascules à venir.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
@@ -1631,8 +1747,8 @@ STRUCTURE (rediger uniquement ces 3 parties) :
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
+  "lettre": "<p>...</p><p>...</p><p>...</p><p>...</p>",
   "sections": [
-    {"titre": "...", "contenu": "<p>...</p>..."},
     {"titre": "...", "contenu": "<p>...</p>..."},
     {"titre": "...", "contenu": "<p>...</p>..."}
   ]
@@ -1657,36 +1773,34 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     {"titre": "...", "contenu": "<p>...</p>..."},
     {"titre": "...", "contenu": "<p>...</p>..."}
   ]
+}
 
 Mouvement 3 -- Ce que les racines portent : 5 paragraphes, titre poétique libre. Profils parentaux lus en prose, aucun terme technique.
 Mouvement 4 -- Ce qui se répète sans le savoir : 4 paragraphes, titre poétique libre. Patterns sur 3 générations, JAMAIS de scènes inventées.
 Mouvement 5 -- Comment être avec chaque enfant : 1 paragraphe dense par enfant + synthèse. Titre poétique libre.
-Mouvement 6 -- Ce qui peut se dénouer : 3 paragraphes, titre poétique libre. Pistes de libération, prose bienveillante.
-}"""
+Mouvement 6 -- Ce qui peut se dénouer : 3 paragraphes, titre poétique libre. Pistes de libération, prose bienveillante."""
 
     prompt_c = pre("1200-1800") + """
-STRUCTURE (rediger uniquement ces 2 parties) :
-1. OMBRES VERS LUMIERES (3 tensions transgenerationnelles, 1 paragraphe dense chacune : pattern concret observe sur plusieurs generations + bascule + lumiere + phrase de liberation. JAMAIS de scenes biographiques inventees. JAMAIS de predictions certaines.)
-2. MANTRAS (un par membre du foyer ancre dans son profil numerologique et astrologique + un mantra de lignee commun qui honore les racines et ouvre vers l'avenir. Chaque mantra : phrase poétique courte + note 2-3 lignes qui explique quels chiffres/planetes l'ancrent.)
-3. MESSAGE FINAL (3 paragraphes longs -- ancre dans l'espoir, la transmission consciente et la beaute de ce que cette lignee peut creer. JAMAIS de predictions certaines.)
+STRUCTURE (rédiger uniquement ces 3 éléments) :
+1. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes longs -- mouvement 7 de la lecture. Élan, espoir, transmission consciente. JAMAIS de prédictions certaines.)
+2. MANTRAS (un par membre du foyer + un mantra de lignée commun. Chaque mantra : phrase poétique courte + note 2-3 lignes expliquant l'ancrage, sans afficher de jargon technique au client.)
+3. MESSAGE FINAL (3 paragraphes longs -- ancré dans l'espoir, la transmission consciente et la beauté de ce que cette lignée peut créer. JAMAIS de prédictions certaines.)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
-    {"titre": "...", "contenu": "<p>...</p>..."}
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
   ],
   "mantras": [
     {"prenom": "...", "texte": "...", "note": "..."}
   ],
-  "message_final": "<p>...</p>"
+  "message_final": "<p>...</p><p>...</p><p>...</p>"
 }
-
-Mouvement 7 -- Ce que vous portez vers demain : 3 paragraphes, titre poétique libre. Élan, espoir, transmission consciente. JAMAIS de prédictions.
 """
 
     a = _appel_claude_chunk(prompt_a, max_tokens=8000)
     b = _appel_claude_chunk(prompt_b, max_tokens=16000)
-    c = _appel_claude_chunk(prompt_c, max_tokens=3000)
+    c = _appel_claude_chunk(prompt_c, max_tokens=4500)
 
     if not a or not b or not c:
         print("⚠️ ATTENTION : un des 3 morceaux Prestige a echoue -- fallback d'erreur")
@@ -1848,9 +1962,13 @@ SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="htt
 <circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="5.1s" repeatCount="indefinite"><mpath href="#sgPath7"/></animateMotion></circle>
 </svg>"""
 
-def generer_html(offre, clients, narratif, astros=None):
+def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     annee = date.today().year
-    if offre == 'solo':
+    est_naissance = (type_analyse == 'naissance')
+    if est_naissance:
+        noms = f"{clients[0]['prenom']} {clients[0].get('nom','')}"
+        tagline = "Une boussole de naissance à relire à chaque étape de la vie."
+    elif offre == 'solo':
         noms = f"{clients[0]['prenom']} {clients[0].get('nom','')}"
         tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
     elif offre == 'couple':
@@ -1885,36 +2003,6 @@ def generer_html(offre, clients, narratif, astros=None):
                 })
     n_sections = len(sections_list)
 
-    # Comme dans le PDF : on rattache la roue à la section qui parle déjà de cette
-    # personne (portrait / ciel natal) plutôt que de l'isoler en annexe technique
-    # après coup -- sinon numéro et astro se lisent comme deux lectures séparées,
-    # et le graphique arrive sans aucune explication.
-    _ASTRO_KEYWORDS = ('astro', 'ciel', 'natal', 'astral')
-
-    def _match_section_index_web(prenom, used):
-        prenom_low = prenom.lower()
-        for i, sec in enumerate(sections_list):
-            if i in used:
-                continue
-            blob = (sec.get('titre','') + ' ' + sec.get('eyebrow','')).lower()
-            if any(k in blob for k in _ASTRO_KEYWORDS) and (len(clients) == 1 or prenom_low in blob):
-                return i
-        for i, sec in enumerate(sections_list):
-            if i in used:
-                continue
-            blob = (sec.get('titre','') + ' ' + sec.get('eyebrow','')).lower()
-            if prenom_low in blob:
-                return i
-        return None
-
-
-    n_wheel_standalone = 0
-    nb = 2 + n_sections + n_wheel_standalone + 1 + 1
-    nav = "\n".join(
-        f'<div class="nav-dot{"  active" if i==0 else ""}" data-section="{i}"></div>'
-        for i in range(nb)
-    )
-
     sections_html = ""
     for i, sec in enumerate(sections_list):
         delay = i * 0.1
@@ -1928,10 +2016,40 @@ def generer_html(offre, clients, narratif, astros=None):
   </div>
 </section>"""
 
-    # Pages "Thème astral" de secours -- uniquement pour les personnes dont aucune
-    # section ne pouvait servir d'ancrage (fallback, ne devrait presque jamais arriver).
+    # Roues astrales : sections réellement générées à partir des positions calculées.
     wheel_html = ""
-    wheel_html = ""
+    wheel_ids = []
+    for idx, (cl, astro) in enumerate(zip(clients, astros or [])):
+        if not astro or not astro.get('planetes'):
+            continue
+        sid = f"s-wheel-{idx}"
+        wheel_ids.append(sid)
+        svg = build_natal_wheel_svg(astro.get('planetes', {}), astro.get('ascendant'))
+        rows = ""
+        for nom in CORPS_EPHEM.keys():
+            d = astro.get('planetes', {}).get(nom, {})
+            if not d or d.get('signe') in (None, '?'):
+                continue
+            deg = d.get('degre')
+            value = d.get('signe', '') if deg is None else f"{d.get('signe','')} · {float(deg):.1f}°"
+            rows += f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">{nom}</span><span class="wheel-legend-value-web">{value}</span></div>'
+        asc = astro.get('ascendant') or {}
+        if asc.get('signe'):
+            deg = asc.get('degre')
+            value = asc['signe'] if deg is None else f"{asc['signe']} · {float(deg):.1f}°"
+            rows += f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">Ascendant</span><span class="wheel-legend-value-web">{value}</span></div>'
+        wheel_html += f"""
+<section class="section section-sep wheel-section" id="{sid}">
+  <div class="reveal">
+    <span class="s-eyebrow">Carte du ciel</span>
+    <h2 class="s-title">Le ciel de {cl.get('prenom','')}</h2>
+    <div class="light-line"></div>
+    <p class="wheel-caption-web">Cette roue situe les principaux corps célestes dans le zodiaque au moment de la naissance.</p>
+    <div class="wheel-wrap-web">{svg}</div>
+    <div class="wheel-legend-web">{rows}</div>
+  </div>
+</section>"""
+    n_wheel_standalone = len(wheel_ids)
 
     # Cycles de vie -- tous formats
     cycles_web_html = ""
@@ -1944,7 +2062,7 @@ def generer_html(offre, clients, narratif, astros=None):
   <div class="reveal">{inner}</div>
 </section>"""
 
-    if offre == 'solo' and clients:
+    if offre == 'solo' and clients and not est_naissance:
         bloc = calcul_cycles_vie(clients[0]['jour'], clients[0]['mois'], clients[0]['annee'])
         if bloc:
             cycles_web_html = _wrap_cycle_web(bloc)
@@ -1966,7 +2084,7 @@ def generer_html(offre, clients, narratif, astros=None):
                 bloc = bloc.replace('Les grandes étapes qui viennent', f'Les grandes étapes de {prenom}')
                 cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-{idx}")
         if offre == 'prestige':
-            parents = [c for c in clients if c.get('role') in ('parent','pere','mere','grand-parent')]
+            parents = [c for c in clients if any(k in ((c.get('role') or c.get('filiation') or '').lower()) for k in ('parent','pere','père','mere','mère','grand'))]
             if not parents:
                 parents = [c for c in clients[2:] if c.get('annee', 2010) < 1975]
             for idx, cl in enumerate(parents[:2]):
@@ -1989,9 +2107,23 @@ def generer_html(offre, clients, narratif, astros=None):
 </div>"""
 
 
-    sm = 2 + n_sections + n_wheel_standalone
+    # Navigation basée sur les IDs réellement présents dans le DOM.
+    sm = 2 + n_sections
     sf = sm + 1
-    sid_list = json.dumps([f's{i}' for i in range(nb)])
+    _sids = ['s0']
+    if narratif_solo_lettre:
+        _sids.append('s1')
+    _sids.extend(f's{i+2}' for i in range(n_sections))
+    _sids.extend(wheel_ids)
+    import re as _re
+    _cycle_ids = _re.findall(r'id="(s-cycles[^"]*)"', cycles_web_html)
+    _sids.extend(cid for cid in _cycle_ids if cid not in _sids)
+    _sids.extend([f's{sm}', f's{sf}'])
+    nav = "\n".join(
+        f'<div class="nav-dot{"  active" if i == 0 else ""}" data-section="{i}"></div>'
+        for i in range(len(_sids))
+    )
+    sid_list = json.dumps(_sids)
 
     return f"""<!DOCTYPE html>
 <html lang="fr">
@@ -2011,7 +2143,7 @@ def generer_html(offre, clients, narratif, astros=None):
   <div class="cover-bg-pulse"></div>
   <div class="particles" id="particles"></div>
   <div class="cover-content">
-    <p class="cover-eyebrow">Analyse personnalisée · {offre.capitalize()} · {annee}</p>
+    <p class="cover-eyebrow">Analyse personnalisée · {"Naissance" if est_naissance else offre.capitalize()} · {annee}</p>
     <h1 class="cover-title">ORIGIN</h1>
     <div class="seed-wrap">
       <div class="seed-pulse"></div>
@@ -2032,7 +2164,7 @@ def generer_html(offre, clients, narratif, astros=None):
 {('''<section class="section section-sep" id="s1">
   <div class="reveal">
     <span class="s-eyebrow">Avant tout</span>
-    <h2 class="s-title">Une lettre pour vous</h2>
+    <h2 class="s-title">{"Une lettre pour toi" if est_naissance else "Une lettre pour vous"}</h2>
     <div class="light-line"></div>
     <div class="lettre">
       <div class="prose">''' + narratif_solo_lettre + '''</div>
@@ -2043,6 +2175,8 @@ def generer_html(offre, clients, narratif, astros=None):
 {sections_html}
 
 {wheel_html}
+
+{cycles_web_html}
 
 <section class="section section-sep" id="s{sm}">
   <div class="reveal">
@@ -2452,8 +2586,12 @@ def _get_logo_b64():
 
 def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='adulte'):
     annee = date.today().year
+    est_naissance = (type_analyse == 'naissance')
 
-    if offre == 'solo':
+    if est_naissance:
+        noms_display = f"{clients[0]['prenom']} {clients[0].get('nom','')}"
+        tagline = "Une boussole de naissance à relire à chaque étape de la vie."
+    elif offre == 'solo':
         noms_display = f"{clients[0]['prenom']} {clients[0].get('nom','')}"
         tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
     elif offre == 'couple':
@@ -2502,37 +2640,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 'contenu': narratif['questions_decision']
             })
 
-    # Associe chaque roue astrale à la section qui parle déjà de cette personne
-    # (portrait, ciel natal...) plutôt que de l'isoler en annexe technique après
-    # coup -- sinon la lecture se lit comme "numéro puis astro séparés" au lieu
-    # d'une lecture croisée, et le lecteur n'a aucune explication pour situer
-    # le graphique. On matche par mot-clé astro dans le titre/eyebrow, sinon
-    # par prénom du client dans le titre (cas couple/famille).
-    _ASTRO_KEYWORDS = ('astro', 'ciel', 'natal', 'astral')
-
-    def _match_section_index(prenom, used):
-        prenom_low = prenom.lower()
-        for i, sec in enumerate(sections):
-            if i in used:
-                continue
-            blob = (sec.get('titre','') + ' ' + sec.get('eyebrow','')).lower()
-            if any(k in blob for k in _ASTRO_KEYWORDS) and (len(clients) == 1 or prenom_low in blob):
-                return i
-        for i, sec in enumerate(sections):
-            if i in used:
-                continue
-            blob = (sec.get('titre','') + ' ' + sec.get('eyebrow','')).lower()
-            if prenom_low in blob:
-                return i
-        return None
-
-
-
     sections_html = ""
     for i, sec in enumerate(sections):
-        # Pas de marque de fin après un chapitre qui embarque déjà la roue : la
-        # légende conclut le chapitre visuellement, ajouter "· · ·" ne ferait
-        # que risquer d'orpheliner ce petit signe seul sur une nouvelle page.
         close_mark = '<div class="chapter-close">· · ·</div>'
         sections_html += f"""
 <div class="section-newpage chapter">
@@ -2543,10 +2652,33 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   {close_mark}
 </div>"""
 
-    # Pages "Thème astral" de secours -- uniquement pour les personnes dont aucune
-    # section ne pouvait servir d'ancrage (fallback, ne devrait presque jamais arriver).
     wheel_pages_html = ""
-    wheel_pages_html = ""
+    for cl, astro in zip(clients, astros or []):
+        if not astro or not astro.get('planetes'):
+            continue
+        svg = build_natal_wheel_svg(astro.get('planetes', {}), astro.get('ascendant'))
+        rows = ""
+        for nom in CORPS_EPHEM.keys():
+            d = astro.get('planetes', {}).get(nom, {})
+            if not d or d.get('signe') in (None, '?'):
+                continue
+            deg = d.get('degre')
+            value = d.get('signe', '') if deg is None else f"{d.get('signe','')} · {float(deg):.1f}°"
+            rows += f'<div class="wheel-legend-row"><span class="wheel-legend-planet">{nom}</span><span class="wheel-legend-value">{value}</span></div>'
+        asc = astro.get('ascendant') or {}
+        if asc.get('signe'):
+            deg = asc.get('degre')
+            value = asc['signe'] if deg is None else f"{asc['signe']} · {float(deg):.1f}°"
+            rows += f'<div class="wheel-legend-row"><span class="wheel-legend-planet">Ascendant</span><span class="wheel-legend-value">{value}</span></div>'
+        wheel_pages_html += f"""
+<div class="section-newpage chapter wheel-block">
+  <span class="eyebrow">Carte du ciel</span>
+  <h2 class="section-title">Le ciel de {cl.get('prenom','')}</h2>
+  <div class="light-line"></div>
+  <p class="wheel-caption">Cette roue situe les principaux corps célestes dans le zodiaque au moment de la naissance.</p>
+  <div class="wheel-wrap">{svg}</div>
+  <div class="wheel-legend">{rows}</div>
+</div>"""
 
     mantras_html = ""
     for i, m in enumerate(_mantras_pdf):
@@ -2562,7 +2694,6 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     # Deux modes : "naissance" (carnet de vie qui suit l'enfant à chaque âge,
     # avec une page pour les parents) et "adulte" (réflexion immédiate sur la
     # lecture, comportement historique).
-    est_naissance = (type_analyse == 'naissance')
     prenom_enfant = clients[0]['prenom'] if clients else ''
 
     def _carnet_page(header, question, n_lignes=22):
@@ -2579,15 +2710,15 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         parents_html = _carnet_page(
             "Pour les parents · ORIGIN",
             f"Cette page vous appartient. Écrivez à {prenom_enfant} ce que vous ressentez "
-            f"aujourd'hui, ce que vous espérez pour son chemin, ce que vous voulez qu'elle ou "
-            f"il sache -- un jour, {prenom_enfant} vous lira ici."
+            f"aujourd'hui, ce que vous espérez pour son chemin, ce que vous voulez transmettre à "
+            f"{prenom_enfant} -- un jour, {prenom_enfant} vous lira ici."
         )
         etapes_vie = [
-            ("Enfance · vers 7-10 ans", "Raconte une journée qui t'a rendu·e vraiment heureux·se cette année."),
+            ("Enfance · vers 7-10 ans", "Raconte une journée qui t'a donné beaucoup de joie cette année."),
             ("Adolescence · vers 13-17 ans", "Qui es-tu en train de devenir ? Qu'est-ce qui compte vraiment pour toi aujourd'hui ?"),
             ("Jeune adulte · vers 18-25 ans", "Quel chemin es-tu en train de choisir ? Qu'emportes-tu avec toi de ton enfance ?"),
             ("Âge adulte · vers 30-45 ans", "Qu'as-tu construit ? Qu'est-ce que la vie t'a appris que tu ignorais à 20 ans ?"),
-            ("Maturité · vers 50 ans et plus", "En regardant ton chemin, qu'est-ce qui t'a le plus nourri·e ? Que veux-tu transmettre à ton tour ?"),
+            ("Maturité · vers 50 ans et plus", "En regardant ton chemin, qu'est-ce qui t'a le plus fait grandir intérieurement ? Que veux-tu transmettre à ton tour ?"),
         ]
         carnet_pages_html = parents_html + "".join(
             _carnet_page(f"{etape} · ORIGIN", question) for etape, question in etapes_vie
@@ -2608,7 +2739,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 "Quelle phrase résonne encore en toi ?",
                 "Qu'as-tu envie de changer à partir d'aujourd'hui ?",
                 "Comment ce que tu as lu éclaire ta relation à toi-même ?",
-                "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
+                "Quelle ancienne histoire es-tu prêt(e) à lâcher ?",
                 "Quel premier pas concret peux-tu faire dès demain ?"
             ]
         carnet_pages_html = "".join(
@@ -2621,7 +2752,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     # Section cycles -- Solo : 1 personne / Couple-Famille-Prestige : adultes uniquement
     cycles_section_html = ""
 
-    if offre == 'solo' and clients:
+    if offre == 'solo' and clients and not est_naissance:
         c0 = clients[0]
         cycles_section_html = calcul_cycles_vie(c0['jour'], c0['mois'], c0['annee'])
 
@@ -2632,7 +2763,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 # Remplacer le titre de section par un titre personnalisé
                 prenom = cl['prenom']
                 bloc = bloc.replace(
-                    '<span class="eyebrow">Numérologie des cycles',
+                    '<span class="eyebrow">Tes grandes étapes',
                     f'<span class="eyebrow">Cycles de {prenom}'
                 ).replace(
                     '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
@@ -2648,7 +2779,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             if bloc:
                 prenom = cl['prenom']
                 bloc = bloc.replace(
-                    '<span class="eyebrow">Numérologie des cycles',
+                    '<span class="eyebrow">Tes grandes étapes',
                     f'<span class="eyebrow">Cycles de {prenom}'
                 ).replace(
                     '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
@@ -2658,7 +2789,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
         # Prestige : cycles des parents (lignée)
         if offre == 'prestige':
-            parents = [c for c in clients if c.get('role') in ('parent', 'pere', 'mere', 'grand-parent')]
+            parents = [c for c in clients if any(k in ((c.get('role') or c.get('filiation') or '').lower()) for k in ('parent','pere','père','mere','mère','grand'))]
             if not parents:
                 # Fallback : clients au-delà des 2 adultes du foyer avec annee < 1980
                 parents = [c for c in clients[2:] if c.get('annee', 2010) < 1975]
@@ -2667,7 +2798,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 if bloc:
                     prenom = cl['prenom']
                     bloc = bloc.replace(
-                        '<span class="eyebrow">Numérologie des cycles',
+                        '<span class="eyebrow">Tes grandes étapes',
                         f'<span class="eyebrow">Lignée · Cycles de {prenom}'
                     ).replace(
                         '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
@@ -2714,6 +2845,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
 {sections_html}
 
+{wheel_pages_html}
+
 {cycles_section_html}
 
 
@@ -2729,7 +2862,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </div>
 
 <div class="carnet-cover">
-  <img src="data:image/jpeg;base64,{LOGO_B64_EMBEDDED}" style="width:55mm;height:55mm;object-fit:contain;margin-bottom:1cm;" alt="ORIGIN">
+  <img src="data:image/png;base64,{logo_b64}" style="width:55mm;height:55mm;object-fit:contain;margin-bottom:1cm;" alt="ORIGIN">
   <h2 class="carnet-cover-title">{'Carnet de Vie' if est_naissance else "Carnet d'Intégration"}</h2>
   <p class="carnet-cover-sub">{f'Un carnet qui grandit avec toi, {prenom_enfant} · À ouvrir à chaque étape de ta vie' if est_naissance else ('Vos réflexions · Vos prises de conscience · Votre chemin' if offre in ('couple','famille','prestige') else 'Tes réflexions · Tes prises de conscience · Ton chemin')}</p>
   <div style="width:60px;height:1px;background:#C9A84C;margin:2cm auto;opacity:.5;"></div>
@@ -2865,7 +2998,7 @@ Valide le contenu puis transfère au client.
 def add_cors(response):
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-ORIGIN-SECRET"
     return response
 
 @app.route("/webhook", methods=["OPTIONS"])
@@ -2874,15 +3007,25 @@ def webhook_preflight():
 
 @app.route('/health', methods=['GET'])
 def health():
-    return jsonify({'status': 'ok', 'service': 'ORIGIN Generator'})
+    missing = [name for name, val in {
+        'ANTHROPIC_API_KEY': ANTHROPIC_API_KEY,
+        'BREVO_SMTP_KEY': BREVO_SMTP_KEY,
+        'EMAIL_DEST': EMAIL_DEST,
+    }.items() if not val]
+    return jsonify({'status': 'ok' if not missing else 'degraded', 'service': 'ORIGIN Generator', 'missing': missing}), (200 if not missing else 503)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     try:
-        data = request.json or request.form.to_dict()
-        print(f"Webhook reçu : {json.dumps(data, ensure_ascii=False)[:300]}")
+        if WEBHOOK_SECRET and request.headers.get('X-ORIGIN-SECRET', '') != WEBHOOK_SECRET:
+            return jsonify({'status': 'error', 'message': 'Signature webhook invalide'}), 401
+        data = request.get_json(silent=True) or request.form.to_dict()
+        print(f"Webhook reçu : offre={data.get('offre','solo')} type={data.get('type_analyse','adulte')}")
 
-        offre = data.get('offre', 'solo').lower()
+        offre = str(data.get('offre', 'solo')).lower().strip()
+        offres_valides = {'solo','naissance','vocation','couple','famille','prestige','bundle'}
+        if offre not in offres_valides:
+            return jsonify({'status':'error','message':'Offre inconnue'}), 400
         type_analyse = data.get('type_analyse', 'adulte').lower()
         email_client = data.get('email', '')
 
@@ -2912,9 +3055,9 @@ def webhook():
                 'prenom': data.get('prenom1', ''),
                 'nom':    data.get('nom1', ''),
                 'genre':  data.get('genre1', ''),
-                'jour':   int(data.get('jour1', 1)),
-                'mois':   int(data.get('mois1', 1)),
-                'annee':  int(data.get('annee1', 1990)),
+                'jour':   safe_int(data.get('jour1'), 1),
+                'mois':   safe_int(data.get('mois1'), 1),
+                'annee':  safe_int(data.get('annee1'), 1990),
                 'ville':  data.get('ville1', 'Paris'),
                 'heure':  _h1,
                 'minute': _m1,
@@ -2965,6 +3108,17 @@ def webhook():
                         'filiation': data.get(f'filiation{i}',''),
                     })
 
+        # Validation métier avant tout appel payant à Claude.
+        if not clients or not clients[0].get('prenom'):
+            return jsonify({'status':'error','message':'Prénom principal manquant'}), 400
+        if offre in ('couple','famille','prestige') and (len(clients) < 2 or not clients[1].get('prenom')):
+            return jsonify({'status':'error','message':'Deuxième personne manquante'}), 400
+        for c in clients:
+            try:
+                datetime(int(c['annee']), int(c['mois']), int(c['jour']))
+            except Exception:
+                return jsonify({'status':'error','message':f"Date de naissance invalide pour {c.get('prenom','ce profil')}"}), 400
+
         profils_txt_parts = []
         astros_clients = []
         for c in clients:
@@ -2987,12 +3141,12 @@ def webhook():
                         )
                         if 'erreur technique' in _chk.lower() or 'en cours de préparation' in _chk.lower():
                             raise ValueError(f'Narratif {lbl} invalide -- fallback détecté')
-                    html_solo     = generer_html('solo',     clients, narratif_solo,     astros_clients)
+                    html_solo     = generer_html('solo',     clients, narratif_solo,     astros_clients, type_analyse)
                     pdf_solo      = generer_pdf_imprimable('solo',     clients, narratif_solo,     astros_clients, type_analyse)
-                    html_vocation = generer_html('vocation', clients, narratif_vocation, astros_clients)
+                    html_vocation = generer_html('vocation', clients, narratif_vocation, astros_clients, type_analyse)
                     pdf_vocation  = generer_pdf_imprimable('vocation', clients, narratif_vocation, astros_clients, type_analyse)
                     envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client)
-                    print(f'✅ Bundle envoyé à {email_client}')
+                    print(f'✅ Bundle envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}')
                     prenoms_log = ' & '.join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, 'bundle', date.today().strftime('%d/%m/%Y'))
                 else:
@@ -3006,10 +3160,10 @@ def webhook():
                     )
                     if "erreur technique" in _check.lower() or "en cours de préparation" in _check.lower():
                         raise ValueError("Narratif invalide -- fallback d erreur détecté après parsing JSON")
-                    html = generer_html(offre, clients, narratif, astros_clients)
+                    html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
                     pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
                     envoyer_email(html, pdf, clients, offre_label, email_client)
-                    print(f"✅ Livret {offre} envoyé à {email_client}")
+                    print(f"✅ Livret {offre_label} envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}")
                     prenoms_log = " & ".join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
             except Exception as ex:
@@ -3023,17 +3177,18 @@ def webhook():
                         "subject": f"🚨 ORIGIN -- ERREUR livret {offre} -- {prenoms}",
                         "textContent": f"Une erreur est survenue lors de la génération du livret.\n\nOffre : {offre}\nClients : {prenoms}\nEmail client : {email_client}\n\nErreur :\n{ex}\n\nRelance manuelle nécessaire."
                     }
-                    requests.post(
+                    _alerte = requests.post(
                         "https://api.brevo.com/v3/smtp/email",
                         headers={"api-key": BREVO_SMTP_KEY, "content-type": "application/json"},
                         json=payload_alerte,
                         timeout=15
                     )
+                    _alerte.raise_for_status()
                     print("📧 Alerte erreur envoyée")
                 except Exception as mail_ex:
                     print(f"Impossible d'envoyer l'alerte : {mail_ex}")
 
-        t = threading.Thread(target=generer, daemon=True)
+        t = threading.Thread(target=generer, daemon=False)
         t.start()
 
         return jsonify({'status': 'accepted', 'message': 'Livret en cours de génération'}), 200
