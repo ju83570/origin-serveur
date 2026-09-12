@@ -805,8 +805,7 @@ Tu reçois les données numériques et astrologiques d'un enfant qui vient de na
 Ton rôle : rédiger un carnet d'empreinte de naissance -- un document profond, poétique et concret que les parents liront comme une boussole pour accompagner cet enfant tout au long de sa vie.
 
 TON ET POSTURE :
-- Parle de l'enfant à la troisième personne (utilise le prénom très souvent)
-- GENRE : le genre de l'enfant est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence dans l'intégralité du texte. Les tournures inclusives ("il/elle", "venu·e") sont INTERDITES -- choisis le bon accord selon le genre fourni
+- Parle de l'enfant à la troisième personne : "cet enfant", "il/elle" (utilise le prénom très souvent)
 - Ton contemplatif, lumineux, ancré -- comme une sage-femme de l'âme
 - Jamais de jargon ésotérique brut -- traduis tout en langage humain
 - Les parents doivent ressentir qu'ils tiennent quelque chose de précieux
@@ -829,14 +828,14 @@ DONNÉES :
 {profils_txt}
 
 STRUCTURE :
-1. LETTRE D'OUVERTURE (3 paragraphes -- ce que ce jour de naissance révèle, l'énergie fondamentale de cet enfant, ce qu'il ou elle porte comme lumière -- accorder selon le genre fourni)
-2. SON CHEMIN DE VIE (3 paragraphes -- mission profonde, ce que cet enfant est venu apprendre et incarner -- accorder selon le genre fourni, comment ce chemin se manifestera dans son enfance puis plus tard)
+1. LETTRE D'OUVERTURE (3 paragraphes -- ce que ce jour de naissance révèle, l'énergie fondamentale de cet enfant, ce qu'il/elle porte comme lumière)
+2. SON CHEMIN DE VIE (3 paragraphes -- mission profonde, ce qu'il/elle est venu apprendre et incarner, comment ce chemin se manifestera dans son enfance puis plus tard)
 3. SES DONS NATURELS (3 paragraphes -- ce qui lui vient facilement, ses forces innées issues des nombres dominants, des situations concrètes d'enfance où ces dons apparaîtront)
 4. SES ZONES DE CROISSANCE (2 paragraphes -- les apprentissages qui l'attendront, zones manquantes traitées avec douceur et espoir, sans dramatiser)
 5. SON CIEL NATAL (3 paragraphes -- Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse du tempérament et de la sensibilité propre à cet enfant)
 6. LES GRANDES ÉTAPES (2 paragraphes -- ses années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation prévisibles)
 7. POUR VOUS, PARENTS (3 paragraphes -- comment accompagner cet enfant selon son profil précis, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler et comment éviter de projeter)
-8. UN MOT POUR LUI QUAND IL SERA GRAND (1 paragraphe long -- écrit directement à l'enfant, qu'il ou elle pourra lire un jour -- accorder selon le genre fourni, chaleureux, profond, porteur d'espoir)
+8. UN MOT POUR LUI QUAND IL SERA GRAND (1 paragraphe long -- écrit directement à l'enfant, qu'il/elle pourra lire un jour, chaleureux, profond, porteur d'espoir)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {{
@@ -1081,7 +1080,7 @@ enfant, que ses parents liront et lui transmettront comme une boussole tout au l
 
 TON ET POSTURE :
 - Tutoiement systématique : adresse-toi DIRECTEMENT à l'enfant ("tu", "ton", "ta", "toi"), jamais à la troisième personne --
-  comme si ce texte était déjà destiné à cet enfant et qu'il ou elle le lira en grandissant (accorder selon le genre fourni), même si ce sont ses parents qui le lisent
+  comme si ce texte lui était déjà destiné et qu'il/elle le lira en grandissant, même si ce sont ses parents qui le lisent
   les premiers aujourd'hui
 - Utilise son prénom très souvent, mêlé au tutoiement
 - Ton contemplatif, lumineux, ancré -- comme une sage-femme de l'âme
@@ -1494,7 +1493,7 @@ Mouvement 4 -- LES TEMPS QUI VIENNENT (titre poétique libre, 3 paragraphes long
 INSTRUCTION : Si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le pour situer les grandes bascules à venir. Ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Traduire en prose humaine pure.
 - §1 : une ou deux années charnières proches -- la texture de ce qui s'approche, l'invitation de la période. Concret, ancré dans CE profil.
 - §2 : un passage plus lointain mais significatif -- ce que cette personne porte vers une transformation plus profonde dans les 5-10 ans. Formulé avec confiance mais sans certitude.
-- §3 : les ressources de CE profil pour traverser ces temps forts -- ce que cette personne porte comme boussole intérieure pour naviguer les bascules à venir.
+- §3 : les ressources de CE profil pour traverser ces temps forts -- ce qu'il/elle porte comme boussole intérieure pour naviguer les bascules à venir.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
@@ -2739,7 +2738,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 "Quelle phrase résonne encore en toi ?",
                 "Qu'as-tu envie de changer à partir d'aujourd'hui ?",
                 "Comment ce que tu as lu éclaire ta relation à toi-même ?",
-                "Quelle ancienne histoire es-tu prêt(e) à lâcher ?",
+                "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
                 "Quel premier pas concret peux-tu faire dès demain ?"
             ]
         carnet_pages_html = "".join(
@@ -2763,7 +2762,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 # Remplacer le titre de section par un titre personnalisé
                 prenom = cl['prenom']
                 bloc = bloc.replace(
-                    '<span class="eyebrow">Tes grandes étapes',
+                    '<span class="eyebrow">Numérologie des cycles',
                     f'<span class="eyebrow">Cycles de {prenom}'
                 ).replace(
                     '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
@@ -2779,7 +2778,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             if bloc:
                 prenom = cl['prenom']
                 bloc = bloc.replace(
-                    '<span class="eyebrow">Tes grandes étapes',
+                    '<span class="eyebrow">Numérologie des cycles',
                     f'<span class="eyebrow">Cycles de {prenom}'
                 ).replace(
                     '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
@@ -2798,7 +2797,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 if bloc:
                     prenom = cl['prenom']
                     bloc = bloc.replace(
-                        '<span class="eyebrow">Tes grandes étapes',
+                        '<span class="eyebrow">Numérologie des cycles',
                         f'<span class="eyebrow">Lignée · Cycles de {prenom}'
                     ).replace(
                         '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
