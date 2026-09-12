@@ -194,110 +194,6 @@ def annee_perso_detaillee(j, m):
     return ap, theme, energie, focus
 
 
-def calcul_charnieres_prompt(j, m, a, prenom):
-    """
-    Génère un bloc texte structuré des années charnières (numérologie + astrologie)
-    pour injection dans les prompts Claude Solo, Couple et Naissance.
-    Fusion : années personnelles marquantes + passages saturniens/jupitériens.
-    Retourne une chaîne à ajouter dans profils_txt.
-    """
-    annee_ref = date.today().year
-
-    def ap_annee(annee):
-        return reduire(j + m + reduire(sum(int(d) for d in str(annee))))
-
-    cdv = chemin_de_vie(j, m, a)
-    _, val_pin, _ = pinnacles(j, m, a)
-
-    # --- Charnières numérologie : années perso 1, 5, 9, 11, 22, 33 sur 25 ans ---
-    charnieres_num = []
-    for an in range(annee_ref, annee_ref + 26):
-        ap = ap_annee(an)
-        age = an - a
-        if ap in (1, 5, 9, 11, 22, 33) or ap == cdv or ap == val_pin:
-            label_ap = {
-                1: "Nouveau départ — premier pas d'un cycle de 9 ans",
-                5: "Pivot et liberté — année de basculement, décisions courageuses",
-                9: "Clôture de cycle — bilan, lâcher-prise, libération",
-                11: "Éveil (nombre maître) — intuition haute, révélations",
-                22: "Réalisation majeure (nombre maître) — impact collectif, construction d'envergure",
-                33: "Service sacré (nombre maître) — amour universel, transmission",
-            }.get(ap, f"Résonance avec le Chemin de vie {cdv}" if ap == cdv else f"Résonance avec le Pinnacle {val_pin}")
-            charnieres_num.append(f"  {an} ({age} ans) — Année personnelle {ap} : {label_ap}")
-
-    charnieres_num = charnieres_num[:5]
-
-    # --- Charnières astrologiques ---
-    charnieres_astro = []
-
-    age_saturne_1 = 29 + (j + m) % 2
-    an_saturne_1 = a + age_saturne_1
-    delta = an_saturne_1 - annee_ref
-    if abs(delta) <= 10:
-        suffix = f" (dans {delta} ans)" if delta > 0 else (" (cette année)" if delta == 0 else f" (passé il y a {-delta} ans)")
-        charnieres_astro.append(
-            f"  {an_saturne_1} ({age_saturne_1} ans){suffix} — Premier retour de Saturne : "
-            "structuration identitaire profonde, remise en question des bases choisies dans la vingtaine, "
-            "maturité nouvelle. Période exigeante mais fondatrice."
-        )
-
-    age_opp_sat = 44 + (j % 2)
-    an_opp_sat = a + age_opp_sat
-    delta = an_opp_sat - annee_ref
-    if abs(delta) <= 15:
-        suffix = f" (dans {delta} ans)" if delta > 0 else (" (cette année)" if delta == 0 else f" (passé il y a {-delta} ans)")
-        charnieres_astro.append(
-            f"  {an_opp_sat} ({age_opp_sat} ans){suffix} — Opposition de Saturne : "
-            "crise de mi-parcours, confrontation à ce qui n'a pas été construit. "
-            "Invitation à repositionner ce qui importe vraiment."
-        )
-
-    age_saturne_2 = 58 + (j + m) % 3
-    an_saturne_2 = a + age_saturne_2
-    delta = an_saturne_2 - annee_ref
-    if abs(delta) <= 20:
-        suffix = f" (dans {delta} ans)" if delta > 0 else (" (cette année)" if delta == 0 else f" (passé il y a {-delta} ans)")
-        charnieres_astro.append(
-            f"  {an_saturne_2} ({age_saturne_2} ans){suffix} — Deuxième retour de Saturne : "
-            "bilan de vie profond, transmission, repositionnement vers l'essentiel."
-        )
-
-    jupiter_a_venir = []
-    for cycle in range(1, 8):
-        age_jup = cycle * 12
-        an_jup = a + age_jup
-        if an_jup >= annee_ref:
-            delta = an_jup - annee_ref
-            jupiter_a_venir.append((an_jup, age_jup, delta))
-        if len(jupiter_a_venir) >= 2:
-            break
-    for an_jup, age_jup, delta in jupiter_a_venir:
-        suffix = f" (dans {delta} ans)" if delta > 0 else " (cette année)"
-        charnieres_astro.append(
-            f"  {an_jup} ({age_jup} ans){suffix} — Retour de Jupiter : "
-            "année d'expansion, d'opportunités, de renouveau. "
-            "Ce que cette personne entreprend ou initie alors bénéficie d'un souffle porteur."
-        )
-
-    if not charnieres_num and not charnieres_astro:
-        return ""
-
-    bloc = f"\n\nCHARNIÈRES TEMPORELLES — {prenom.upper()} (USAGE INTERNE UNIQUEMENT)\n"
-    bloc += "(Ces données sont réservées à l'écriture narrative. Ne jamais mentionner 'Saturne', 'Jupiter', "
-    bloc += "'année personnelle', ni aucun terme technique dans le texte livré. "
-    bloc += "Utiliser ces repères pour situer les grandes bascules dans une prose vivante et humaine.)\n"
-
-    if charnieres_num:
-        bloc += "\nAncrages numériques (années à texture forte) :\n"
-        bloc += "\n".join(charnieres_num)
-
-    if charnieres_astro:
-        bloc += "\n\nPassages astrologiques majeurs :\n"
-        bloc += "\n".join(charnieres_astro)
-
-    return bloc
-
-
 def calcul_cycles_vie(j, m, a):
     """Calcule les grandes étapes numériques sur 20 ans et génère le HTML de la section."""
     annee_ref = date.today().year
@@ -692,14 +588,6 @@ def fmt_profil(p, avec_transits=False):
         except Exception as ex:
             print(f"[transits] Calcul ignoré : {ex}")
 
-        # Charnières temporelles (numérologie + astrologie) — Solo / Vocation / Couple / Bundle
-        try:
-            bloc_charnieres = calcul_charnieres_prompt(j, m, a, pr)
-            if bloc_charnieres:
-                lines.append(bloc_charnieres)
-        except Exception as ex:
-            print(f"[charnieres] Calcul ignoré : {ex}")
-
     return "\n".join(lines), num, astro
 
 PROMPT_NAISSANCE = """Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
@@ -762,10 +650,8 @@ qui répond à trois questions dans l'ordre :
 3. MOUVEMENT : voilà comment tester et activer ça dans ta vie dès maintenant
 
 Le client doit pouvoir dire à la fin :
-"Je me suis reconnu. Je comprends comment je fonctionne.
-Je vois 5 ou 6 directions concrètes qui activent précisément ma mécanique.
-Je comprends pourquoi certains environnements me conviennent et d'autres non.
-Je sais quoi tester dès la semaine prochaine."
+"Je me suis reconnu. Je comprends mieux comment je fonctionne.
+Je sais quoi rechercher ou éviter professionnellement. Je sais quoi faire dès lundi."
 
 ═══════════════════════════════════════════════
 RÈGLE N°0 — TRANSITS ACTUELS (CONTEXTE INTERNE)
@@ -817,10 +703,7 @@ RÈGLE N°3 — TON ET POSTURE
 
 GENRE : accordé selon les données (Homme/Femme). Accord strict. Jamais inclusif.
 ANNÉE EN COURS : {annee_courante}
-LONGUEUR : entre 5500 et 7000 mots. Chaque paragraphe = minimum 6-7 lignes denses.
-RÉPÉTITIONS : le triptyque central (construire/structurer/transmettre ou équivalent)
-ne doit pas apparaître plus de 2 fois dans le livret. Si tu l'as utilisé dans une section,
-reformule différemment dans les suivantes -- même idée, autre angle, autre image.
+LONGUEUR : entre 4500 et 5500 mots. Chaque paragraphe = minimum 6-7 lignes denses.
 
 ═══════════════════════════════════════════════
 DONNÉES
@@ -864,46 +747,24 @@ Ton expression : [les FONCTIONS (jamais les métiers) dans lesquelles tu t'épan
 
 ━━━ COUCHE 3 : MOUVEMENT ━━━
 
-[SECTION 5] TES TERRITOIRES D'EXPRESSION PROFESSIONNELLE (section centrale du MOUVEMENT)
-C'est la grande nouveauté du livret. Ce que le client attend sans le savoir.
-Il doit fermer le livret en se disant : "Je comprends comment je fonctionne ET je vois
-5 ou 6 directions concrètes qui activent précisément ma mécanique."
+[SECTION 5] TES PROCHAINS PAS CONCRETS (3 paragraphes denses)
+§1 : ce que l'année {annee_courante} ouvre ou demande -- fenêtre tirée du profil.
+§2 : micro-signaux quotidiens -- situations concrètes, émotions précises à observer.
+§3 : exploration 30 jours -- 3 FONCTIONS à tester (jamais des métiers),
+     et comment évaluer après chaque essai (énergie ? facilité ? désir de recommencer ?).
 
-Présente 5 à 6 TERRITOIRES (jamais des intitulés de postes -- des verbes ou fonctions larges).
-Exemples de verbes/fonctions : ORGANISER, CONCEVOIR, TRANSMETTRE, ÉCLAIRER, FONDER, PILOTER,
-STRUCTURER, RELIER, TRANSFORMER, CRÉER... -- choisis ceux qui correspondent à CE profil.
-
-Pour CHAQUE territoire, 1 paragraphe dense qui explique :
-a) POURQUOI ce profil précis s'y épanouit -- la mécanique interne qui s'active, pas des généralités
-b) CE QUI SIGNALE que c'est le bon environnement -- situations concrètes, signaux à guetter
-c) LE RISQUE ou le point de vigilance -- ce qui peut transformer ce territoire en piège pour CE profil
-
-Terminer par 1 paragraphe de synthèse : comment ces territoires s'emboîtent dans une trajectoire
-cohérente. La personne ne doit pas choisir UN territoire -- elle doit voir comment ils forment
-un écosystème qui lui ressemble.
-
-RÈGLE ABSOLUE : aucun intitulé de poste (consultant, directeur, formateur...). Des fonctions,
-des verbes, des modes de contribution. Le cadre change. La fonction, jamais.
-
-[SECTION 6] TES PROCHAINS PAS CONCRETS (2 paragraphes denses)
-§1 : micro-signaux quotidiens à observer -- situations concrètes, émotions précises.
-     Comment reconnaître qu'on est dans son flux vs hors de son flux. Très ancré, très pratique.
-§2 : exploration 30 jours -- 3 expériences concrètes pour tester les territoires identifiés.
-     Pour chaque expérience : ce qu'on fait (action précise, 2h max), et comment évaluer
-     (énergie en sortie ? facilité ? envie de recommencer ? sensation de contribuer vraiment ?).
-
-[SECTION 7 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
+[SECTION 6 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
 Clé JSON : "questions_decision"
 1 paragraphe d'intro : ces questions sont ta boussole personnelle, tirées de CE profil,
 pour évaluer toute opportunité en 5 minutes -- poste, projet, reconversion, client.
 Puis 5 questions en prose continue, chacune formulée en tutoiement direct,
 SPÉCIFIQUES à ce profil (pas génériques), qui révèlent si la personne va vers elle ou loin d'elle.
 
-[SECTION 8] TA PHRASE D'ANCRAGE (1 paragraphe)
+[SECTION 7] TA PHRASE D'ANCRAGE (1 paragraphe)
 Une phrase courte, unique, puissante -- vérité sur la façon de contribuer.
 À relire les jours de doute. Introduire + expliquer brièvement pourquoi c'est juste.
 
-[SECTION 9] MESSAGE FINAL (2 paragraphes)
+[SECTION 8] MESSAGE FINAL (2 paragraphes)
 Chaleureux, porteur, concret. L'élan. Ce qui devient possible quand être et faire s'alignent.
 
 ═══════════════════════════════════════════════
@@ -919,7 +780,6 @@ Les clés "profil_contribution" et "questions_decision" sont OBLIGATOIRES.
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}}
   ],
   "profil_contribution": "<p>...</p><p>Ton moteur : ...</p><p>Ton besoin fondamental : ...</p><p>Ton mode naturel : ...</p><p>Ta contribution : ...</p><p>Ton environnement idéal : ...</p><p>Ce qui t'éteint : ...</p><p>Ton expression : ...</p>",
@@ -940,7 +800,7 @@ def appeler_claude_vocation(profils_txt):
             r = requests.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-opus-4-6", "max_tokens": 16000, "messages": [{"role": "user", "content": prompt}]},
+                json={"model": "claude-opus-4-6", "max_tokens": 14000, "messages": [{"role": "user", "content": prompt}]},
                 timeout=600
             )
             r.raise_for_status()
@@ -966,20 +826,6 @@ def appeler_claude_vocation(profils_txt):
 
 def appeler_claude_naissance(profils_txt):
     annee_courante = date.today().year
-
-    # Calcul charnières pour l'enfant
-    try:
-        import re
-        prenom_match = re.search(r"PROFIL\s*:\s*(\w+)", profils_txt)
-        date_match = re.search(r"N[eé](?:e)? le (\d{2})/(\d{2})/(\d{4})", profils_txt)
-        if prenom_match and date_match:
-            _prenom_n = prenom_match.group(1)
-            _j_n, _m_n, _a_n = int(date_match.group(1)), int(date_match.group(2)), int(date_match.group(3))
-            bloc_charnieres_naissance = calcul_charnieres_prompt(_j_n, _m_n, _a_n, _prenom_n)
-            if bloc_charnieres_naissance:
-                profils_txt = profils_txt + bloc_charnieres_naissance
-    except Exception as ex:
-        print(f"[naissance-charnieres] Calcul ignoré : {ex}")
 
     base = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
 Tu reçois les données numériques et astrologiques d'un enfant qui vient de naître ou qui est sur le point de naître.
@@ -1031,11 +877,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 
     prompt_b = base + """STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
 5. TON CIEL NATAL (3 paragraphes, tutoiement -- Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse de ton tempérament)
-6. TES GRANDES ÉTAPES (3 paragraphes, tutoiement) :
-INSTRUCTION : Si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le. Ne jamais mentionner Saturne, Jupiter, année personnelle ni aucun terme technique. Prose poétique adressée à l'enfant.
-- §1 : les premières grandes étapes — ce qui se jouera dans l'enfance et l'adolescence (7 ans, 14 ans, 21 ans). Bascules naturelles, ancré dans CE profil.
-- §2 : les grandes charnières de la vie adulte — moments de transformation, de repositionnement, de maturité nouvelle. Nommés comme des seuils qui s'ouvrent, jamais comme des épreuves.
-- §3 : ce que ce profil lui donnera pour traverser ces temps forts — ses ressources naturelles, sa boussole intérieure.
+6. TES GRANDES ÉTAPES (2 paragraphes, tutoiement -- tes années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation)
 7. VOTRE MODE D'EMPLOI -- CE QUE CET ENFANT VOUS DEMANDE D'ÊTRE (s'adresse aux parents avec "vous" -- c'est la section centrale du carnet, la plus longue, la plus riche, la plus actionnable. Les parents la reliront pendant des années. Traiter les 8 points ci-dessous -- 1 paragraphe dense minimum par point, intégrés dans la prose de façon fluide, jamais comme titres visibles.) : A) QUI EST VRAIMENT CET ENFANT : son profil traduit en images concrètes, ce qu'il ressent à l'intérieur que le monde ne verra pas toujours, sa couleur d'âme unique. B) SES BESOINS FONDAMENTAUX -- LES VRAIS : ce dont il a besoin pour se sentir en sécurité et reconnu dans sa singularité, ce qui se passe en lui quand ces besoins ne sont pas comblés, comment y répondre concrètement au quotidien. C) CE QUI L'ALLUME ET CE QUI L'ÉTEINT : ses conditions pour s'épanouir, ce qui le stimule, ce qui l'écrase sans qu'il sache le dire -- avec des situations du quotidien observables. D) COMMENT LUI PARLER POUR QU'IL VOUS ENTENDE : les formulations qui l'ouvrent, celles qui le ferment sans que vous le voyiez, comment maintenir l'autorité et l'amour sans qu'ils s'excluent. E) CE QU'IL NE FAUT PAS LUI RÉPÉTER ET CE QU'IL A BESOIN D'ENTENDRE : les phrases anodines qui peuvent laisser des traces avec son profil, et à l'inverse les mots précis qui nourrissent son estime propre. F) COMMENT NE PAS LUI TRANSMETTRE CE QUI N'EST PAS À LUI : ce qu'il risque de capter sans que personne ne l'ait voulu, ce que les parents peuvent faire pour qu'il hérite des forces de la lignée sans en porter les blessures. Formulé avec bienveillance, jamais culpabilisant. G) CE QU'IL EST VENU VOUS APPRENDRE : la croissance qu'il demande à ses parents, ce qu'il les invite à devenir -- formulé comme une invitation lumineuse. H) CE QUE VOUS POUVEZ LUI OFFRIR QUE PERSONNE D'AUTRE NE PEUT LUI DONNER : la force de cette alliance particulière, ce qui rend ce lien irremplaçable. Terminer par cette phrase reformulée naturellement dans la prose : "On dit qu'il n'existe pas de mode d'emploi pour être parent. Ce carnet vient de prouver le contraire -- le vôtre, pour [prénom], existe. Il a toujours existé. Il attendait juste d'être lu."
 8. UN MOT POUR TOI, PLUS TARD (1 paragraphe long, tutoiement -- écrit directement à l'enfant qui lira ce mot en grandissant, chaleureux, profond, porteur d'espoir)
 
@@ -1359,13 +1201,12 @@ CHUNK A -- retourne UNIQUEMENT ce JSON valide, sans markdown :
   ]
 }
 
-Mouvement 1 -- QUI TU ES (titre poétique libre, 5 paragraphes longs) :
+Mouvement 1 -- QUI TU ES (titre poétique libre, 4 paragraphes longs) :
 IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence tout au long du texte.
 - §1 : ce qui caractérise fondamentalement cette personne -- son rapport au monde, à l'existence, aux autres. Très concret, très ancré, impossible à généraliser.
 - §2 : son intelligence, sa façon de traiter le réel, ce qui se passe dans sa tête que les autres ne voient pas. Précis, intime.
 - §3 : ce que cette personne dégage sans s'en rendre compte -- son impact sur les autres, l'atmosphère qu'elle/il crée, ce que les gens ressentent en sa présence.
-- §4 (LUMIÈRE) : les forces naturelles, les élans profonds, ce qui se déploie avec évidence quand cette personne est alignée. Nommer et célébrer avec précision -- pas de généralités.
-- §5 (OMBRE) : ce qui résiste, se cache, ou coûte à cette personne. Les patterns limitants, la face que cette personne cache même à elle-même, ce qui se répète malgré elle. Nommé avec bienveillance et courage -- jamais comme un verdict, toujours comme une zone de croissance consciente. "Cette même force a son revers..." est un bon ancrage.
+- §4 : ce qui freine cette personne, les tensions internes, les paradoxes qu'elle/il habite. Courageux et bienveillant -- nommer sans ménager, sans blesser.
 
 Mouvement 2 -- CE QUE TU TRAVERSES EN CE MOMENT (titre poétique libre, 3 paragraphes longs) :
 - §1 : la qualité de la période actuelle -- sa texture, son énergie, ce qui la caractérise au quotidien.
@@ -1379,7 +1220,6 @@ CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
     {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
     {"titre": "...", "contenu": "<p>...</p><p>...</p>"}
   ],
   "mantra": {"texte": "...", "note": "..."},
@@ -1392,14 +1232,7 @@ RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les 
 - §2 : les zones de résistance et angles morts -- ce qui résiste, ce qui coince, ce que cette personne évite sans le savoir. Nommer avec courage et bienveillance.
 - §3 : la transformation à portée -- ce qui est déjà en train de changer, ce qui cherche à émerger, le prochain seuil.
 
-Mouvement 4 -- LES TEMPS QUI VIENNENT (titre poétique libre, 3 paragraphes longs) :
-INSTRUCTION IMPÉRATIVE : Si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le pour identifier les 3 ou 4 prochaines années clés de cette personne. Ne jamais mentionner "Saturne", "Jupiter", "année personnelle", "retour de Saturne", "nombre maître" ni aucun terme technique. Traduis tout en langage humain pur.
-- §1 : les années charnières proches (1-3 ans) -- ce qui s'approche, la texture de la période qui vient. Pas de prédiction : une invitation, un type d'énergie, ce que ça demande concrètement à CE profil.
-- §2 : un passage plus lointain mais significatif (5-10 ans) -- ce que cette personne porte vers une transformation plus profonde. Formulé avec confiance mais sans certitude.
-- §3 : un regard d'ensemble -- comment CE profil est équipé pour traverser ces bascules. Ses ressources naturelles face aux temps forts à venir.
-Si le bloc "CHARNIÈRES TEMPORELLES" est absent, s'appuyer sur l'énergie de l'année personnelle actuelle et du cycle de vie.
-
-Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
+Mouvement 4 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
 - §2 : une note finale qui donne confiance à cette personne dans sa propre trajectoire. Chaleureux, ancré, jamais vague ni prédictif.
 
@@ -1463,12 +1296,8 @@ CHUNK A -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence dans chaque portrait.
 Mouvement 1 -- Ce que vous êtes l'un pour l'autre : 4 paragraphes immersifs, aucun terme technique, titre poétique libre.
-Mouvement 2 -- Portrait de Personne 1 : 5 paragraphes, titre poétique libre avec prénom. Prose immersive, aucun terme technique.
-  §1-§3 : portrait complet — fonctionnement intérieur, intelligence, impact sur les autres.
-  §4 (LUMIÈRE) : forces naturelles, dons, ce qui se déploie avec évidence quand cette personne est alignée.
-  §5 (OMBRE) : ce qui résiste, se répète, coûte. Nommé avec bienveillance et courage — jamais comme verdict.
-Mouvement 3 -- Portrait de Personne 2 : 5 paragraphes, titre poétique libre avec prénom. Ton distinct. JAMAIS de copier-coller.
-  Même structure : §1-§3 portrait, §4 lumière, §5 ombre."""
+Mouvement 2 -- Portrait de Personne 1 : 4 paragraphes, titre poétique libre avec prénom. Prose immersive, aucun terme technique.
+Mouvement 3 -- Portrait de Personne 2 : 4 paragraphes, titre poétique libre avec prénom. Ton distinct. JAMAIS de copier-coller."""
 
     prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
@@ -1514,14 +1343,7 @@ CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 }}
 
 Mouvement 4 -- Ce que vous traversez en ce moment : 3 paragraphes, titre poétique libre. Descriptif du présent des deux profils croisés. JAMAIS prédictif.
-
-Mouvement 5 -- LES TEMPS QUI VIENNENT (titre poétique libre, 3 paragraphes longs) :
-INSTRUCTION : Si les données contiennent des blocs "CHARNIÈRES TEMPORELLES", utilise-les pour identifier les années charnières proches et à venir POUR LE COUPLE. Ne jamais mentionner Saturne, Jupiter, année personnelle ni aucun terme technique. Prose humaine uniquement.
-- §1 : les années charnières proches (1-3 ans) — ce qui s'approche pour chacun et comment ces dynamiques interagissent dans leur lien.
-- §2 : regard sur les 5-10 prochaines années — bascules à venir, périodes portantes, comment naviguer ensemble.
-- §3 : ce que leurs profils croisés leur donnent comme ressources pour traverser les temps forts à venir.
-
-Mouvement 6 -- Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
+Mouvement 5 -- Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
 Mantras -- RÈGLES STRICTES, 5 mantras au total :
 - Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil -- célèbre ce que cette personne EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
