@@ -2015,40 +2015,10 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
   </div>
 </section>"""
 
-    # Roues astrales : sections réellement générées à partir des positions calculées.
+    # Roue astrale masquée dans les livrets clients. Disponible uniquement en mode interne/debug.
     wheel_html = ""
     wheel_ids = []
-    for idx, (cl, astro) in enumerate(zip(clients, astros or [])):
-        if not astro or not astro.get('planetes'):
-            continue
-        sid = f"s-wheel-{idx}"
-        wheel_ids.append(sid)
-        svg = build_natal_wheel_svg(astro.get('planetes', {}), astro.get('ascendant'))
-        rows = ""
-        for nom in CORPS_EPHEM.keys():
-            d = astro.get('planetes', {}).get(nom, {})
-            if not d or d.get('signe') in (None, '?'):
-                continue
-            deg = d.get('degre')
-            value = d.get('signe', '') if deg is None else f"{d.get('signe','')} · {float(deg):.1f}°"
-            rows += f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">{nom}</span><span class="wheel-legend-value-web">{value}</span></div>'
-        asc = astro.get('ascendant') or {}
-        if asc.get('signe'):
-            deg = asc.get('degre')
-            value = asc['signe'] if deg is None else f"{asc['signe']} · {float(deg):.1f}°"
-            rows += f'<div class="wheel-legend-row-web"><span class="wheel-legend-planet-web">Ascendant</span><span class="wheel-legend-value-web">{value}</span></div>'
-        wheel_html += f"""
-<section class="section section-sep wheel-section" id="{sid}">
-  <div class="reveal">
-    <span class="s-eyebrow">Carte du ciel</span>
-    <h2 class="s-title">Le ciel de {cl.get('prenom','')}</h2>
-    <div class="light-line"></div>
-    <p class="wheel-caption-web">Cette roue situe les principaux corps célestes dans le zodiaque au moment de la naissance.</p>
-    <div class="wheel-wrap-web">{svg}</div>
-    <div class="wheel-legend-web">{rows}</div>
-  </div>
-</section>"""
-    n_wheel_standalone = len(wheel_ids)
+    n_wheel_standalone = 0
 
     # Cycles de vie -- tous formats
     cycles_web_html = ""
@@ -2651,33 +2621,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   {close_mark}
 </div>"""
 
+    # Roue astrale masquée dans les PDF clients. Disponible uniquement en mode interne/debug.
     wheel_pages_html = ""
-    for cl, astro in zip(clients, astros or []):
-        if not astro or not astro.get('planetes'):
-            continue
-        svg = build_natal_wheel_svg(astro.get('planetes', {}), astro.get('ascendant'))
-        rows = ""
-        for nom in CORPS_EPHEM.keys():
-            d = astro.get('planetes', {}).get(nom, {})
-            if not d or d.get('signe') in (None, '?'):
-                continue
-            deg = d.get('degre')
-            value = d.get('signe', '') if deg is None else f"{d.get('signe','')} · {float(deg):.1f}°"
-            rows += f'<div class="wheel-legend-row"><span class="wheel-legend-planet">{nom}</span><span class="wheel-legend-value">{value}</span></div>'
-        asc = astro.get('ascendant') or {}
-        if asc.get('signe'):
-            deg = asc.get('degre')
-            value = asc['signe'] if deg is None else f"{asc['signe']} · {float(deg):.1f}°"
-            rows += f'<div class="wheel-legend-row"><span class="wheel-legend-planet">Ascendant</span><span class="wheel-legend-value">{value}</span></div>'
-        wheel_pages_html += f"""
-<div class="section-newpage chapter wheel-block">
-  <span class="eyebrow">Carte du ciel</span>
-  <h2 class="section-title">Le ciel de {cl.get('prenom','')}</h2>
-  <div class="light-line"></div>
-  <p class="wheel-caption">Cette roue situe les principaux corps célestes dans le zodiaque au moment de la naissance.</p>
-  <div class="wheel-wrap">{svg}</div>
-  <div class="wheel-legend">{rows}</div>
-</div>"""
 
     mantras_html = ""
     for i, m in enumerate(_mantras_pdf):
