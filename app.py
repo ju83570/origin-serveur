@@ -219,8 +219,9 @@ def annee_perso_detaillee(j, m):
 
 def calcul_charnieres_prompt(j, m, a, prenom):
     """
-    Génère un bloc texte structuré des années charnières (numérologie + astrologie)
-    pour injection dans les prompts Claude Solo, Couple et Naissance.
+    Génère un bloc interne de repères temporels (numérologie + astrologie)
+    pour TOUTES les offres ORIGIN. Ces repères ne sont jamais livrés tels quels :
+    ils servent uniquement à synthétiser 2 à 4 grandes fenêtres charnières.
     Retourne une chaîne à ajouter dans profils_txt.
     """
     from datetime import date as _date
@@ -298,9 +299,13 @@ def calcul_charnieres_prompt(j, m, a, prenom):
         return ""
 
     bloc = f"\n\nCHARNIÈRES TEMPORELLES — {prenom.upper()} (USAGE INTERNE UNIQUEMENT)\n"
-    bloc += ("(Ne jamais mentionner 'Saturne', 'Jupiter', 'année personnelle', 'retour de Saturne', "
-             "'nombre maître' ni aucun terme technique dans le texte livré. "
-             "Traduire en langage humain pur.)\n")
+    bloc += ("(Ces dates sont des SIGNAUX INTERNES, pas une liste à restituer. "
+             "Ne jamais faire une analyse année par année. Sélectionner seulement les 3 à 4 "
+             "grandes fenêtres de changement les plus structurantes sur 10 à 20 ans, et regrouper "
+             "les années proches dans une même période. Ne jamais mentionner 'Saturne', 'Jupiter', "
+             "'année personnelle', 'retour de Saturne', 'nombre maître' ni aucun terme technique "
+             "dans le texte livré. Ne jamais annoncer un événement certain : parler de fenêtre, "
+             "de seuil, de mouvement possible ou d'invitation. Traduire en langage humain pur.)\n")
     if charnieres_num:
         bloc += "\nAncrages numériques (années à texture forte) :\n" + "\n".join(charnieres_num)
     if charnieres_astro:
@@ -308,115 +313,8 @@ def calcul_charnieres_prompt(j, m, a, prenom):
     return bloc
 
 
-def calcul_cycles_vie(j, m, a):
-    """Calcule les grandes étapes vibratoires sur 20 ans et génère le HTML de la section."""
-    annee_ref = date.today().year
-
-    def ap_annee(annee):
-        return reduire(j + m + reduire(sum(int(d) for d in str(annee))))
-
-    # Pinnacle ACTUEL (pas forcément p4) selon l'âge
-    num_pin_actuel, val_pin_actuel, _ = pinnacles(j, m, a)
-
-    # p4 = pinnacle permanent (phase finale, > 36-cdv+18 ans)
-    cdv_val = chemin_de_vie(j, m, a)
-    p4 = reduire(j + sum(int(d) for d in str(a)))
-
-    sens = {
-        1:  ("Nouveau départ", "L'énergie d'initiation s'ouvre. Ce qui commence cette année porte la marque de tout ce qui précède. C'est le moment des premières pierres, pas des coups d'éclat."),
-        2:  ("Alliance et gestation", "Une période de patience et de construction intérieure. Ce qui mûrit en silence prend racine profondément."),
-        3:  ("Expression retrouvée", "L'énergie créative et communicante s'allume. Une porte s'ouvre vers la légèreté, vers une forme d'expression longtemps mise de côté."),
-        4:  ("Construction de fond", "Une période de travail patient, de fondation, de structure. Rien de spectaculaire — mais ce qui se construit ici tient dans le temps."),
-        5:  ("Pivot et liberté", "Une période de transformation et de mouvement. L'énergie pousse vers le changement, vers les décisions qui ouvrent des espaces."),
-        6:  ("Ancrage et responsabilité", "Après le mouvement, cette période demande de stabiliser — les liens, les engagements, ce qui a été choisi."),
-        7:  ("Approfondissement", "Une période de retrait intérieur, de quête de sens. Ce qui mûrit ici n'est pas visible de l'extérieur — mais c'est là que la compréhension s'installe durablement."),
-        8:  ("Récolte", "L'énergie de puissance et de reconnaissance s'active. Si le travail des années précédentes a été fait avec intégrité, cette période peut en révéler la mesure."),
-        9:  ("Bilan et lâcher-prise", "Fin de cycle. Cette période demande de ne pas retenir ce qui est terminé. Ce qui se dissout libère quelque chose pour la suite."),
-        11: ("Intensité rare", "Une période d'une intensité particulière — entre inspiration élevée et pression intérieure forte. Ce qui s'ouvre ici peut dépasser ce qu'on anticipait."),
-        22: ("Réalisation à grande échelle", "L'énergie appelle à penser et construire au-delà du quotidien. Ce qui se fait ici a une portée qui dépasse souvent l'intention initiale."),
-        33: ("Service et profondeur", "Une période d'une profondeur exceptionnelle, tournée vers le service et la transmission."),
-    }
-
-    etapes = []
-    for an in range(annee_ref, annee_ref + 21):
-        n = ap_annee(an)
-        age = an - a
-        marquant = n in (1, 5, 8, 9, 11, 22, 33)
-        # Marquer si vibration = pinnacle actuel (pas uniquement p4)
-        if n == val_pin_actuel:
-            marquant = True
-        if marquant:
-            etapes.append((an, age, n))
-
-    etapes = etapes[:6]
-    if not etapes:
-        return ""
-
-    cards_html = ""
-    for an, age, n in etapes:
-        titre_type, texte = sens.get(n, ("Période notable", "Une période qui mérite attention."))
-        is_now = (an == annee_ref)
-        if n in (22, 11, 33):
-            card_class = "cycle-maitre"
-        elif n in (1, 9):
-            card_class = "cycle-charniere"
-        elif n == 5:
-            card_class = "cycle-pivot"
-        elif n == 8:
-            card_class = "cycle-recolte"
-        else:
-            card_class = "cycle-fond"
-
-        # Résonances : termes neutres, sans jargon technique
-        notes_res = []
-        if n == val_pin_actuel:
-            notes_res.append("en écho avec la vibration dominante de ta phase de vie")
-        if n == cdv_val:
-            notes_res.append("en résonance avec ta vibration fondamentale")
-        res_txt = f" <em>({', '.join(notes_res)})</em>" if notes_res else ""
-
-        now_badge = ' <span style="background:var(--or);color:#0A0908;padding:.1rem .4rem;border-radius:2px;font-size:.45rem;letter-spacing:.2em;margin-left:.5rem;font-family:\'Jost\',sans-serif;">MAINTENANT</span>' if is_now else ""
-
-        cards_html += f"""
-<div class="cycle-card {card_class}">
-  <div class="cycle-header">
-    <div class="cycle-year">{an}{now_badge}</div>
-    <div class="cycle-age">{age} ans</div>
-    <div class="cycle-num">Vibration de l'année · {n}</div>
-  </div>
-  <div class="cycle-label-type">{titre_type}{res_txt}</div>
-  <p class="cycle-text">{texte}</p>
-</div>"""
-
-    section_html = f"""
-<div class="section-newpage chapter" id="s-cycles">
-  <span class="eyebrow">Tes grandes étapes · {annee_ref}–{annee_ref + 20}</span>
-  <h2 class="section-title">Les grandes étapes qui viennent</h2>
-  <div class="light-line"></div>
-  <div class="prose">
-    <p>Chaque année de ta vie porte une vibration propre, calculée à partir de ta date de naissance. Elle ne détermine pas les événements — elle colore le terrain, indique le type d'énergie disponible. Certaines années sont silencieuses, de construction intérieure. D'autres sont des années de bascule, de récolte ou d'épreuve — elles méritent d'être connues à l'avance.</p>
-    <p>Ce qui suit n'est pas un horoscope. C'est une lecture de ta structure temporelle propre. Les étapes signalées sont celles qui ont une intensité particulière sur les vingt prochaines années.</p>
-  </div>
-  <div class="cycles-grid">
-    {cards_html}
-  </div>
-</div>"""
-
-    return section_html
-
-
-VILLES_FR = {
-    "paris":(48.8566,2.3522),"marseille":(43.2965,5.3698),"lyon":(45.7640,4.8357),
-    "nice":(43.7102,7.2620),"toulouse":(43.6047,1.4442),"bordeaux":(44.8378,-0.5792),
-    "nantes":(47.2184,-1.5536),"strasbourg":(48.5734,7.7521),"montpellier":(43.6108,3.8767),
-    "toulon":(43.1242,5.9280),"cannes":(43.5528,7.0174),"aix-en-provence":(43.5297,5.4474),
-    "saint-tropez":(43.2727,6.6408),"draguignan":(43.5377,6.4650),
-    "brignoles":(43.4046,6.0606),"carcès":(43.4781,6.1770),"cotignac":(43.5511,6.1539),
-    "var":(43.4667,6.2167),"antibes":(43.5804,7.1283),"grasse":(43.6585,6.9259),
-    "avignon":(43.9493,4.8055),"arles":(43.6767,4.6278),"nimes":(43.8367,4.3601),
-}
-
-_GEOCODE_CACHE = {}  # cache mémoire pour éviter les doublons d'appels
+# Les anciennes cartes annuelles client ont été supprimées volontairement.
+# Les grandes périodes charnières sont synthétisées dans le narratif à partir des signaux internes.
 
 def get_coords(ville):
     """
@@ -780,8 +678,7 @@ def fmt_profil(p, avec_transits=False):
         deg_str = f" {asc['degre']}°" if asc['degre'] else ""
         lines.append(f"  Ascendant  : {asc['signe']}{deg_str}")
 
-    # Transits actuels injectés silencieusement (usage interne prompt uniquement)
-    # Transits injectés uniquement pour Solo, Vocation, Couple, Bundle
+    # Transits actuels : uniquement pour les offres qui en ont besoin dans la lecture du présent.
     if avec_transits:
         try:
             bloc_transits = calc_transits(astro['planetes'], j, m, a)
@@ -790,12 +687,14 @@ def fmt_profil(p, avec_transits=False):
         except Exception as ex:
             print(f"[transits] Calcul ignoré : {ex}")
 
-        try:
-            bloc_charnieres = calcul_charnieres_prompt(j, m, a, pr)
-            if bloc_charnieres:
-                lines.append(bloc_charnieres)
-        except Exception as ex:
-            print(f"[charnieres] Calcul ignoré : {ex}")
+    # Grandes périodes charnières : injectées pour TOUTES les offres.
+    # Les années brutes restent internes ; les prompts doivent les regrouper en 2 à 4 fenêtres maximum.
+    try:
+        bloc_charnieres = calcul_charnieres_prompt(j, m, a, pr)
+        if bloc_charnieres:
+            lines.append(bloc_charnieres)
+    except Exception as ex:
+        print(f"[charnieres] Calcul ignoré : {ex}")
 
     return "\n".join(lines), num, astro
 
@@ -833,7 +732,7 @@ STRUCTURE :
 3. SES DONS NATURELS (3 paragraphes -- ce qui lui vient facilement, ses forces innées issues des nombres dominants, des situations concrètes d'enfance où ces dons apparaîtront)
 4. SES ZONES DE CROISSANCE (2 paragraphes -- les apprentissages qui l'attendront, zones manquantes traitées avec douceur et espoir, sans dramatiser)
 5. SON CIEL NATAL (3 paragraphes -- Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse du tempérament et de la sensibilité propre à cet enfant)
-6. LES GRANDES ÉTAPES (2 paragraphes -- ses années charnières dans l'enfance et l'adolescence, cycles numériques, moments de transformation prévisibles)
+6. LES GRANDES PÉRIODES DE VIE (3 paragraphes -- seulement 3 à 4 grandes fenêtres structurantes, repères proches regroupés, jamais une revue année par année, aucune prédiction certaine)
 7. POUR VOUS, PARENTS (3 paragraphes -- comment accompagner cet enfant selon son profil précis, ce dont il aura besoin, ce qu'il faudra respecter, comment lui parler et comment éviter de projeter)
 8. UN MOT POUR LUI QUAND IL SERA GRAND (1 paragraphe long -- écrit directement à l'enfant, qu'il/elle pourra lire un jour, chaleureux, profond, porteur d'espoir)
 
@@ -874,6 +773,15 @@ dans les données, utilise-le pour affiner l'analyse — notamment les sections
 MOUVEMENT et TES PROCHAINS PAS CONCRETS.
 Ces informations colorent le ton, les tensions évoquées, l'énergie de la période.
 JAMAIS exposées : aucun terme planétaire, aucun mot "transit" dans le texte livré.
+
+═══════════════════════════════════════════════
+RÈGLE N°0B — GRANDES PÉRIODES CHARNIÈRES
+═══════════════════════════════════════════════
+Si un bloc "CHARNIÈRES TEMPORELLES" est présent, il contient des repères INTERNES.
+Ne les restitue JAMAIS année par année. Pour la vocation, retiens seulement 2 à 4 grandes fenêtres
+de trajectoire professionnelle sur 10 à 20 ans : changement d'échelle, clôture, repositionnement,
+redémarrage, maturation ou transmission. Regroupe les années proches en une seule période.
+Aucune prédiction certaine : parle de fenêtres, de seuils, de terrain favorable ou de questions à revisiter.
 
 ═══════════════════════════════════════════════
 RÈGLE N°1 — PRINCIPE ABSOLU : INVISIBILITÉ DES OUTILS
@@ -979,25 +887,32 @@ La personne ne doit pas choisir UN territoire -- elle doit voir un écosystème 
 RÈGLE ABSOLUE : aucun intitulé de poste (consultant, directeur, formateur...). Des fonctions, des
 verbes, des modes de contribution. Le cadre change. La fonction, jamais.
 
-[SECTION 6] TES PROCHAINS PAS CONCRETS (2 paragraphes denses)
+[SECTION 6] TES GRANDES PÉRIODES CHARNIÈRES PROFESSIONNELLES (3 paragraphes denses)
+À partir des repères internes "CHARNIÈRES TEMPORELLES", ne retiens que 2 à 4 grandes fenêtres sur 10 à 20 ans.
+§1 : la prochaine fenêtre de repositionnement ou de changement d'échelle réellement structurante.
+§2 : une ou deux fenêtres plus lointaines seulement si elles marquent une clôture, un redémarrage, une maturation ou une transmission. Regroupe les années proches.
+§3 : ce que cette personne peut garder comme boussole professionnelle à travers ces passages.
+INTERDIT : revue année par année, catalogue de dates, événement annoncé comme certain, jargon technique.
+
+[SECTION 7] TES PROCHAINS PAS CONCRETS (2 paragraphes denses)
 §1 : micro-signaux quotidiens à observer -- situations concrètes, émotions précises.
      Comment reconnaître qu'on est dans son flux vs hors de son flux.
 §2 : exploration 30 jours -- 3 expériences concrètes pour tester les territoires identifiés.
      Pour chaque expérience : action précise (2h max) + comment évaluer (énergie en sortie ?
      facilité ? envie de recommencer ? sensation de contribuer vraiment ?).
 
-[SECTION 7 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
+[SECTION 8 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
 Clé JSON : "questions_decision"
 1 paragraphe d'intro : ces questions sont ta boussole personnelle, tirées de CE profil,
 pour évaluer toute opportunité en 5 minutes -- poste, projet, reconversion, client.
 Puis 5 questions en prose continue, chacune formulée en tutoiement direct,
 SPÉCIFIQUES à ce profil (pas génériques), qui révèlent si la personne va vers elle ou loin d'elle.
 
-[SECTION 8] TA PHRASE D'ANCRAGE (1 paragraphe)
+[SECTION 9] TA PHRASE D'ANCRAGE (1 paragraphe)
 Une phrase courte, unique, puissante -- vérité sur la façon de contribuer.
 À relire les jours de doute. Introduire + expliquer brièvement pourquoi c'est juste.
 
-[SECTION 9] MESSAGE FINAL (2 paragraphes)
+[SECTION 10] MESSAGE FINAL (2 paragraphes)
 Chaleureux, porteur, concret. L'élan. Ce qui devient possible quand être et faire s'alignent.
 
 ═══════════════════════════════════════════════
@@ -1061,17 +976,7 @@ def appeler_claude_vocation(profils_txt):
 def appeler_claude_naissance(profils_txt):
     annee_courante = date.today().year
 
-    # Injection charnières pour Naissance (fmt_profil appelé sans avec_transits)
-    try:
-        import re as _re
-        _pm = _re.search(r'PROFIL\s*:\s*(\w+)', profils_txt)
-        _dm = _re.search(r'N[eé]e? le (\d{2})/(\d{2})/(\d{4})', profils_txt)
-        if _pm and _dm:
-            _bloc = calcul_charnieres_prompt(int(_dm.group(1)), int(_dm.group(2)), int(_dm.group(3)), _pm.group(1))
-            if _bloc:
-                profils_txt = profils_txt + _bloc
-    except Exception as _ex:
-        print(f"[naissance-charnieres] Calcul ignoré : {_ex}")
+    # Les charnières temporelles sont déjà injectées dans profils_txt par fmt_profil().
 
     base = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
 Tu reçois les données numériques et astrologiques d'un enfant qui vient de naître ou qui est sur le point de naître.
@@ -1123,11 +1028,12 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 
     prompt_b = base + """STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
 5. TON CIEL NATAL (3 paragraphes, tutoiement -- Soleil+Lune narrativisés ensemble, planètes personnelles, synthèse de ton tempérament)
-6. TES GRANDES ÉTAPES (3 paragraphes, tutoiement) :
-INSTRUCTION : Si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le. Ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Prose poétique, adressée à l'enfant.
-- §1 : les premières grandes étapes -- ce qui se jouera dans l'enfance et l'adolescence (7, 14, 21 ans). Les bascules de croissance naturelles, ancrées dans CE profil.
-- §2 : les grandes charnières de la vie adulte -- les moments de transformation, de maturité nouvelle. Nommés comme des seuils, des portes qui s'ouvrent, jamais comme des épreuves certaines.
-- §3 : ce que ce profil unique lui donnera pour traverser ces temps forts -- ses ressources naturelles, sa boussole intérieure.
+6. TES GRANDES PÉRIODES DE VIE (3 paragraphes, tutoiement) :
+INSTRUCTION ABSOLUE : Si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le uniquement comme matériau interne. Ne restitue JAMAIS les années une par une. Sélectionne 3 à 4 grandes fenêtres de vie maximum et regroupe les repères proches en une même période.
+- §1 : une ou deux grandes fenêtres de l'enfance et de l'adolescence réellement structurantes pour CE profil -- pas une liste d'âges fixes, pas un calendrier.
+- §2 : une ou deux grandes fenêtres de passage vers l'âge adulte ou de maturation, uniquement si elles correspondent à une vraie bascule de cycle. Utilise "autour de", "entre ... et ...", "ce passage peut".
+- §3 : les ressources profondes de CE profil pour traverser ces changements sans se perdre -- ce qui reste stable quand le décor change.
+RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Aucune prédiction certaine. Le lecteur doit recevoir une carte des GRANDES PÉRIODES DE VIE, jamais une analyse année par année.
 7. VOTRE MODE D'EMPLOI -- CE QUE CET ENFANT VOUS DEMANDE D'ÊTRE (s'adresse aux parents avec "vous" -- c'est la section centrale du carnet, la plus longue, la plus riche, la plus actionnable. Les parents la reliront pendant des années. Traiter les 8 points ci-dessous -- 1 paragraphe dense minimum par point, intégrés dans la prose de façon fluide, jamais comme titres visibles.) : A) QUI EST VRAIMENT CET ENFANT : son profil traduit en images concrètes, ce qu'il ressent à l'intérieur que le monde ne verra pas toujours, sa couleur d'âme unique. B) SES BESOINS FONDAMENTAUX -- LES VRAIS : ce dont il a besoin pour se sentir en sécurité et reconnu dans sa singularité, ce qui se passe en lui quand ces besoins ne sont pas comblés, comment y répondre concrètement au quotidien. C) CE QUI L'ALLUME ET CE QUI L'ÉTEINT : ses conditions pour s'épanouir, ce qui le stimule, ce qui l'écrase sans qu'il sache le dire -- avec des situations du quotidien observables. D) COMMENT LUI PARLER POUR QU'IL VOUS ENTENDE : les formulations qui l'ouvrent, celles qui le ferment sans que vous le voyiez, comment maintenir l'autorité et l'amour sans qu'ils s'excluent. E) CE QU'IL NE FAUT PAS LUI RÉPÉTER ET CE QU'IL A BESOIN D'ENTENDRE : les phrases anodines qui peuvent laisser des traces avec son profil, et à l'inverse les mots précis qui nourrissent son estime propre. F) COMMENT NE PAS LUI TRANSMETTRE CE QUI N'EST PAS À LUI : ce qu'il risque de capter sans que personne ne l'ait voulu, ce que les parents peuvent faire pour qu'il hérite des forces de la lignée sans en porter les blessures. Formulé avec bienveillance, jamais culpabilisant. G) CE QU'IL EST VENU VOUS APPRENDRE : la croissance qu'il demande à ses parents, ce qu'il les invite à devenir -- formulé comme une invitation lumineuse. H) CE QUE VOUS POUVEZ LUI OFFRIR QUE PERSONNE D'AUTRE NE PEUT LUI DONNER : la force de cette alliance particulière, ce qui rend ce lien irremplaçable. Terminer par cette phrase reformulée naturellement dans la prose : "On dit qu'il n'existe pas de mode d'emploi pour être parent. Ce carnet vient de prouver le contraire -- le vôtre, pour [prénom], existe. Il a toujours existé. Il attendait juste d'être lu."
 8. UN MOT POUR TOI, PLUS TARD (1 paragraphe long, tutoiement -- écrit directement à l'enfant qui lira ce mot en grandissant, chaleureux, profond, porteur d'espoir)
 
@@ -1135,7 +1041,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
     {"titre": "Ton ciel natal", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "Tes grandes étapes", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "Tes grandes périodes de vie", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
     {"titre": "Pour vous, parents", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}
   ],
   "mantras": [{"prenom": "...", "texte": "...", "note": "..."}],
@@ -1229,7 +1135,7 @@ JAMAIS de prédictions certaines. Toujours ancré dans les profils réels.
         'famille': """
 LE PRINCIPE ABSOLU : La famille ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau -- pas le texte livré.
 
-STRUCTURE (6 mouvements, titres libres -- poétiques, adaptés à CE foyer, jamais techniques) :
+STRUCTURE (7 mouvements, titres libres -- poétiques, adaptés à CE foyer, jamais techniques) :
 
 1. CE QUE CE FOYER PORTE (4 paragraphes) -- Ce qui rend ce foyer unique, lu dans l'ensemble des profils croisés. Ce que cette famille crée ensemble, ce qu'elle transmet, ce qu'elle cherche. Prose vivante, immersive, aucun terme technique.
 
@@ -1258,7 +1164,9 @@ G) UNE PHRASE POUR LUI -- À LUI TRANSMETTRE, À LUI DIRE, À LUI ÉCRIRE : Une 
 
 Terminer cette section par un paragraphe de synthèse : l'art d'adapter sa parentalité à chaque enfant dans sa singularité tout en maintenant l'équilibre et la cohésion du foyer. Conclure avec cette phrase obligatoire, reformulée naturellement dans la prose : "On dit qu'il n'existe pas de mode d'emploi pour être parent. Ce livret vient de prouver le contraire -- le vôtre existe. Il a toujours existé. Il attendait juste d'être lu."
 
-6. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes) -- Un élan vers la suite pour ce foyer. Vision de ce qu'ils peuvent devenir ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
+6. LES GRANDES PÉRIODES CHARNIÈRES DU FOYER (3 paragraphes) -- Croiser les blocs "CHARNIÈRES TEMPORELLES" de chaque membre. Ne JAMAIS faire une revue année par année. Retenir seulement 2 à 4 grandes fenêtres où plusieurs trajectoires familiales se rencontrent, changent de phase ou demandent une réorganisation du foyer. Regrouper les années proches en périodes de 1 à 3 ans. Parler de seuils possibles, jamais d'événements certains. Aucun jargon technique.
+
+7. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes) -- Un élan vers la suite pour ce foyer après ces grandes périodes. Vision de ce qu'ils peuvent devenir ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
         'prestige': """
 LE PRINCIPE ABSOLU : La famille ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau sur 3 générations -- pas le texte livré.
 
@@ -1325,6 +1233,7 @@ REGLES ABSOLUES (violations = livret inutilisable) :
 - JAMAIS de scenes biographiques inventees (enfance, reunion, rupture, deuil -- sauf si fourni par le client)
 - JAMAIS de predictions certaines ("cette annee tu vas...", "Jupiter te promet...")
 - JAMAIS de references a la ville natale comme lieu de vie actuel suppose
+- Si des blocs "CHARNIÈRES TEMPORELLES" sont présents : JAMAIS de revue année par année. Retenir seulement 2 à 4 grandes fenêtres de bascule, regrouper les années proches et employer un langage de possibilité, jamais de certitude.
 - Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]" -- pas "Pinnacle actuel"
 - Offre SOLO uniquement : pas de Transgenérationnel dans la couverture
 
@@ -1349,6 +1258,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}}
   ],
   "mantras": [{{"prenom": "Famille", "texte": "...", "note": "..."}}],
@@ -1489,11 +1399,12 @@ RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les 
 - §2 : les zones de résistance et angles morts -- ce qui résiste, ce qui coince, ce que cette personne évite sans le savoir. Nommer avec courage et bienveillance.
 - §3 : la transformation à portée -- ce qui est déjà en train de changer, ce qui cherche à émerger, le prochain seuil.
 
-Mouvement 4 -- LES TEMPS QUI VIENNENT (titre poétique libre, 3 paragraphes longs) :
-INSTRUCTION : Si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le pour situer les grandes bascules à venir. Ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Traduire en prose humaine pure.
-- §1 : une ou deux années charnières proches -- la texture de ce qui s'approche, l'invitation de la période. Concret, ancré dans CE profil.
-- §2 : un passage plus lointain mais significatif -- ce que cette personne porte vers une transformation plus profonde dans les 5-10 ans. Formulé avec confiance mais sans certitude.
-- §3 : les ressources de CE profil pour traverser ces temps forts -- ce qu'il/elle porte comme boussole intérieure pour naviguer les bascules à venir.
+Mouvement 4 -- LES GRANDES PÉRIODES CHARNIÈRES (titre poétique libre, 3 paragraphes longs) :
+INSTRUCTION ABSOLUE : si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le comme matériau interne pour identifier seulement les grandes bascules. NE FAIS JAMAIS une revue année par année et ne restitue jamais tous les repères calculés. Regroupe les années proches en grandes fenêtres cohérentes.
+- §1 : la prochaine grande fenêtre de bascule réellement structurante -- idéalement une période de 1 à 3 ans, avec sa texture et ce qu'elle peut inviter à reconsidérer.
+- §2 : une ou deux grandes fenêtres plus lointaines sur les 10 à 20 prochaines années, uniquement si elles représentent un changement de cycle, une clôture, un redémarrage, une maturation ou une transformation profonde. Mieux vaut 2 périodes fortes que 6 années faibles.
+- §3 : la logique d'ensemble de ces passages et les ressources de CE profil pour les traverser -- ce qui reste stable en lui/elle lorsque le décor change.
+RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. Employer "autour de", "entre ... et ...", "cette fenêtre peut", "ce passage invite". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
@@ -1611,11 +1522,12 @@ CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 
 Mouvement 4 -- Ce que vous traversez en ce moment : 3 paragraphes, titre poétique libre. Descriptif du présent des deux profils croisés. JAMAIS prédictif.
 
-Mouvement 5 -- LES TEMPS QUI VIENNENT (titre poétique libre, 3 paragraphes longs) :
-INSTRUCTION : Si les données contiennent des blocs "CHARNIÈRES TEMPORELLES" pour l'une ou l'autre des personnes, utilise-les. Ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Prose humaine.
-- §1 : les années charnières proches pour ce couple -- ce qui s'approche pour chacun et comment ces dynamiques interagissent dans leur lien.
-- §2 : regard sur les 5-10 prochaines années -- les grandes bascules, ce qu'ils peuvent construire ensemble pendant les périodes portantes.
-- §3 : ce que leurs profils croisés leur donnent comme ressources pour traverser ensemble les temps forts.
+Mouvement 5 -- LES GRANDES PÉRIODES CHARNIÈRES DU LIEN (titre poétique libre, 3 paragraphes longs) :
+INSTRUCTION ABSOLUE : si les données contiennent des blocs "CHARNIÈRES TEMPORELLES", ne restitue jamais les années une par une. Croise les deux profils et ne retiens que 2 à 4 grandes fenêtres où leurs dynamiques personnelles se rencontrent, se décalent ou changent de phase.
+- §1 : la prochaine fenêtre structurante du couple -- ce qui peut demander un ajustement, une décision, un nouvel équilibre ou une consolidation.
+- §2 : une ou deux fenêtres plus lointaines sur 10 à 20 ans -- uniquement les bascules majeures, regroupées en périodes lorsque plusieurs repères se suivent.
+- §3 : les ressources du lien pour traverser ces passages et ce qui peut rester stable entre eux malgré les changements.
+RÈGLES : aucun terme technique ("Saturne", "Jupiter", "année personnelle", etc.), aucune prédiction certaine, aucun catalogue annuel. Parler de fenêtres possibles, de seuils et de tendances de fond.
 
 Mouvement 6 -- Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
@@ -1718,6 +1630,7 @@ REGLES ABSOLUES :
 - JAMAIS de matrices ou tableaux de chiffres
 - JAMAIS de scenes biographiques inventees (evocation universelle ancree dans le profil)
 - JAMAIS de predictions certaines
+- Si des blocs "CHARNIÈRES TEMPORELLES" sont présents : ce sont des repères internes. Ne jamais les restituer année par année ; les regrouper en 2 à 4 grandes fenêtres maximum.
 - Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]"
 
 UTILISATION DES DONNEES ENRICHIES :
@@ -1780,14 +1693,16 @@ Mouvement 5 -- Comment être avec chaque enfant : 1 paragraphe dense par enfant 
 Mouvement 6 -- Ce qui peut se dénouer : 3 paragraphes, titre poétique libre. Pistes de libération, prose bienveillante."""
 
     prompt_c = pre("1200-1800") + """
-STRUCTURE (rédiger uniquement ces 3 éléments) :
-1. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes longs -- mouvement 7 de la lecture. Élan, espoir, transmission consciente. JAMAIS de prédictions certaines.)
-2. MANTRAS (un par membre du foyer + un mantra de lignée commun. Chaque mantra : phrase poétique courte + note 2-3 lignes expliquant l'ancrage, sans afficher de jargon technique au client.)
-3. MESSAGE FINAL (3 paragraphes longs -- ancré dans l'espoir, la transmission consciente et la beauté de ce que cette lignée peut créer. JAMAIS de prédictions certaines.)
+STRUCTURE (rédiger uniquement ces 4 éléments) :
+1. LES GRANDES PÉRIODES CHARNIÈRES DE LA LIGNÉE (3 paragraphes longs) -- Croise les blocs "CHARNIÈRES TEMPORELLES" de tous les membres. Ne restitue JAMAIS les années une par une. Retenir seulement 2 à 4 grandes fenêtres sur 10 à 20 ans où plusieurs trajectoires convergent, se décalent ou changent de phase. Regrouper les années proches. Aucun jargon technique, aucune prédiction certaine.
+2. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes longs -- élan, espoir, transmission consciente après ces grandes périodes. JAMAIS de prédictions certaines.)
+3. MANTRAS (un par membre du foyer + un mantra de lignée commun. Chaque mantra : phrase poétique courte + note 2-3 lignes expliquant l'ancrage, sans afficher de jargon technique au client.)
+4. MESSAGE FINAL (3 paragraphes longs -- ancré dans l'espoir, la transmission consciente et la beauté de ce que cette lignée peut créer. JAMAIS de prédictions certaines.)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
     {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
   ],
   "mantras": [
@@ -2020,48 +1935,11 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     wheel_ids = []
     n_wheel_standalone = 0
 
-    # Cycles de vie -- tous formats
+    # Grandes périodes à venir :
+    # ne jamais ajouter de cartes annuelles techniques dans le livret client.
+    # Les charnières sont utilisées uniquement comme matériau interne par Claude,
+    # puis restituées en quelques grandes fenêtres narratives.
     cycles_web_html = ""
-
-    def _wrap_cycle_web(bloc, section_id="s-cycles"):
-        inner = bloc.replace('<div class="section-newpage chapter" id="s-cycles">', '').strip()
-        if inner.endswith('</div>'):
-            inner = inner[:-6].strip()
-        return f"""<section class="section section-sep" id="{section_id}">
-  <div class="reveal">{inner}</div>
-</section>"""
-
-    if offre == 'solo' and clients and not est_naissance:
-        bloc = calcul_cycles_vie(clients[0]['jour'], clients[0]['mois'], clients[0]['annee'])
-        if bloc:
-            cycles_web_html = _wrap_cycle_web(bloc)
-
-    elif offre == 'couple' and clients:
-        for idx, cl in enumerate(clients[:2]):
-            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
-            if bloc:
-                prenom = cl['prenom']
-                bloc = bloc.replace('Les grandes étapes qui viennent', f'Les grandes étapes de {prenom}')
-                cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-{idx}")
-
-    elif offre in ('famille', 'prestige') and clients:
-        adultes = [c for c in clients if c.get('annee', 2010) < (date.today().year - 16)][:2]
-        for idx, cl in enumerate(adultes):
-            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
-            if bloc:
-                prenom = cl['prenom']
-                bloc = bloc.replace('Les grandes étapes qui viennent', f'Les grandes étapes de {prenom}')
-                cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-{idx}")
-        if offre == 'prestige':
-            parents = [c for c in clients if any(k in ((c.get('role') or c.get('filiation') or '').lower()) for k in ('parent','pere','père','mere','mère','grand'))]
-            if not parents:
-                parents = [c for c in clients[2:] if c.get('annee', 2010) < 1975]
-            for idx, cl in enumerate(parents[:2]):
-                bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
-                if bloc:
-                    prenom = cl['prenom']
-                    bloc = bloc.replace('Les grandes étapes qui viennent', f'Le chemin de {prenom}')
-                    cycles_web_html += _wrap_cycle_web(bloc, f"s-cycles-parent-{idx}")
 
     mantras_html = ""
     for i, m in enumerate(narratif_mantras):
@@ -2693,62 +2571,9 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     # Tagline de couverture : Solo sans transgénérationnel
     cover_meta = "Numérologie · Astrologie · Transgénérationnel" if offre in ('famille', 'prestige') else "Numérologie · Astrologie · Lectures croisées"
 
-    # Section cycles -- Solo : 1 personne / Couple-Famille-Prestige : adultes uniquement
+    # Aucune grille/calendrier annuel dans le PDF client.
+    # Les grandes périodes charnières sont déjà intégrées au narratif.
     cycles_section_html = ""
-
-    if offre == 'solo' and clients and not est_naissance:
-        c0 = clients[0]
-        cycles_section_html = calcul_cycles_vie(c0['jour'], c0['mois'], c0['annee'])
-
-    elif offre == 'couple' and clients:
-        for cl in clients[:2]:
-            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
-            if bloc:
-                # Remplacer le titre de section par un titre personnalisé
-                prenom = cl['prenom']
-                bloc = bloc.replace(
-                    '<span class="eyebrow">Numérologie des cycles',
-                    f'<span class="eyebrow">Cycles de {prenom}'
-                ).replace(
-                    '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
-                    f'<h2 class="section-title">Les grandes étapes de {prenom}</h2>'
-                )
-                cycles_section_html += bloc
-
-    elif offre in ('famille', 'prestige') and clients:
-        # Adultes = les 2 premiers clients (convention app)
-        adultes = [c for c in clients if c.get('annee', 2010) < (date.today().year - 16)][:2]
-        for cl in adultes:
-            bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
-            if bloc:
-                prenom = cl['prenom']
-                bloc = bloc.replace(
-                    '<span class="eyebrow">Numérologie des cycles',
-                    f'<span class="eyebrow">Cycles de {prenom}'
-                ).replace(
-                    '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
-                    f'<h2 class="section-title">Les grandes étapes de {prenom}</h2>'
-                )
-                cycles_section_html += bloc
-
-        # Prestige : cycles des parents (lignée)
-        if offre == 'prestige':
-            parents = [c for c in clients if any(k in ((c.get('role') or c.get('filiation') or '').lower()) for k in ('parent','pere','père','mere','mère','grand'))]
-            if not parents:
-                # Fallback : clients au-delà des 2 adultes du foyer avec annee < 1980
-                parents = [c for c in clients[2:] if c.get('annee', 2010) < 1975]
-            for cl in parents[:2]:
-                bloc = calcul_cycles_vie(cl['jour'], cl['mois'], cl['annee'])
-                if bloc:
-                    prenom = cl['prenom']
-                    bloc = bloc.replace(
-                        '<span class="eyebrow">Numérologie des cycles',
-                        f'<span class="eyebrow">Lignée · Cycles de {prenom}'
-                    ).replace(
-                        '<h2 class="section-title">Les grandes étapes qui viennent</h2>',
-                        f'<h2 class="section-title">Le chemin de {prenom}</h2>'
-                    )
-                    cycles_section_html += bloc
 
     html_print = f"""<!DOCTYPE html>
 <html lang="fr">
