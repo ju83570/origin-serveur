@@ -1103,6 +1103,8 @@ def appeler_claude(offre, profils_txt, type_analyse='adulte'):
         return appeler_claude_prestige(profils_txt)
     if offre == 'couple':
         return appeler_claude_couple(profils_txt)
+    if offre == 'famille':
+        return appeler_claude_famille(profils_txt)
     if offre == 'solo':
         return appeler_claude_solo(profils_txt)
 
@@ -1651,7 +1653,7 @@ Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predict
     }
 
 
-def _appel_claude_chunk(prompt, max_tokens=8000):
+def _appel_claude_chunk(prompt, max_tokens=8000, timeout=300):
     import time
     last_exception = None
     for tentative in range(3):
@@ -1660,7 +1662,7 @@ def _appel_claude_chunk(prompt, max_tokens=8000):
                 "https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                 json={"model": "claude-opus-4-6", "max_tokens": max_tokens, "messages": [{"role": "user", "content": prompt}]},
-                timeout=300
+                timeout=timeout
             )
             r.raise_for_status()
             return _extraire_json_claude(r)
@@ -1717,6 +1719,167 @@ DONNÉES :
 {profils_txt}
 """
 
+
+def appeler_claude_famille(profils_txt):
+    """Génération Famille en 4 chunks pour éviter la troncature / le JSON invalide.
+
+    L'ancienne version demandait 9 000-11 000 mots dans une seule réponse JSON.
+    Sur une famille de plusieurs personnes, la réponse pouvait être tronquée ou devenir
+    invalide ; _extraire_json_claude() retournait alors None, puis FALLBACK_NARRATIF
+    (sections=[]), ce qui déclenchait « Narratif invalide -- aucune section générée ».
+    """
+    import time
+
+    annee_courante = date.today().year
+    pre = lambda mots: _preambule_prompt(annee_courante, mots, profils_txt)
+
+    # Repères simples pour éviter que Claude invente des membres/enfants.
+    blocs_profils = [
+        b.strip() for b in re.split(r'(?=^PROFIL\s*:)', profils_txt or '', flags=re.MULTILINE)
+        if b.strip().startswith('PROFIL')
+    ]
+    noms = []
+    for bloc in blocs_profils:
+        m = re.search(r'^PROFIL\s*:\s*([^\n]+)', bloc, flags=re.MULTILINE)
+        if m:
+            noms.append(re.sub(r'\s+--\s+(?:Homme|Femme)\s*$', '', m.group(1).strip(), flags=re.IGNORECASE))
+
+    adultes_txt = ' & '.join(noms[:2]) if noms[:2] else 'les deux premiers profils'
+    autres_txt = ', '.join(noms[2:]) if len(noms) > 2 else 'aucun membre supplémentaire renseigné'
+    reperes = f"""
+REPÈRES DE COMPOSITION DU FOYER :
+- Adultes principaux : {adultes_txt}
+- Membres ajoutés après les deux adultes : {autres_txt}
+- N'invente JAMAIS un enfant, un frère, une sœur ou un lien de parenté absent des données.
+- Les profils après les deux adultes sont les membres ajoutés via le formulaire famille ; utilise leur filiation si elle est indiquée.
+"""
+
+    prompt_a = pre("3200-4200") + reperes + r'''
+CHUNK A — OUVERTURE, IDENTITÉ DU FOYER ET PORTRAITS.
+Rédige UNIQUEMENT :
+1. LETTRE D'OUVERTURE — 3 paragraphes longs adressés au foyer entier. Elle doit donner immédiatement le sentiment que cette famille précise a été comprise.
+2. CE QUE CE FOYER PORTE — 4 paragraphes. Ce qui rend ce foyer unique, ce qu'il crée ensemble, ce qu'il cherche à transmettre, ses forces et ses tensions créatives.
+3. QUI TU ES — PORTRAIT DE CHAQUE MEMBRE — pour CHAQUE profil réellement présent dans les données, 3 à 4 paragraphes denses, avec son prénom. Dans le premier paragraphe de chaque portrait, nomme UNE FOIS son « chemin de vie X » exact. Aucun autre nombre technique visible. Chaque portrait doit avoir un ton distinct et ne jamais être copié-collé d'un autre.
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "lettre": "<p>...</p><p>...</p><p>...</p>",
+  "sections": [
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "contenu": "<p>...</p>..."}
+  ]
+}
+Les titres doivent être poétiques et spécifiques à CE foyer.
+'''
+
+    prompt_b = pre("1800-2400") + reperes + r'''
+CHUNK B — DYNAMIQUE DU FOYER ET TRANSMISSION.
+Rédige UNIQUEMENT ces 2 sections :
+1. CE QUI SE PASSE ENTRE VOUS — 4 paragraphes longs. Croise tous les profils : ce que chacun apporte, ce que les autres réveillent, complémentarités, zones de friction, rôles implicites. Aucun jargon technique visible, aucune scène biographique inventée.
+2. CE QUI SE TRANSMET SANS LE VOULOIR — 4 paragraphes longs. Patterns, loyautés, répétitions et forces héritées qui ressortent réellement des profils. Toujours bienveillant, jamais culpabilisant, jamais déterministe.
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "sections": [
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}
+  ]
+}
+'''
+
+    prompt_c = pre("3200-4600") + reperes + r'''
+CHUNK C — LE MODE D'EMPLOI DE CHAQUE ENFANT / MEMBRE JEUNE.
+Rédige UNIQUEMENT UNE section centrale : « LE MODE D'EMPLOI DE TON ENFANT » (titre final poétique libre).
+
+Pour CHAQUE enfant réellement identifiable dans les profils ajoutés après les deux adultes, rédige 7 paragraphes denses et distincts. Chaque paragraphe commence naturellement par son prénom et développe, dans cet ordre sans afficher les lettres A-G comme sous-titres :
+A) qui il/elle est vraiment ;
+B) ce dont il/elle a besoin de ses parents précisément ;
+C) ce qui l'allume et ce qui l'éteint dans la vie quotidienne ;
+D) comment lui parler pour qu'il/elle entende vraiment ;
+E) comment éviter de lui transmettre ce qui ne lui appartient pas ;
+F) ce qu'il/elle invite ses parents à apprendre ou devenir ;
+G) une phrase-boussole courte à lui transmettre.
+
+Termine par 1 paragraphe de synthèse sur l'art d'adapter la parentalité à chaque singularité tout en gardant la cohésion du foyer. Reformule naturellement l'idée : « On dit qu'il n'existe pas de mode d'emploi pour être parent. Ce livret vient de prouver le contraire — le vôtre existe. »
+
+IMPORTANT :
+- N'invente AUCUN enfant absent des données.
+- Si aucun enfant n'est réellement identifiable, ne crée pas de faux enfant : transforme cette section en « Mode d'emploi du foyer » avec 5 paragraphes sur les besoins relationnels concrets des membres présents.
+- Aucune donnée technique brute dans le texte livré.
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "sections": [
+    {"titre": "...", "contenu": "<p>...</p>..."}
+  ]
+}
+'''
+
+    prompt_d = pre("1800-2400") + reperes + r'''
+CHUNK D — GRANDES PÉRIODES, AVENIR, MANTRAS ET MESSAGE FINAL.
+Rédige UNIQUEMENT :
+1. LES GRANDES PÉRIODES CHARNIÈRES DU FOYER — 3 paragraphes longs. Croise les blocs « CHARNIÈRES TEMPORELLES » et retiens seulement 2 à 4 grandes fenêtres où plusieurs trajectoires se rencontrent ou changent de phase. Regroupe les années proches. Aucune revue année par année, aucune prédiction certaine, aucun jargon technique.
+2. CE QUE VOUS PORTEZ VERS DEMAIN — 3 paragraphes longs. Élan, maturité, cohésion, possibilités. Chaleureux et concret, jamais prédictif.
+3. MANTRAS — un mantra court pour chaque membre réellement présent + un mantra « Famille ». Chaque entrée contient prénom, texte, note. Les notes expliquent l'ancrage humain sans exposer les calculs.
+4. MESSAGE FINAL — 2 à 3 paragraphes longs qui referment le livret avec chaleur et précision.
+
+RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
+{
+  "sections": [
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
+  ],
+  "mantras": [
+    {"prenom": "...", "texte": "...", "note": "..."}
+  ],
+  "message_final": "<p>...</p><p>...</p>"
+}
+'''
+
+    def _appel_famille_valide(label, prompt, max_tokens, essais=2):
+        """Relance aussi quand HTTP réussit mais que le JSON/les sections sont invalides."""
+        for tentative in range(1, essais + 1):
+            try:
+                data = _appel_claude_chunk(prompt, max_tokens=max_tokens, timeout=600)
+            except Exception as ex:
+                print(f"[famille:{label}] erreur appel tentative {tentative}/{essais} : {ex}")
+                data = None
+
+            if data and isinstance(data, dict) and data.get('sections'):
+                print(f"[famille:{label}] OK — {len(data.get('sections', []))} section(s)")
+                return data
+
+            print(f"[famille:{label}] JSON invalide ou sections vides — tentative {tentative}/{essais}")
+            if tentative < essais:
+                time.sleep(10)
+        return None
+
+    # Chaque bloc reste nettement sous la taille de l'ancien appel unique 9k-11k mots.
+    a = _appel_famille_valide('A', prompt_a, max_tokens=10000)
+    b = _appel_famille_valide('B', prompt_b, max_tokens=7000)
+    c = _appel_famille_valide('C', prompt_c, max_tokens=12000)
+    d = _appel_famille_valide('D', prompt_d, max_tokens=7000)
+
+    if not a or not b or not c or not d:
+        print("⚠️ Famille : au moins un chunk est invalide après relance — fallback")
+        return FALLBACK_NARRATIF
+
+    sections = (
+        (a.get('sections') or [])
+        + (b.get('sections') or [])
+        + (c.get('sections') or [])
+        + (d.get('sections') or [])
+    )
+    if not sections:
+        print("⚠️ Famille : fusion terminée mais aucune section — fallback")
+        return FALLBACK_NARRATIF
+
+    return {
+        'lettre': a.get('lettre', ''),
+        'sections': sections,
+        'mantras': d.get('mantras') or [{'prenom': 'Famille', 'texte': '', 'note': ''}],
+        'message_final': d.get('message_final', ''),
+    }
 
 def appeler_claude_prestige(profils_txt):
     annee_courante = date.today().year
