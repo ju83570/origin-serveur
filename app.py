@@ -1757,13 +1757,20 @@ ADULTES PRINCIPAUX : {adultes[0]} et {adultes[1]}
 MEMBRES AJOUTÉS APRÈS LES DEUX ADULTES : {enfants_txt}
 
 RÈGLES ABSOLUES :
-- N'invente JAMAIS un membre, un enfant, une fratrie, un événement biographique ou un lien absent des données.
+- N'invente JAMAIS un membre, un enfant, une fratrie, un événement biographique, une durée de relation, une scène vécue, un comportement observé, un détail physique ou un lien absent des données.
+- SOURCE DE VÉRITÉ DES LIENS : seules les mentions explicites « Filiation » et le bloc CONTEXTE FOURNI PAR LE CLIENT autorisent à écrire « père », « mère », « fils », « fille », « beau-fils », « belle-fille », « enfant commun », « famille recomposée », etc. N'infère JAMAIS un lien à partir de l'ordre des profils.
+- Ne mentionne JAMAIS une durée précise (« depuis X ans ») sauf si cette durée est écrite explicitement dans le contexte client.
+- N'écris JAMAIS l'âge chiffré d'une personne. Les appels sont générés séparément et un âge pourrait devenir incohérent d'un bloc à l'autre. Utilise simplement « enfant », « adolescent(e) », « jeune adulte » seulement si cela est évident d'après la date de naissance ; sinon évite toute étiquette d'âge.
 - Les outils de calcul restent internes, SAUF le numéro exact du chemin de vie de chaque personne, qui peut être nommé UNE FOIS dans son portrait sous la forme « chemin de vie X ».
 - Ne montre jamais : positions planétaires, degrés, Soleil/Lune/Ascendant, expression, intime, réalisation, année personnelle, pinnacle, dominants/manquants ou jargon technique.
-- Aucune prédiction certaine. Les périodes futures sont des fenêtres possibles, jamais des événements garantis.
+- Aucune prédiction certaine. Pour le futur, emploie systématiquement le conditionnel (« pourrait », « peut inviter », « il est possible que »). Interdits : « s'ouvrira », « sentira », « deviendra », « aura besoin toute sa vie », « restera toujours vrai ».
+- Les lectures de personnalité et les conseils éducatifs sont des PISTES symboliques, jamais des diagnostics ni des vérités sur le fonctionnement psychologique. Préfère « peut », « semble inviter à », « une piste à observer », « pourrait l'aider » à « il est », « il a besoin », « il fait toujours ».
+- Ne transforme JAMAIS un enfant en symbole du couple ou du foyer : pas de « ciment », « preuve que l'amour fonctionne », « baromètre », « trait d'union vivant », « enfant qui relie les deux mondes » ou formulation équivalente.
+- Pour les transmissions familiales, ne présente jamais une peur, blessure, loyauté ou répétition comme un héritage avéré sans donnée explicite. Parle de « dynamique possible », « vigilance », « tendance à observer ».
 - Prose chaleureuse, précise, concrète, immersive. Aucun tableau et aucune liste à puces dans le contenu livré.
 - Respecte le genre indiqué pour chaque personne.
 - Utilise les prénoms régulièrement, sans répétition mécanique.
+- VARIATION DE STYLE : limite fortement les métaphores « bâtir / fondation / pilier / structure / architecture / sol / constellation / trait d'union ». N'utilise pas la même image plus d'une fois par bloc.
 - Chaque réponse doit être un JSON STRICTEMENT valide, sans markdown, sans texte avant ou après.
 
 DONNÉES COMPLÈTES DE LA FAMILLE :
@@ -1859,7 +1866,7 @@ RETOURNE EXACTEMENT UN OBJET JSON avec une clé "sections" contenant {len(groupe
 Longueur cible totale : 1 300 à 1 700 mots.
 
 1. « CE QUI SE PASSE ENTRE VOUS » : 4 paragraphes longs. Croise tous les profils : ce que chacun apporte, ce que les autres réveillent, complémentarités, frictions possibles, rôles implicites et besoins relationnels.
-2. « CE QUI SE TRANSMET SANS LE VOULOIR » : 4 paragraphes longs. Patterns, loyautés, répétitions et forces héritées réellement visibles dans les profils. Bienveillant, non déterministe, jamais culpabilisant.
+2. « CE QUI PEUT SE TRANSMETTRE SANS LE VOULOIR » : 4 paragraphes longs. Décris uniquement des dynamiques POSSIBLES à observer dans le foyer à partir des contrastes entre profils. Ne parle de loyauté, blessure, peur ou héritage avéré que si le contexte client le dit explicitement. Bienveillant, conditionnel, non déterministe, jamais culpabilisant.
 
 RETOURNE UNIQUEMENT :
 {
@@ -1878,16 +1885,16 @@ RETOURNE UNIQUEMENT :
             consigne = f'''RÉDIGE UNIQUEMENT LE « MODE D'EMPLOI » DE : {groupe_txt}.
 Longueur cible : 850 à 1 100 mots PAR PERSONNE.
 
-Pour CHAQUE personne de ce groupe, crée UNE section distincte de 7 paragraphes. Sans afficher les lettres A-G comme sous-titres, traite dans cet ordre :
-A) qui cette personne est vraiment ;
-B) ce dont elle a besoin de ses parents/adultes précisément ;
-C) ce qui l'allume et ce qui l'éteint au quotidien ;
-D) comment lui parler pour qu'elle entende vraiment ;
-E) comment éviter de lui transmettre ce qui ne lui appartient pas ;
-F) ce qu'elle invite les adultes à apprendre ou devenir ;
+Pour CHAQUE personne de ce groupe, crée UNE section distincte de 7 paragraphes. Cette partie est ACTIONNABLE et ne doit PAS refaire le portrait déjà écrit : ne répète ni le chemin de vie, ni les grandes périodes, ni les descriptions générales déjà utilisées. Sans afficher les lettres A-G comme sous-titres, traite dans cet ordre :
+A) une clé de compréhension pratique, formulée comme une piste et non une vérité psychologique ;
+B) ce qui pourrait l'aider à se sentir respecté(e) et en sécurité avec les adultes ;
+C) des conditions quotidiennes susceptibles de favoriser son épanouissement, sans inventer de comportement observé ;
+D) des façons possibles de communiquer avec elle/lui, proposées comme options ;
+E) des vigilances de transmission formulées au conditionnel, sans attribuer une blessure ou une loyauté inexistante ;
+F) ce que la relation avec cette personne peut inviter les adultes à développer ;
 G) une phrase-boussole courte à lui transmettre, intégrée naturellement au dernier paragraphe.
 
-N'invente aucune scène ni information absente. RETOURNE UN JSON STRICT avec "sections" contenant exactement {len(groupe)} section(s), dans cet ordre : {groupe_txt}.'''
+INTERDICTION : aucune scène supposée (« quand il se met en colère », « elle revient toujours », etc.), aucun diagnostic, aucune certitude éducative, aucun rôle symbolique dans le couple ou la famille. N'invente aucune information absente. RETOURNE UN JSON STRICT avec "sections" contenant exactement {len(groupe)} section(s), dans cet ordre : {groupe_txt}.'''
             enfant_tasks.append((label, consigne, 7600, len(groupe), False, False))
     else:
         enfant_tasks.append((
@@ -1899,10 +1906,10 @@ N'invente aucune scène ni information absente. RETOURNE UN JSON STRICT avec "se
     final_prompt = f'''RÉDIGE UNIQUEMENT LA FIN DU LIVRET.
 Longueur cible totale : 1 100 à 1 500 mots hors mantras.
 
-1. LES GRANDES PÉRIODES CHARNIÈRES DU FOYER : 3 paragraphes. Croise les blocs « CHARNIÈRES TEMPORELLES » de tous les membres. Retiens seulement 2 à 4 grandes fenêtres ; regroupe les années proches ; aucune revue année par année et aucune prédiction certaine.
-2. CE QUE VOUS PORTEZ VERS DEMAIN : 3 paragraphes. Élan, cohésion, maturité, possibilités concrètes, jamais prédictif.
-3. MANTRAS : exactement un mantra court pour chacun de ces membres : {composition}, puis un dernier mantra nommé « Famille ». Chaque entrée = prénom, texte, note.
-4. MESSAGE FINAL : 2 paragraphes longs.
+1. LES GRANDES PÉRIODES CHARNIÈRES DU FOYER : 3 paragraphes. Croise les blocs « CHARNIÈRES TEMPORELLES » de tous les membres. Retiens seulement 2 à 4 grandes fenêtres ; regroupe les années proches. Ne répète PAS les fenêtres individuelles déjà évoquées dans les portraits. Chaque phrase future doit rester explicitement conditionnelle.
+2. CE QUE VOUS PORTEZ VERS DEMAIN : 3 paragraphes. Élan, cohésion, maturité et possibilités concrètes. Aucun nouveau fait biographique, aucun rôle familial inventé, aucune promesse.
+3. MANTRAS : exactement un mantra court pour chacun de ces membres : {composition}, puis un dernier mantra nommé « Famille ». Chaque entrée = prénom, texte, note. Aucun détail biographique ou physique nouveau dans les notes.
+4. MESSAGE FINAL : 2 paragraphes longs. Synthèse sobre et chaleureuse ; n'introduis AUCUNE nouvelle information, aucun détail physique, aucun diagnostic et aucune affirmation du type « vous ne vous êtes pas trouvés par hasard ».
 
 RETOURNE UNIQUEMENT :
 {{
@@ -2861,7 +2868,16 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             _carnet_page(f"{etape} · ORIGIN", question) for etape, question in etapes_vie
         )
     else:
-        if offre in ('couple', 'famille', 'prestige'):
+        if offre == 'famille':
+            questions_list = [
+                "Qu'est-ce qui vous a le plus touchés dans cette lecture ?",
+                "Quelle force de votre foyer avez-vous envie de nourrir davantage ?",
+                "Quel besoin de chacun avez-vous envie de mieux respecter ?",
+                "Quelle manière de communiquer aimeriez-vous ajuster dans votre quotidien ?",
+                "Quelle dynamique familiale avez-vous envie de laisser derrière vous ?",
+                "Quel petit rituel concret pouvez-vous mettre en place dès cette semaine ?"
+            ]
+        elif offre in ('couple', 'prestige'):
             questions_list = [
                 "Qu'est-ce qui vous a le plus touchés dans cette lecture ?",
                 "Quelle phrase résonne encore en vous ?",
@@ -2913,8 +2929,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <div class="light-line" style="margin:0 auto 1.2cm;"></div>
   <div class="prose" style="text-align:left;max-width:14cm;">
     <p>Ce livret est le fruit d'une lecture croisée : numérologie, astrologie, et lecture des cycles de vie. Ces trois approches ne se substituent pas l'une à l'autre -- elles se répondent, se complètent, révèlent ensemble ce qu'aucune ne pourrait montrer seule.</p>
-    <p>Ce que tu tiens entre les mains n'est pas un horoscope, ni un portrait psychologique, ni une prédiction. C'est une carte -- la tienne. Elle montre le terrain, les reliefs, les zones d'ombre et les lignes de force. Ce que tu en fais t'appartient entièrement.</p>
-    <p>Pour en tirer le meilleur : lis lentement. Laisse résonner ce qui résonne. Note ce qui te surprend. Reviens dans quelques semaines -- certaines choses prennent du temps à se déposer.</p>
+    <p>{"Ce que vous tenez entre les mains n'est ni un diagnostic ni une prédiction. C'est une lecture symbolique et personnalisée -- une carte possible de votre foyer. Elle propose des pistes, des reliefs et des lignes de force ; ce que vous en faites vous appartient entièrement." if offre == 'famille' else "Ce que tu tiens entre les mains n'est pas un horoscope, ni un portrait psychologique, ni une prédiction. C'est une carte -- la tienne. Elle montre le terrain, les reliefs, les zones d'ombre et les lignes de force. Ce que tu en fais t'appartient entièrement."}</p>
+    <p>{"Pour en tirer le meilleur : lisez lentement. Gardez ce qui résonne, laissez le reste. Revenez-y dans quelques semaines -- certaines choses prennent du temps à se déposer." if offre == 'famille' else "Pour en tirer le meilleur : lis lentement. Laisse résonner ce qui résonne. Note ce qui te surprend. Reviens dans quelques semaines -- certaines choses prennent du temps à se déposer."}</p>
   </div>
   <div class="light-line" style="margin:1.2cm auto 0;"></div>
 </div>
@@ -2941,9 +2957,13 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <div class="light-line" style="margin:1.5cm auto 0;width:4cm;"></div>
 </div>
 
-<div class="section-newpage center-page">
-  {chapter_end_html}
-</div>
+{(('<div class="section-newpage first-page">'
+   '<span class="eyebrow">Pour terminer</span>'
+   '<h2 class="section-title">Un dernier mot pour votre foyer</h2>'
+   '<div class="light-line"></div>'
+   f'<div class="prose">{narratif.get("message_final", "")}</div>'
+   '<div class="chapter-close">· · ·</div>'
+   '</div>') if offre == 'famille' and narratif.get('message_final') else f'<div class="section-newpage center-page">{chapter_end_html}</div>')}
 
 <div class="carnet-cover">
   <img src="data:image/png;base64,{logo_b64}" style="width:55mm;height:55mm;object-fit:contain;margin-bottom:1cm;" alt="ORIGIN">
