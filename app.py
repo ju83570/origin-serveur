@@ -801,9 +801,10 @@ Aucune prédiction certaine : parle de fenêtres, de seuils, de terrain favorabl
 ═══════════════════════════════════════════════
 RÈGLE N°1 — PRINCIPE ABSOLU : INVISIBILITÉ DES OUTILS
 ═══════════════════════════════════════════════
-La personne ne sait pas ce que tu utilises pour la lire.
-Elle ne voit JAMAIS les mots : "numérologie", "astrologie", "chemin de vie",
-"Soleil", "Lune", "pinnacle", "chiffre", "nombre", "thème natal", "maison".
+La personne ne voit pas les outils de calcul, avec UNE exception volontaire : son chemin de vie.
+Le numéro exact du chemin de vie DOIT rester visible et être clairement nommé sous la forme « chemin de vie X » au moins une fois.
+Ne jamais remplacer ce numéro par un surnom et ne jamais présenter un autre nombre (expression, intime, réalisation, dominant, année personnelle) comme s'il s'agissait du chemin de vie.
+Tout le reste reste interne : "numérologie", "astrologie", "Soleil", "Lune", "Ascendant", "pinnacle", "thème natal", "maison", degrés et positions planétaires.
 Ces outils sont ton matériau -- pas le texte livré.
 
 ═══════════════════════════════════════════════
@@ -1013,6 +1014,8 @@ ANNÉE EN COURS : {annee_courante}
 
 GENRE : le genre de l'enfant est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, participes passés et pronoms en conséquence dans l'intégralité du texte. Ne jamais utiliser "elle/la" pour un garçon ni "il/le" pour une fille. Les tournures inclusives (venu·e, il/elle) sont interdites -- choisis le bon accord selon le genre fourni.
 
+RÈGLE ABSOLUE -- CHEMIN DE VIE : Le numéro exact du chemin de vie est la SEULE donnée numérologique technique qui doit être affichée explicitement au lecteur. Dans la section « Ton chemin de vie », nomme-le clairement sous la forme « Ton chemin de vie X ». Ne jamais confondre ce nombre avec Expression, Intime, Réalisation, année personnelle, dominants ou manquants. Tous ces autres nombres restent internes et sont seulement traduits en langage humain. Les données astrologiques brutes (Soleil, Lune, Ascendant, degrés, positions) restent également internes.
+
 RÈGLE ABSOLUE -- FRATRIE : Ne jamais inventer de frères ou sœurs, de fratrie, ou de "ton frère"/"ta sœur" si ces informations ne sont pas explicitement présentes dans les données. Si une fratrie est indiquée dans les données, tu peux en parler. Sinon, n'en mentionne jamais l'existence -- même comme exemple.
 
 LONGUEUR IMPERATIVE :
@@ -1027,7 +1030,7 @@ DONNÉES :
 
     prompt_a = base + """STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
 1. LETTRE D'OUVERTURE (3 paragraphes, tutoiement -- ce que ce jour de naissance révèle, ton énergie fondamentale, ce que tu portes comme lumière)
-2. TON CHEMIN DE VIE (3 paragraphes, tutoiement -- ta mission profonde, ce que tu apprends à comprendre et à incarner, comment ce chemin peut se manifester)
+2. TON CHEMIN DE VIE (3 paragraphes, tutoiement -- commence par nommer explicitement « Ton chemin de vie X » avec le numéro exact lu sur la ligne Chemin de vie, puis développe ta mission profonde, ce que tu apprends à comprendre et à incarner, comment ce chemin peut se manifester)
 3. TES DONS NATURELS (3 paragraphes, tutoiement -- ce qui te vient facilement, tes forces innées, scènes concrètes d'enfance)
 4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement -- les apprentissages qui t'attendront, zones manquantes avec douceur et espoir)
 
@@ -1120,7 +1123,7 @@ GENRE : le genre est indiqué dans les données (Homme/Femme). Accorde TOUS les 
 
 4. CE QUE TU PORTES VERS DEMAIN (2 paragraphes) -- Un élan vers la suite. Ce qui se dégage, ce qui s'ouvre. Chaleureux, porteur d'élan. JAMAIS de prédictions certaines.""",
         'couple': """
-LE PRINCIPE ABSOLU : Le couple ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau -- pas le texte livré. Tu les utilises pour voir, puis tu écris ce que tu vois.
+LE PRINCIPE ABSOLU : les outils restent internes, SAUF les numéros de chemin de vie. Pour chaque personne, le numéro exact lu sur la ligne « Chemin de vie » doit être nommé clairement (« chemin de vie X »). Ne jamais substituer un nombre d'expression, intime, réalisation ou dominant au chemin de vie. Tout le reste (astrologie brute, Soleil/Lune/Ascendant, pinnacle, autres nombres, degrés) reste interne. Tu traduis leur sens en prose.
 
 STRUCTURE (7 mouvements, titres libres -- poétiques, adaptés à CE couple, jamais techniques) :
 
@@ -1148,13 +1151,13 @@ JAMAIS de prédictions certaines. Toujours ancré dans les profils réels.
 
 7. CE QUE VOUS PORTEZ VERS DEMAIN (2 paragraphes) -- Un élan vers la suite. Ce qui se dégage pour eux ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
         'famille': """
-LE PRINCIPE ABSOLU : La famille ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau -- pas le texte livré.
+LE PRINCIPE ABSOLU : les outils restent internes, SAUF le numéro de chemin de vie de chaque membre. Chaque portrait doit nommer clairement « chemin de vie X » avec la valeur exacte lue sur la ligne Chemin de vie. Ne jamais confondre avec Expression, Intime, Réalisation, dominants, année personnelle ou pinnacle. Les données astrologiques brutes et tous les autres nombres restent internes.
 
 STRUCTURE (7 mouvements, titres libres -- poétiques, adaptés à CE foyer, jamais techniques) :
 
 1. CE QUE CE FOYER PORTE (4 paragraphes) -- Ce qui rend ce foyer unique, lu dans l'ensemble des profils croisés. Ce que cette famille crée ensemble, ce qu'elle transmet, ce qu'elle cherche. Prose vivante, immersive, aucun terme technique.
 
-2. QUI TU ES, [chaque membre] (4 paragraphes par personne) -- Portrait immersif de chaque membre lu dans son profil complet. Ton distinct pour chacun. Impossible à donner à quelqu'un d'autre. JAMAIS de sous-sections numérologie / astrologie séparées dans le texte.
+2. QUI TU ES, [chaque membre] (4 paragraphes par personne) -- Portrait immersif de chaque membre lu dans son profil complet. Dans le premier paragraphe de chaque personne, nomme UNE FOIS son numéro exact sous la forme « chemin de vie X ». Ton distinct pour chacun. Impossible à donner à quelqu'un d'autre. Aucun autre nombre technique ne doit être affiché.
 
 3. CE QUI SE PASSE ENTRE VOUS (4 paragraphes) -- La dynamique du foyer lue dans les profils croisés : ce que chacun apporte, ce que l'autre éveille, les tensions créatives, les complémentarités, les rôles non dits. Prose vivante.
 
@@ -1183,7 +1186,7 @@ Terminer cette section par un paragraphe de synthèse : l'art d'adapter sa paren
 
 7. CE QUE VOUS PORTEZ VERS DEMAIN (3 paragraphes) -- Un élan vers la suite pour ce foyer après ces grandes périodes. Vision de ce qu'ils peuvent devenir ensemble. Chaleureux, porteur d'espoir. JAMAIS de prédictions certaines.""",
         'prestige': """
-LE PRINCIPE ABSOLU : La famille ne sait pas ce que tu utilises pour les lire. Ils ne voient jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle". Ces outils sont ton matériau sur 3 générations -- pas le texte livré.
+LE PRINCIPE ABSOLU : les outils restent internes, SAUF le numéro de chemin de vie de chaque membre. Chaque portrait doit nommer clairement « chemin de vie X » avec la valeur exacte lue sur la ligne Chemin de vie. Ne jamais confondre ce nombre avec Expression, Intime, Réalisation, dominants, année personnelle ou pinnacle. Les données astrologiques brutes et les autres nombres restent internes.
 
 STRUCTURE (7 mouvements, titres libres -- poétiques, adaptés à CETTE lignée, jamais techniques) :
 
@@ -1249,7 +1252,7 @@ REGLES ABSOLUES (violations = livret inutilisable) :
 - JAMAIS de predictions certaines ("cette annee tu vas...", "Jupiter te promet...")
 - JAMAIS de references a la ville natale comme lieu de vie actuel suppose
 - Si des blocs "CHARNIÈRES TEMPORELLES" sont présents : JAMAIS de revue année par année. Retenir seulement 2 à 4 grandes fenêtres de bascule, regrouper les années proches et employer un langage de possibilité, jamais de certitude.
-- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]" -- pas "Pinnacle actuel"
+- Le pinnacle reste un repère INTERNE : ne jamais afficher son nom ni sa valeur au client. -- pas "Pinnacle actuel"
 - Offre SOLO uniquement : pas de Transgenérationnel dans la couverture
 
 UTILISATION DES DONNÉES :
@@ -1351,6 +1354,45 @@ FALLBACK_NARRATIF = {
 }
 
 
+def _extraire_chemins_de_vie(profils_txt):
+    """Extrait [(nom_complet, chemin_de_vie)] depuis les blocs PROFIL de fmt_profil()."""
+    resultats = []
+    if not profils_txt:
+        return resultats
+    blocs = re.split(r'(?=^PROFIL\s*:)', profils_txt, flags=re.MULTILINE)
+    for bloc in blocs:
+        m_nom = re.search(r'^PROFIL\s*:\s*([^\n]+)', bloc, flags=re.MULTILINE)
+        m_cdv = re.search(r'^\s*Chemin de vie\s*:\s*(\d+)', bloc, flags=re.MULTILINE | re.IGNORECASE)
+        if m_nom and m_cdv:
+            # Retirer le suffixe de genre éventuel " -- Homme/Femme" du nom affiché.
+            nom = re.sub(r'\s+--\s+(?:Homme|Femme)\s*$', '', m_nom.group(1).strip(), flags=re.IGNORECASE)
+            resultats.append((nom, int(m_cdv.group(1))))
+    return resultats
+
+
+def _securiser_note_mantra_couple(mantras, chemins):
+    """Évite qu'un autre nombre (expression, intime...) soit présenté comme le chemin de vie du couple."""
+    if not mantras or len(chemins) < 2:
+        return mantras
+    cdv_autorises = {str(chemins[0][1]), str(chemins[1][1])}
+    for m in mantras:
+        if str(m.get('prenom', '')).strip().lower() != 'ensemble':
+            continue
+        note = str(m.get('note', ''))
+        # Si la note contient un nombre numérologique différent des deux chemins de vie,
+        # on remplace seulement la note explicative par une formulation exacte et non ambiguë.
+        nums = set(re.findall(r'(?<!\d)(?:11|22|33|[1-9])(?!\d)', note))
+        if nums - cdv_autorises:
+            nom1, cdv1 = chemins[0]
+            nom2, cdv2 = chemins[1]
+            m['note'] = (
+                f"Cette phrase s'appuie sur la rencontre entre le chemin de vie {cdv1} de {nom1} "
+                f"et le chemin de vie {cdv2} de {nom2}. Ces deux dynamiques sont croisées ici sans "
+                "les confondre avec les autres nombres du profil."
+            )
+    return mantras
+
+
 def appeler_claude_solo(profils_txt):
     """Solo en 2 chunks pour éviter la troncature JSON."""
     import datetime
@@ -1360,7 +1402,7 @@ def appeler_claude_solo(profils_txt):
 
 ANNÉE EN COURS : {annee_courante}
 
-LE PRINCIPE ABSOLU : Le client ne voit jamais les mots "numérologie", "astrologie", "chemin de vie", "Soleil", "Lune", "pinnacle", "transit". Ces outils sont ton matériau de lecture -- pas le texte livré. Tu les utilises pour voir, puis tu écris ce que tu vois en prose vivante.
+LE PRINCIPE ABSOLU : les outils de calcul restent invisibles, SAUF le chemin de vie. Le client DOIT voir son numéro de chemin de vie, clairement nommé sous la forme « chemin de vie X ». Ne jamais cacher ni remplacer ce numéro par un surnom. En revanche, ne jamais exposer les autres données techniques brutes : "numérologie", "astrologie", "Soleil", "Lune", "Ascendant", "pinnacle", "transit", nombres d'expression/intime/réalisation, chiffres dominants/manquants, degrés ou positions planétaires. Tu utilises ces éléments pour comprendre, puis tu écris leur sens en prose vivante.
 
 CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données ci-dessous, utilise-le pour affiner l'analyse des sections "ce que tu traverses en ce moment" et "ce que tu portes vers demain". Ces éléments colorent la texture de la période, les tensions intérieures, les ouvertures disponibles. JAMAIS exposés dans le texte : aucun terme planétaire, aucun mot "transit".
 
@@ -1383,7 +1425,7 @@ CHUNK A -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 
 Mouvement 1 -- QUI TU ES (titre poétique libre, 5 paragraphes longs) :
 IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence tout au long du texte.
-- §1 : ce qui caractérise fondamentalement cette personne -- son rapport au monde, à l'existence, aux autres. Très concret, très ancré, impossible à généraliser.
+- §1 : ouvre naturellement en nommant UNE FOIS le numéro exact de son chemin de vie (ex. « Ton chemin de vie 22... »), puis traduis immédiatement ce que cela raconte humainement. Ensuite développe ce qui caractérise fondamentalement cette personne -- son rapport au monde, à l'existence, aux autres. Très concret, très ancré, impossible à généraliser.
 - §2 : son intelligence, sa façon de traiter le réel, ce qui se passe dans sa tête que les autres ne voient pas. Précis, intime.
 - §3 : ce que cette personne dégage sans s'en rendre compte -- son impact sur les autres, l'atmosphère qu'elle/il crée, ce que les gens ressentent en sa présence.
 - §4 (LUMIÈRE) : les forces naturelles, les élans profonds, ce qui se déploie avec évidence quand cette personne est alignée. Célébrer avec précision -- pas de généralités.
@@ -1441,11 +1483,16 @@ Message final : 2 paragraphes qui donnent envie de refermer le livret avec le se
 def appeler_claude_couple(profils_txt):
     """Génération couple en 2 chunks pour éviter la troncature JSON."""
     annee_courante = date.today().year
+    chemins = _extraire_chemins_de_vie(profils_txt)
+    chemins_txt = " ; ".join(f"{nom} = chemin de vie {cdv}" for nom, cdv in chemins[:2]) or "Lis les valeurs exactes sur les lignes Chemin de vie."
 
     prompt_a = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
+
+CHEMINS DE VIE — VALEURS À NE JAMAIS CONFONDRE : {chemins_txt}
+Le chemin de vie est la SEULE donnée numérologique brute autorisée à apparaître explicitement. Pour chaque personne, nomme UNE FOIS « chemin de vie X » avec la valeur exacte ci-dessus. Un nombre d'Expression, Intime, Réalisation, année personnelle, dominant ou manquant n'est JAMAIS un chemin de vie. Ne juxtapose jamais deux autres nombres comme s'ils étaient les chemins de vie du couple. Les termes Soleil, Lune, Ascendant, degrés, positions planétaires et autres nombres restent internes.
 
 CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données, utilise-le pour affiner la lecture de chaque profil et la dynamique de couple — tensions du moment, cycles traversés, énergie disponible. JAMAIS exposé dans le texte : aucun terme planétaire, aucun mot "transit".
 
@@ -1465,11 +1512,12 @@ STYLE OBLIGATOIRE :
 - Ton bienveillant mais direct sur les zones d'ombre
 
 REGLES ABSOLUES :
+- EXCEPTION VISIBLE OBLIGATOIRE : le numéro exact du chemin de vie de chaque personne doit être nommé clairement « chemin de vie X » dans son portrait. C'est le SEUL nombre numérologique brut à afficher. Ne jamais confondre avec Expression, Intime, Réalisation, année personnelle, dominants/manquants ou pinnacle.
 - JAMAIS de positions planetaires au degre exact
 - JAMAIS de matrices ou tableaux de chiffres
 - JAMAIS de scenes biographiques inventees
 - JAMAIS de predictions certaines
-- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]"
+- Le pinnacle reste un repère INTERNE : ne jamais afficher son nom ni sa valeur au client.
 
 DONNÉES :
 {profils_txt}
@@ -1486,15 +1534,20 @@ CHUNK A -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence dans chaque portrait.
 Mouvement 1 -- Ce que vous êtes l'un pour l'autre : 4 paragraphes immersifs, aucun terme technique, titre poétique libre.
 Mouvement 2 -- Portrait de Personne 1 (5 paragraphes, titre poétique libre avec prénom) :
+- Dans le premier paragraphe, nomme explicitement son chemin de vie exact sous la forme « chemin de vie X », une seule fois, puis traduis son sens humainement.
 - §1-§3 : portrait complet — fonctionnement intérieur, intelligence, impact sur les autres.
 - §4 (LUMIÈRE) : forces naturelles, dons, ce qui se déploie avec évidence.
 - §5 (OMBRE) : ce qui résiste, se répète, coûte. Nommé avec bienveillance et courage -- jamais comme verdict.
 Mouvement 3 -- Portrait de Personne 2 (5 paragraphes, titre poétique libre avec prénom). Ton distinct. JAMAIS de copier-coller.
+- Dans le premier paragraphe, nomme explicitement son chemin de vie exact sous la forme « chemin de vie X », une seule fois. Vérifie qu'il s'agit bien de la ligne Chemin de vie et non de son nombre d'expression.
 - Même structure : §1-§3 portrait, §4 lumière, §5 ombre."""
 
     prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
 ANNÉE EN COURS : {annee_courante}
+
+CHEMINS DE VIE — VALEURS À NE JAMAIS CONFONDRE : {chemins_txt}
+Le chemin de vie est la SEULE donnée numérologique brute autorisée à apparaître explicitement. Si tu cites un nombre dans un mantra ou sa note, utilise uniquement les chemins de vie exacts ci-dessus et nomme-les comme tels. Ne jamais utiliser Expression, Intime, Réalisation, année personnelle, dominant ou manquant comme substitut du chemin de vie. Les données astrologiques brutes restent internes.
 
 CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données, utilise-le pour affiner "ce que vous traversez en ce moment" et le message final. JAMAIS exposé : aucun terme planétaire dans le texte livré.
 
@@ -1514,7 +1567,7 @@ REGLES ABSOLUES :
 - JAMAIS de matrices ou tableaux de chiffres
 - JAMAIS de scenes biographiques inventees
 - JAMAIS de predictions certaines
-- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]"
+- Le pinnacle reste un repère INTERNE : ne jamais afficher son nom ni sa valeur au client.
 
 DONNÉES :
 {profils_txt}
@@ -1547,12 +1600,12 @@ RÈGLES : aucun terme technique ("Saturne", "Jupiter", "année personnelle", etc
 Mouvement 6 -- Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
 Mantras -- RÈGLES STRICTES, 5 mantras au total :
-- Mantra 1 [Personne 1] : ancré dans son chiffre dominant ou son Soleil -- célèbre ce que cette personne EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre.
-- Mantra 2 [Personne 1] : ancré dans son chiffre manquant ou sa Lune/Ascendant -- une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout".
-- Mantra 3 [Personne 2] : idem, ancré dans son chiffre dominant ou son Soleil. Différent du mantra de Personne 1 en ton et en contenu.
-- Mantra 4 [Personne 2] : idem, ancré dans son chiffre manquant ou sa Lune/Ascendant. Doit nommer quelque chose de précis et unique à cette personne.
-- Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils -- cite les chiffres ou planètes des deux, nomme la tension créatrice entre eux. Pas un mantra générique sur l'amour.
-Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra, quels chiffres/planètes l'ancrent.
+- Mantra 1 [Personne 1] : ancré dans l'ensemble de son profil -- célèbre ce que cette personne EST déjà. La phrase doit être impossible à donner à quelqu'un d'autre. Dans la note, le seul nombre que tu peux citer est son chemin de vie exact.
+- Mantra 2 [Personne 1] : une invitation concrète vers ce qui lui résiste. Pas générique, pas de "tu es capable de tout". Ne cite aucune donnée astrologique brute ni autre nombre technique.
+- Mantra 3 [Personne 2] : ancré dans l'ensemble de son profil, ton distinct de Personne 1. Dans la note, le seul nombre que tu peux citer est son chemin de vie exact.
+- Mantra 4 [Personne 2] : une invitation précise vers ce qui lui résiste. Ne cite aucune donnée astrologique brute ni autre nombre technique.
+- Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils. Si la note cite des nombres, elle DOIT citer exclusivement les DEUX chemins de vie exacts indiqués dans « CHEMINS DE VIE — VALEURS À NE JAMAIS CONFONDRE », en disant clairement « le chemin de vie X de [prénom] » et « le chemin de vie Y de [prénom] ». JAMAIS le nombre d'expression ou un autre nombre. Pas un mantra générique sur l'amour.
+Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra correspond à ce profil, sans exposer les calculs.
 Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predictions certaines."""
 
     import time
@@ -1587,11 +1640,13 @@ Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predict
     if not data_a or not data_b:
         return FALLBACK_NARRATIF
 
-    # Fusionner les deux chunks
+    # Fusionner les deux chunks + sécurité : le mantra commun ne peut pas
+    # présenter un autre nombre (expression, intime...) comme un chemin de vie.
+    mantras_couple = _securiser_note_mantra_couple(data_b.get("mantras", []), chemins)
     return {
         "lettre": data_a.get("lettre", ""),
         "sections": data_a.get("sections", []) + data_b.get("sections", []),
-        "mantras": data_b.get("mantras", []),
+        "mantras": mantras_couple,
         "message_final": data_b.get("message_final", "")
     }
 
@@ -1641,12 +1696,13 @@ STYLE OBLIGATOIRE :
 - Ton bienveillant mais direct sur les zones d'ombre
 
 REGLES ABSOLUES :
+- EXCEPTION VISIBLE OBLIGATOIRE : le numéro exact du chemin de vie de chaque personne doit être nommé clairement « chemin de vie X » dans son portrait. C'est le SEUL nombre numérologique brut à afficher. Ne jamais confondre avec Expression, Intime, Réalisation, année personnelle, dominants/manquants ou pinnacle.
 - JAMAIS de positions planetaires au degre exact
 - JAMAIS de matrices ou tableaux de chiffres
 - JAMAIS de scenes biographiques inventees (evocation universelle ancree dans le profil)
 - JAMAIS de predictions certaines
 - Si des blocs "CHARNIÈRES TEMPORELLES" sont présents : ce sont des repères internes. Ne jamais les restituer année par année ; les regrouper en 2 à 4 grandes fenêtres maximum.
-- Le Pinnacle se nomme toujours "Pinnacle permanent [valeur]"
+- Le pinnacle reste un repère INTERNE : ne jamais afficher son nom ni sa valeur au client.
 
 UTILISATION DES DONNEES ENRICHIES :
 - L'annee personnelle, son theme et son focus sont deja calcules -- developpe-les narrativement
@@ -1669,8 +1725,8 @@ def appeler_claude_prestige(profils_txt):
     prompt_a = pre("3000-3500") + """
 STRUCTURE (rediger uniquement ces 3 parties) :
 1. LETTRE D'OUVERTURE (4 paragraphes longs -- a la lignee entiere sur 3 generations, ce que cette famille porte comme heritage et comme mission, le fil invisible qui relie les generations)
-2. PORTRAIT NUMEROLOGIQUE DE CHAQUE MEMBRE DU FOYER (3 paragraphes denses par personne -- chemin de vie, expression/intime croises, annee perso et pinnacle permanent. Narratif pur, JAMAIS de tableau. Ton distinct pour chacun.)
-3. PORTRAIT ASTROLOGIQUE DE CHAQUE MEMBRE DU FOYER (2 paragraphes denses par personne -- Soleil/Lune, planetes personnelles, synthese. JAMAIS de degres ni positions chiffrees. Ton distinct pour chacun.)
+2. PORTRAIT DE CHAQUE MEMBRE DU FOYER (3 paragraphes denses par personne -- nommer explicitement uniquement son « chemin de vie X » exact ; expression/intime, année perso et pinnacle restent des matériaux internes traduits en prose. JAMAIS de tableau. Ton distinct pour chacun.)
+3. APPROFONDISSEMENT DE CHAQUE MEMBRE DU FOYER (2 paragraphes denses par personne -- utilise Soleil/Lune et planètes personnelles en interne pour enrichir la synthèse, mais ne nomme aucune donnée astrologique brute au client. Ton distinct pour chacun.)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {
@@ -1682,7 +1738,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 }
 
 Mouvement 1 -- Le fil qui relie : 4 paragraphes, titre poétique libre. Ce que cette lignée porte, lu dans les profils croisés.
-Mouvement 2 -- Portrait de chaque membre : 4 paragraphes par personne, titres poétiques avec prénom. Prose immersive, aucun terme technique.
+Mouvement 2 -- Portrait de chaque membre : 4 paragraphes par personne, titres poétiques avec prénom. Nommer UNE FOIS « chemin de vie X » avec le numéro exact de la personne ; aucun autre nombre ni donnée astrologique brute visible.
 """
 
     prompt_b = pre("3500-4500") + """
