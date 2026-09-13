@@ -2657,7 +2657,65 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf(presentational_hints=True)
 
-def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client):
+
+
+def _resume_donnees_formulaire(data):
+    """Construit un résumé lisible des données réellement saisies dans le formulaire.
+    Utilisé dans les emails internes ORIGIN pour permettre une relance manuelle
+    sans dépendre des logs serveur en cas d'échec de génération.
+    """
+    if not isinstance(data, dict):
+        return "(Données formulaire indisponibles)"
+
+    lignes = []
+    lignes.append(f"Offre saisie : {data.get('offre', '')}")
+    lignes.append(f"Type d'analyse : {data.get('type_analyse', '')}")
+    lignes.append(f"Email client : {data.get('email', '')}")
+
+    champs_personne = (
+        'prenom', 'nom', 'genre', 'jour', 'mois', 'annee',
+        'heure', 'minute', 'ville', 'asc', 'filiation', 'fratrie'
+    )
+
+    for i in range(1, 11):
+        vals = {k: data.get(f'{k}{i}', '') for k in champs_personne}
+        if not any(v not in (None, '') for v in vals.values()):
+            continue
+
+        prenom = vals['prenom'] or f'Personne {i}'
+        nom = vals['nom'] or ''
+        lignes.append("")
+        lignes.append(f"Personne {i} : {(prenom + ' ' + nom).strip()}")
+        if vals['genre']:
+            lignes.append(f"  Genre : {vals['genre']}")
+
+        date_parts = [vals['jour'], vals['mois'], vals['annee']]
+        if any(v not in (None, '') for v in date_parts):
+            jj = str(vals['jour'] or '??').zfill(2)
+            mm = str(vals['mois'] or '??').zfill(2)
+            aa = str(vals['annee'] or '????')
+            lignes.append(f"  Date de naissance : {jj}/{mm}/{aa}")
+
+        if vals['heure'] not in (None, '') or vals['minute'] not in (None, ''):
+            hh = str(vals['heure'] if vals['heure'] not in (None, '') else '??').zfill(2)
+            mn = str(vals['minute'] if vals['minute'] not in (None, '') else '00').zfill(2)
+            lignes.append(f"  Heure de naissance : {hh}:{mn}")
+        else:
+            lignes.append("  Heure de naissance : non renseignée")
+
+        if vals['ville']:
+            lignes.append(f"  Ville de naissance : {vals['ville']}")
+        if vals['asc']:
+            lignes.append(f"  Ascendant saisi : {vals['asc']}")
+        if vals['filiation']:
+            lignes.append(f"  Filiation : {vals['filiation']}")
+        if vals['fratrie']:
+            lignes.append(f"  Fratrie : {vals['fratrie']}")
+
+    return "\n".join(lignes)
+
+
+def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, form_data=None):
     """Envoie les 2 livrets Bundle (Solo + Vocation) dans un seul email."""
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
@@ -2686,6 +2744,9 @@ Pièces jointes :
 - ORIGIN_Vocation_... → livret Vocation interactif
 - ORIGIN_Vocation_..._imprimable.pdf → Vocation version imprimable A4
 
+--- DONNÉES SAISIES DANS LE FORMULAIRE ---
+{_resume_donnees_formulaire(form_data)}
+
 Valide le contenu puis transfère les 2 livrets au client.
 """
 
@@ -2708,7 +2769,7 @@ Valide le contenu puis transfère les 2 livrets au client.
     print(f"✅ Email Bundle envoyé à {EMAIL_DEST}")
 
 
-def envoyer_email(html_content, pdf_bytes, clients, offre, email_client):
+def envoyer_email(html_content, pdf_bytes, clients, offre, email_client, form_data=None):
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
     filename_html = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}.html"
@@ -2725,6 +2786,9 @@ Pièces jointes :
 - {filename_html} → livret interactif (ouvrir dans un navigateur)
 - {filename_pdf}  → version imprimable A4
 {"- Les_Heritages_Invisibles.pdf → ebook bonus inclus" if offre in ('famille','prestige') else ""}
+
+--- DONNÉES SAISIES DANS LE FORMULAIRE ---
+{_resume_donnees_formulaire(form_data)}
 
 Valide le contenu puis transfère au client.
 """
@@ -2914,7 +2978,7 @@ def webhook():
                     pdf_solo      = generer_pdf_imprimable('solo',     clients, narratif_solo,     astros_clients, type_analyse)
                     html_vocation = generer_html('vocation', clients, narratif_vocation, astros_clients, type_analyse)
                     pdf_vocation  = generer_pdf_imprimable('vocation', clients, narratif_vocation, astros_clients, type_analyse)
-                    envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client)
+                    envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, data)
                     print(f'✅ Bundle envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}')
                     prenoms_log = ' & '.join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, 'bundle', date.today().strftime('%d/%m/%Y'))
@@ -2931,7 +2995,7 @@ def webhook():
                         raise ValueError("Narratif invalide -- fallback d erreur détecté après parsing JSON")
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
                     pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
-                    envoyer_email(html, pdf, clients, offre_label, email_client)
+                    envoyer_email(html, pdf, clients, offre_label, email_client, data)
                     print(f"✅ Livret {offre_label} envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}")
                     prenoms_log = " & ".join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
@@ -2943,8 +3007,8 @@ def webhook():
                     payload_alerte = {
                         "sender": {"name": "ORIGIN -- Alerte", "email": "contact@origin-famille.fr"},
                         "to": [{"email": EMAIL_DEST}],
-                        "subject": f"🚨 ORIGIN -- ERREUR livret {offre} -- {prenoms}",
-                        "textContent": f"Une erreur est survenue lors de la génération du livret.\n\nOffre : {offre}\nClients : {prenoms}\nEmail client : {email_client}\n\nErreur :\n{ex}\n\nRelance manuelle nécessaire."
+                        "subject": f"🚨 ORIGIN -- ERREUR livret {offre_label} -- {prenoms}",
+                        "textContent": f"Une erreur est survenue lors de la génération du livret.\n\nOffre : {offre_label}\nClients : {prenoms}\nEmail client : {email_client}\n\n--- DONNÉES SAISIES DANS LE FORMULAIRE ---\n{_resume_donnees_formulaire(data)}\n\n--- ERREUR TECHNIQUE ---\n{ex}\n\nRelance manuelle nécessaire."
                     }
                     _alerte = requests.post(
                         "https://api.brevo.com/v3/smtp/email",
