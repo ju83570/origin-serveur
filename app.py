@@ -316,6 +316,21 @@ def calcul_charnieres_prompt(j, m, a, prenom):
 # Les anciennes cartes annuelles client ont été supprimées volontairement.
 # Les grandes périodes charnières sont synthétisées dans le narratif à partir des signaux internes.
 
+# Coordonnées de secours pour les villes les plus fréquentes.
+# Cette table doit rester définie avant get_coords().
+VILLES_FR = {
+    "paris": (48.8566, 2.3522), "marseille": (43.2965, 5.3698), "lyon": (45.7640, 4.8357),
+    "nice": (43.7102, 7.2620), "toulouse": (43.6047, 1.4442), "bordeaux": (44.8378, -0.5792),
+    "nantes": (47.2184, -1.5536), "strasbourg": (48.5734, 7.7521), "montpellier": (43.6108, 3.8767),
+    "toulon": (43.1242, 5.9280), "cannes": (43.5528, 7.0174), "aix-en-provence": (43.5297, 5.4474),
+    "saint-tropez": (43.2727, 6.6408), "draguignan": (43.5377, 6.4650),
+    "brignoles": (43.4046, 6.0606), "carcès": (43.4781, 6.1770), "cotignac": (43.5511, 6.1539),
+    "var": (43.4667, 6.2167), "antibes": (43.5804, 7.1283), "grasse": (43.6585, 6.9259),
+    "avignon": (43.9493, 4.8055), "arles": (43.6767, 4.6278), "nimes": (43.8367, 4.3601),
+}
+
+_GEOCODE_CACHE = {}
+
 def get_coords(ville):
     """
     Retourne (lat, lon) pour une ville.
@@ -2712,7 +2727,53 @@ def _resume_donnees_formulaire(data):
         if vals['fratrie']:
             lignes.append(f"  Fratrie : {vals['fratrie']}")
 
+    # Conserver aussi tous les autres champs du formulaire (ex. "Ton histoire",
+    # contexte, situation, commentaire...). Cela permet une reprise manuelle même
+    # si le nom exact du champ change côté site.
+    champs_connus = {'offre', 'type_analyse', 'email'}
+    for i in range(1, 11):
+        for k in champs_personne:
+            champs_connus.add(f'{k}{i}')
+    extras = []
+    for k, v in data.items():
+        if k in champs_connus or v in (None, ''):
+            continue
+        txt = str(v).strip()
+        if not txt:
+            continue
+        extras.append((str(k), txt))
+    if extras:
+        lignes.append("")
+        lignes.append("Autres informations saisies :")
+        for k, txt in extras:
+            label = k.replace('_', ' ').strip()
+            lignes.append(f"  {label} : {txt}")
+
     return "\n".join(lignes)
+
+
+def _extraire_contexte_client(data):
+    """Extrait le texte libre saisi par le client ("Ton histoire", contexte, situation...).
+    Tolère plusieurs noms de champs afin de rester compatible avec le formulaire du site.
+    """
+    if not isinstance(data, dict):
+        return ""
+    mots = ('histoire', 'contexte', 'situation', 'message', 'commentaire', 'commentaires', 'story', 'notes')
+    morceaux = []
+    for k, v in data.items():
+        if v in (None, ''):
+            continue
+        key = str(k).lower()
+        if any(m in key for m in mots):
+            txt = str(v).strip()
+            if txt:
+                morceaux.append(txt)
+    # Éviter les doublons si le même texte est envoyé sous deux alias.
+    uniques = []
+    for txt in morceaux:
+        if txt not in uniques:
+            uniques.append(txt)
+    return "\n\n".join(uniques)
 
 
 def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, form_data=None):
@@ -2859,7 +2920,7 @@ def webhook():
         offres_valides = {'solo','naissance','vocation','couple','famille','prestige','bundle'}
         if offre not in offres_valides:
             return jsonify({'status':'error','message':'Offre inconnue'}), 400
-        type_analyse = data.get('type_analyse', 'adulte').lower()
+        type_analyse = str(data.get('type_analyse') or 'adulte').lower().strip()
         email_client = data.get('email', '')
 
         # L'offre "naissance" est structurellement une offre à une seule
@@ -2903,9 +2964,9 @@ def webhook():
                 'prenom': data.get('prenom1',''),
                 'nom':    data.get('nom1',''),
                 'genre':  data.get('genre1',''),
-                'jour':   int(data.get('jour1',1)),
-                'mois':   int(data.get('mois1',1)),
-                'annee':  int(data.get('annee1',1990)),
+                'jour':   safe_int(data.get('jour1'), 1),
+                'mois':   safe_int(data.get('mois1'), 1),
+                'annee':  safe_int(data.get('annee1'), 1990),
                 'ville':  data.get('ville1','Paris'),
                 'heure':  _h1,
                 'minute': _m1,
@@ -2916,9 +2977,9 @@ def webhook():
                 'prenom': data.get('prenom2',''),
                 'nom':    data.get('nom2',''),
                 'genre':  data.get('genre2',''),
-                'jour':   int(data.get('jour2',1)),
-                'mois':   int(data.get('mois2',1)),
-                'annee':  int(data.get('annee2',1990)),
+                'jour':   safe_int(data.get('jour2'), 1),
+                'mois':   safe_int(data.get('mois2'), 1),
+                'annee':  safe_int(data.get('annee2'), 1990),
                 'ville':  data.get('ville2','Paris'),
                 'heure':  _h2,
                 'minute': _m2,
@@ -2952,16 +3013,27 @@ def webhook():
             except Exception:
                 return jsonify({'status':'error','message':f"Date de naissance invalide pour {c.get('prenom','ce profil')}"}), 400
 
-        profils_txt_parts = []
-        astros_clients = []
-        for c in clients:
-            txt, _, astro = fmt_profil(c, avec_transits=(offre_label in {'solo', 'vocation', 'couple', 'bundle'}))
-            profils_txt_parts.append(txt)
-            astros_clients.append(astro)
-        profils_txt = "\n\n".join(profils_txt_parts)
-
         def generer():
             try:
+                # Tout ce qui peut échouer côté calcul/géocodage/astro est exécuté
+                # après l'accusé de réception HTTP. Ainsi le client ne voit pas un 500
+                # pour un incident de génération ; ORIGIN reçoit l'alerte et peut relancer.
+                profils_txt_parts = []
+                astros_clients = []
+                for c in clients:
+                    txt, _, astro = fmt_profil(c, avec_transits=(offre_label in {'solo', 'vocation', 'couple', 'bundle'}))
+                    profils_txt_parts.append(txt)
+                    astros_clients.append(astro)
+                profils_txt = "\n\n".join(profils_txt_parts)
+
+                contexte_client = _extraire_contexte_client(data)
+                if contexte_client:
+                    profils_txt += (
+                        "\n\nCONTEXTE FOURNI PAR LE CLIENT — À UTILISER POUR PERSONNALISER LA LECTURE\n"
+                        "(Ne pas citer ce bloc comme une source ; l'intégrer naturellement.)\n"
+                        + contexte_client
+                    )
+
                 if offre_label == 'bundle':
                     # Bundle : générer Solo + Vocation et envoyer ensemble
                     narratif_solo     = appeler_claude('solo',     profils_txt, type_analyse)
@@ -3027,9 +3099,36 @@ def webhook():
         return jsonify({'status': 'accepted', 'message': 'Livret en cours de génération'}), 200
 
     except Exception as e:
-        print(f"ERREUR : {e}")
+        print(f"ERREUR WEBHOOK : {e}")
         import traceback; traceback.print_exc()
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+        try:
+            _data = locals().get('data') or request.get_json(silent=True) or request.form.to_dict()
+            _offre = str((_data or {}).get('offre', 'inconnue'))
+            _email = str((_data or {}).get('email', ''))
+            _payload = {
+                "sender": {"name": "ORIGIN -- Alerte", "email": "contact@origin-famille.fr"},
+                "to": [{"email": EMAIL_DEST}],
+                "subject": f"🚨 ORIGIN -- ERREUR WEBHOOK -- {_offre}",
+                "textContent": (
+                    "Une erreur est survenue avant le lancement de la génération.\n\n"
+                    f"Offre : {_offre}\nEmail client : {_email}\n\n"
+                    "--- DONNÉES SAISIES DANS LE FORMULAIRE ---\n"
+                    f"{_resume_donnees_formulaire(_data)}\n\n"
+                    "--- ERREUR TECHNIQUE ---\n"
+                    f"{e}\n\nRelance manuelle nécessaire."
+                )
+            }
+            if EMAIL_DEST and BREVO_SMTP_KEY:
+                _r = requests.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={"api-key": BREVO_SMTP_KEY, "content-type": "application/json"},
+                    json=_payload, timeout=15
+                )
+                _r.raise_for_status()
+        except Exception as _mail_ex:
+            print(f"Impossible d'envoyer l'alerte webhook : {_mail_ex}")
+        # Ne jamais exposer le détail technique au navigateur.
+        return jsonify({'status': 'error', 'message': 'Erreur interne temporaire'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
