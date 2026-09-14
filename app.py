@@ -1759,14 +1759,18 @@ MEMBRES AJOUTÉS APRÈS LES DEUX ADULTES : {enfants_txt}
 RÈGLES ABSOLUES :
 - N'invente JAMAIS un membre, un enfant, une fratrie, un événement biographique, une durée de relation, une scène vécue, un comportement observé, un détail physique ou un lien absent des données.
 - SOURCE DE VÉRITÉ DES LIENS : seules les mentions explicites « Filiation » et le bloc CONTEXTE FOURNI PAR LE CLIENT autorisent à écrire « père », « mère », « fils », « fille », « beau-fils », « belle-fille », « enfant commun », « famille recomposée », etc. N'infère JAMAIS un lien à partir de l'ordre des profils.
-- Ne mentionne JAMAIS une durée précise (« depuis X ans ») sauf si cette durée est écrite explicitement dans le contexte client.
+- Une durée précise (« depuis X ans ») peut être mentionnée UNIQUEMENT dans la LETTRE D'OUVERTURE, et seulement si elle est écrite explicitement dans le contexte client. Dans tous les autres blocs, même si la durée est connue, reformule sans chiffre (« dans ce foyer », « au fil de votre histoire »).
 - N'écris JAMAIS l'âge chiffré d'une personne. Les appels sont générés séparément et un âge pourrait devenir incohérent d'un bloc à l'autre. Utilise simplement « enfant », « adolescent(e) », « jeune adulte » seulement si cela est évident d'après la date de naissance ; sinon évite toute étiquette d'âge.
 - Les outils de calcul restent internes, SAUF le numéro exact du chemin de vie de chaque personne, qui peut être nommé UNE FOIS dans son portrait sous la forme « chemin de vie X ».
 - Ne montre jamais : positions planétaires, degrés, Soleil/Lune/Ascendant, expression, intime, réalisation, année personnelle, pinnacle, dominants/manquants ou jargon technique.
 - Aucune prédiction certaine. Pour le futur, emploie systématiquement le conditionnel (« pourrait », « peut inviter », « il est possible que »). Interdits : « s'ouvrira », « sentira », « deviendra », « aura besoin toute sa vie », « restera toujours vrai ».
 - Les lectures de personnalité et les conseils éducatifs sont des PISTES symboliques, jamais des diagnostics ni des vérités sur le fonctionnement psychologique. Préfère « peut », « semble inviter à », « une piste à observer », « pourrait l'aider » à « il est », « il a besoin », « il fait toujours ».
-- Ne transforme JAMAIS un enfant en symbole du couple ou du foyer : pas de « ciment », « preuve que l'amour fonctionne », « baromètre », « trait d'union vivant », « enfant qui relie les deux mondes » ou formulation équivalente.
+- Ne transforme JAMAIS un enfant en symbole du couple ou du foyer : pas de « ciment », « preuve que l'amour fonctionne », « baromètre », « thermomètre », « miroir du couple/du foyer/de l'ambiance », « trait d'union vivant », « pont entre deux mondes », « enfant qui relie les deux mondes » ou formulation équivalente. N'affirme pas que l'humeur ou le comportement d'un enfant reflète l'état émotionnel du groupe.
+- N'utilise JAMAIS une filiation hésitante du type « frère ou demi-frère », « beau-fils ou fils », etc. Si le lien exact n'est pas explicitement établi par les données, utilise seulement le prénom.
 - Pour les transmissions familiales, ne présente jamais une peur, blessure, loyauté ou répétition comme un héritage avéré sans donnée explicite. Parle de « dynamique possible », « vigilance », « tendance à observer ».
+- Évite les formulations de certitude, même positives : « ce qui est certain », « sans aucun doute », « forcément », « toujours », « jamais » lorsqu'elles décrivent la personnalité. Garde le registre d'hypothèse symbolique.
+- N'utilise pas le jargon « manque symbolique », « chiffre manquant », « nombre manquant », ni aucun équivalent technique dans le texte client.
+- N'invente pas de scènes quotidiennes pour donner du relief : pas de disputes, repas partagés, conversations difficiles, silences au dîner, rires ou réactions supposées si le contexte client ne les mentionne pas.
 - Prose chaleureuse, précise, concrète, immersive. Aucun tableau et aucune liste à puces dans le contenu livré.
 - Respecte le genre indiqué pour chaque personne.
 - Utilise les prénoms régulièrement, sans répétition mécanique.
@@ -1777,8 +1781,14 @@ DONNÉES COMPLÈTES DE LA FAMILLE :
 {profils_txt}
 """
 
-    def _appel_bloc(label, consigne, max_tokens, min_sections=1, besoin_lettre=False, besoin_mantras=False):
-        """Appel Famille isolé avec retry également sur JSON invalide/tronqué."""
+    def _appel_bloc(label, consigne, max_tokens, min_sections=1, besoin_lettre=False, besoin_mantras=False, expected_names=None, min_section_chars=700):
+        """Appel Famille isolé avec validation stricte et retry.
+
+        Pour Famille, un JSON syntaxiquement valide ne suffit pas : chaque section
+        demandée doit réellement contenir un titre et du contenu. Les blocs par
+        personne peuvent aussi être vérifiés sur le prénom attendu afin d'éviter
+        qu'une section vide ou la mauvaise personne soit fusionnée silencieusement.
+        """
         for tentative in range(1, 4):
             retry_note = ''
             if tentative == 2:
@@ -1815,17 +1825,46 @@ DONNÉES COMPLÈTES DE LA FAMILLE :
                 )
 
                 data = _extraire_json_claude(r)
-                ok = isinstance(data, dict) and len(data.get('sections') or []) >= min_sections
+                sections_data = data.get('sections') if isinstance(data, dict) else None
+                ok = isinstance(sections_data, list) and len(sections_data) == min_sections
+
+                # Aucune section fantôme : titre + contenu substantiel obligatoires.
+                if ok:
+                    for sec in sections_data:
+                        if not isinstance(sec, dict):
+                            ok = False
+                            break
+                        titre = str(sec.get('titre') or '').strip()
+                        contenu = str(sec.get('contenu') or '').strip()
+                        if len(titre) < 2 or len(contenu) < min_section_chars or '<p>' not in contenu:
+                            ok = False
+                            break
+
+                # Pour les blocs individuels, le prénom attendu doit apparaître
+                # dans la section correspondante, dans le même ordre.
+                if ok and expected_names:
+                    if len(expected_names) != len(sections_data):
+                        ok = False
+                    else:
+                        for sec, expected in zip(sections_data, expected_names):
+                            haystack = (str(sec.get('titre') or '') + ' ' + str(sec.get('contenu') or '')[:500]).casefold()
+                            prenom = str(expected).strip().split()[0].casefold()
+                            if prenom and prenom not in haystack:
+                                ok = False
+                                break
+
                 if besoin_lettre:
-                    ok = ok and bool(data.get('lettre'))
+                    lettre = str(data.get('lettre') or '').strip() if isinstance(data, dict) else ''
+                    ok = ok and len(lettre) >= 700 and '<p>' in lettre
                 if besoin_mantras:
-                    ok = ok and bool(data.get('mantras'))
+                    mantras = data.get('mantras') if isinstance(data, dict) else None
+                    ok = ok and isinstance(mantras, list) and len(mantras) >= len(noms) + 1
 
                 if ok:
-                    print(f"[famille:{label}] OK -- {len(data.get('sections') or [])} section(s)", flush=True)
+                    print(f"[famille:{label}] OK -- {len(sections_data)} section(s) validée(s)", flush=True)
                     return data
 
-                print(f"[famille:{label}] JSON/structure invalide -- retry", flush=True)
+                print(f"[famille:{label}] JSON/structure/contenu invalide -- retry", flush=True)
             except Exception as ex:
                 print(f"[famille:{label}] erreur : {type(ex).__name__}: {ex}", flush=True)
 
@@ -1839,7 +1878,7 @@ DONNÉES COMPLÈTES DE LA FAMILLE :
 Longueur cible totale : 900 à 1 200 mots.
 
 - LETTRE D'OUVERTURE : 3 paragraphes longs adressés à cette famille précise.
-- SECTION « CE QUE CE FOYER PORTE » : 4 paragraphes sur ce que cette famille crée ensemble, ses forces, ses tensions créatives, ce qu'elle cherche à transmettre.
+- SECTION « CE QUE CE FOYER PORTE » : 4 paragraphes sur ce que cette famille crée ensemble, ses forces, ses tensions créatives, ce qu'elle cherche à transmettre. Dans cette section, ne répète aucune durée précise, même si elle figure dans le contexte client, et n'invente aucune scène quotidienne.
 
 RETOURNE EXACTEMENT CETTE FORME JSON :
 {
@@ -1860,13 +1899,13 @@ Longueur cible : 450 à 600 mots PAR PERSONNE.
 Pour chaque personne, crée UNE section distincte de 3 à 4 paragraphes denses : fonctionnement intérieur, forces, besoins, zones de croissance et manière d'être en relation avec ce foyer. Dans le premier paragraphe, nomme UNE FOIS son numéro exact sous la forme « chemin de vie X », puis traduis immédiatement son sens humainement. N'affiche aucun autre nombre technique.
 
 RETOURNE EXACTEMENT UN OBJET JSON avec une clé "sections" contenant {len(groupe)} section(s), une par personne, dans cet ordre : {groupe_txt}. Chaque section = {{"titre":"...", "contenu":"<p>...</p>..."}}.'''
-        portrait_tasks.append((label, consigne, 5200, len(groupe), False, False))
+        portrait_tasks.append((label, consigne, 5200, len(groupe), False, False, list(groupe), 1200))
 
     dynamique_prompt = r'''RÉDIGE UNIQUEMENT DEUX SECTIONS.
 Longueur cible totale : 1 300 à 1 700 mots.
 
-1. « CE QUI SE PASSE ENTRE VOUS » : 4 paragraphes longs. Croise tous les profils : ce que chacun apporte, ce que les autres réveillent, complémentarités, frictions possibles, rôles implicites et besoins relationnels.
-2. « CE QUI PEUT SE TRANSMETTRE SANS LE VOULOIR » : 4 paragraphes longs. Décris uniquement des dynamiques POSSIBLES à observer dans le foyer à partir des contrastes entre profils. Ne parle de loyauté, blessure, peur ou héritage avéré que si le contexte client le dit explicitement. Bienveillant, conditionnel, non déterministe, jamais culpabilisant.
+1. « CE QUI SE PASSE ENTRE VOUS » : 4 paragraphes longs. Croise tous les profils : ce que chacun apporte, ce que les autres pourraient réveiller, complémentarités, frictions possibles et besoins relationnels. Ne fige personne dans un rôle implicite. Pour un enfant, interdiction absolue de le décrire comme miroir, baromètre, thermomètre, ciment, pont, trait d'union ou reflet de l'état émotionnel du groupe. N'affirme jamais que son humeur reflète les tensions du foyer.
+2. « CE QUI PEUT SE TRANSMETTRE SANS LE VOULOIR » : 4 paragraphes longs. Décris uniquement des dynamiques POSSIBLES à observer dans le foyer à partir des contrastes entre profils. Ne parle de loyauté, blessure, peur ou héritage avéré que si le contexte client le dit explicitement. N'utilise pas le jargon « manque symbolique ». Bienveillant, conditionnel, non déterministe, jamais culpabilisant. Aucune durée précise et aucune filiation hésitante du type « frère ou demi-frère ».
 
 RETOURNE UNIQUEMENT :
 {
@@ -1878,14 +1917,14 @@ RETOURNE UNIQUEMENT :
 
     enfant_tasks = []
     if enfants:
-        for idx in range(0, len(enfants), 2):
-            groupe = enfants[idx:idx+2]
-            groupe_txt = ' et '.join(groupe)
-            label = f"enfant{idx//2 + 1}"
-            consigne = f'''RÉDIGE UNIQUEMENT LE « MODE D'EMPLOI » DE : {groupe_txt}.
-Longueur cible : 850 à 1 100 mots PAR PERSONNE.
+        # Un appel par enfant : plus fiable qu'un bloc de deux personnes et
+        # impossible à fusionner si la section attendue manque réellement.
+        for idx, personne in enumerate(enfants):
+            label = f"enfant{idx + 1}"
+            consigne = f'''RÉDIGE UNIQUEMENT LE « MODE D'EMPLOI » DE : {personne}.
+Longueur cible : 850 à 1 100 mots.
 
-Pour CHAQUE personne de ce groupe, crée UNE section distincte de 7 paragraphes. Cette partie est ACTIONNABLE et ne doit PAS refaire le portrait déjà écrit : ne répète ni le chemin de vie, ni les grandes périodes, ni les descriptions générales déjà utilisées. Sans afficher les lettres A-G comme sous-titres, traite dans cet ordre :
+Crée EXACTEMENT UNE section de 7 paragraphes, avec un titre qui contient clairement le prénom {personne.split()[0]}. Cette partie est ACTIONNABLE et ne doit PAS refaire le portrait déjà écrit : ne répète ni le chemin de vie, ni les grandes périodes, ni les descriptions générales déjà utilisées. Sans afficher les lettres A-G comme sous-titres, traite dans cet ordre :
 A) une clé de compréhension pratique, formulée comme une piste et non une vérité psychologique ;
 B) ce qui pourrait l'aider à se sentir respecté(e) et en sécurité avec les adultes ;
 C) des conditions quotidiennes susceptibles de favoriser son épanouissement, sans inventer de comportement observé ;
@@ -1894,13 +1933,16 @@ E) des vigilances de transmission formulées au conditionnel, sans attribuer une
 F) ce que la relation avec cette personne peut inviter les adultes à développer ;
 G) une phrase-boussole courte à lui transmettre, intégrée naturellement au dernier paragraphe.
 
-INTERDICTION : aucune scène supposée (« quand il se met en colère », « elle revient toujours », etc.), aucun diagnostic, aucune certitude éducative, aucun rôle symbolique dans le couple ou la famille. N'invente aucune information absente. RETOURNE UN JSON STRICT avec "sections" contenant exactement {len(groupe)} section(s), dans cet ordre : {groupe_txt}.'''
-            enfant_tasks.append((label, consigne, 7600, len(groupe), False, False))
+INTERDICTIONS RENFORCÉES : aucune scène supposée, aucun diagnostic, aucune certitude éducative, aucune durée précise, aucun rôle symbolique dans le couple ou la famille. Ne décris jamais l'enfant comme miroir, baromètre, thermomètre, ciment, pont ou reflet de l'état émotionnel du foyer. N'utilise jamais une filiation hésitante (« frère ou demi-frère »). N'invente aucune information absente.
+
+RETOURNE EXACTEMENT :
+{{"sections":[{{"titre":"Repères pour {personne.split()[0]}","contenu":"<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}}]}}'''
+            enfant_tasks.append((label, consigne, 5000, 1, False, False, [personne], 2200))
     else:
         enfant_tasks.append((
             'mode_foyer',
-            r'''Aucun membre supplémentaire n'est présent après les deux adultes. Rédige UNE section « MODE D'EMPLOI DU FOYER » en 5 paragraphes concrets sur les besoins relationnels des deux adultes, leur façon de communiquer, les tensions à prévenir, ce qui apaise le lien et ce qui nourrit la cohésion. Longueur cible 900 à 1 100 mots. Retourne uniquement {"sections":[{"titre":"...","contenu":"<p>...</p>..."}]}.''',
-            4500, 1, False, False
+            r'''Aucun membre supplémentaire n'est présent après les deux adultes. Rédige UNE section « MODE D'EMPLOI DU FOYER » en 5 paragraphes concrets sur les besoins relationnels des deux adultes, leur façon de communiquer, les tensions à prévenir, ce qui apaise le lien et ce qui nourrit la cohésion. Longueur cible 900 à 1 100 mots. Retourne uniquement {"sections":[{"titre":"Mode d'emploi du foyer","contenu":"<p>...</p>..."}]}.''',
+            4500, 1, False, False, None, 1800
         ))
 
     final_prompt = f'''RÉDIGE UNIQUEMENT LA FIN DU LIVRET.
@@ -1909,7 +1951,7 @@ Longueur cible totale : 1 100 à 1 500 mots hors mantras.
 1. LES GRANDES PÉRIODES CHARNIÈRES DU FOYER : 3 paragraphes. Croise les blocs « CHARNIÈRES TEMPORELLES » de tous les membres. Retiens seulement 2 à 4 grandes fenêtres ; regroupe les années proches. Ne répète PAS les fenêtres individuelles déjà évoquées dans les portraits. Chaque phrase future doit rester explicitement conditionnelle.
 2. CE QUE VOUS PORTEZ VERS DEMAIN : 3 paragraphes. Élan, cohésion, maturité et possibilités concrètes. Aucun nouveau fait biographique, aucun rôle familial inventé, aucune promesse.
 3. MANTRAS : exactement un mantra court pour chacun de ces membres : {composition}, puis un dernier mantra nommé « Famille ». Chaque entrée = prénom, texte, note. Aucun détail biographique ou physique nouveau dans les notes.
-4. MESSAGE FINAL : 2 paragraphes longs. Synthèse sobre et chaleureuse ; n'introduis AUCUNE nouvelle information, aucun détail physique, aucun diagnostic et aucune affirmation du type « vous ne vous êtes pas trouvés par hasard ».
+4. MESSAGE FINAL : 2 paragraphes longs. Synthèse sobre et chaleureuse ; n'introduis AUCUNE nouvelle information, aucun détail physique, aucun diagnostic et aucune affirmation du type « vous ne vous êtes pas trouvés par hasard ». Ne répète aucune durée précise, même si elle est présente dans le contexte client.
 
 RETOURNE UNIQUEMENT :
 {{
@@ -1922,18 +1964,21 @@ RETOURNE UNIQUEMENT :
 }}'''
 
     tasks = [
-        ('foyer', foyer_prompt, 4800, 1, True, False),
+        ('foyer', foyer_prompt, 4800, 1, True, False, None, 1200),
         *portrait_tasks,
-        ('dynamique', dynamique_prompt, 6200, 2, False, False),
+        ('dynamique', dynamique_prompt, 6200, 2, False, False, None, 1200),
         *enfant_tasks,
-        ('final', final_prompt, 5800, 2, False, True),
+        ('final', final_prompt, 5800, 2, False, True, None, 900),
     ]
 
     resultats = {}
     with ThreadPoolExecutor(max_workers=min(3, len(tasks))) as pool:
         futures = {
-            pool.submit(_appel_bloc, label, consigne, max_tok, min_sec, need_letter, need_mantras): label
-            for label, consigne, max_tok, min_sec, need_letter, need_mantras in tasks
+            pool.submit(
+                _appel_bloc, label, consigne, max_tok, min_sec,
+                need_letter, need_mantras, expected_names, min_chars
+            ): label
+            for label, consigne, max_tok, min_sec, need_letter, need_mantras, expected_names, min_chars in tasks
         }
         for future in as_completed(futures):
             label = futures[future]
@@ -2294,6 +2339,23 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     )
     sid_list = json.dumps(_sids)
 
+    # Construire le bloc lettre AVANT le grand f-string HTML. Dans l'ancienne
+    # version, une expression Python était enfermée dans une chaîne littérale
+    # et pouvait apparaître telle quelle dans la version web.
+    lettre_titre = "Une lettre pour toi" if est_naissance else "Une lettre pour vous"
+    lettre_html = ""
+    if narratif_solo_lettre:
+        lettre_html = f"""<section class="section section-sep" id="s1">
+  <div class="reveal">
+    <span class="s-eyebrow">Avant tout</span>
+    <h2 class="s-title">{lettre_titre}</h2>
+    <div class="light-line"></div>
+    <div class="lettre">
+      <div class="prose">{narratif_solo_lettre}</div>
+    </div>
+  </div>
+</section>"""
+
     return f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -2330,16 +2392,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
   </div>
 </section>
 
-{('''<section class="section section-sep" id="s1">
-  <div class="reveal">
-    <span class="s-eyebrow">Avant tout</span>
-    <h2 class="s-title">{"Une lettre pour toi" if est_naissance else "Une lettre pour vous"}</h2>
-    <div class="light-line"></div>
-    <div class="lettre">
-      <div class="prose">''' + narratif_solo_lettre + '''</div>
-    </div>
-  </div>
-</section>''') if narratif_solo_lettre else ''}
+{lettre_html}
 
 {sections_html}
 
