@@ -1945,6 +1945,46 @@ RETOURNE EXACTEMENT :
             4500, 1, False, False, None, 1800
         ))
 
+
+    liens_prompt = r'''RÉDIGE LE CHAPITRE PREMIUM : « LES LIENS QUI SE CONSTRUISENT ».
+
+Objectif : aider les adultes à accompagner les relations dans le foyer. Ce chapitre ne remplace pas les portraits individuels : il explique comment les différences de tempérament peuvent devenir des occasions de compréhension.
+
+Longueur cible totale : 1800 à 2400 mots.
+
+Crée EXACTEMENT 4 sections :
+
+1. « Accompagner chaque enfant dans ses liens »
+- Une lecture transversale de la façon dont chaque enfant peut trouver sa place auprès des autres membres du foyer.
+- Ne transforme jamais un enfant en symbole du couple ou de la famille.
+- Ne dis jamais qu'un enfant ressent les tensions, porte l'équilibre ou reflète l'ambiance du foyer.
+
+2. « Les liens entre frères et sœurs »
+- Explique les complémentarités possibles, les différences de rythme, les occasions d'apprentissage mutuel.
+- Ne prédis jamais une relation future.
+- Ne crée aucun conflit ou événement qui n'existe pas dans les données.
+
+3. « La juste place de chacun dans une famille recomposée »
+- Aborde les questions possibles de place, d'appartenance et de reconnaissance.
+- Ne suppose aucune blessure, jalousie ou difficulté.
+- Parle en termes de pistes à observer.
+
+4. « Des gestes simples pour nourrir les liens »
+- Donne des pistes concrètes : moments individuels, écoute, rituels, valorisation des différences.
+- Pas de liste à puces dans le texte livré.
+
+STYLE : chaleureux, premium, pratique. Conditionnel obligatoire. Aucune certitude psychologique. Aucune scène inventée.
+
+RETOURNE UNIQUEMENT :
+{
+  "sections": [
+    {"titre":"...", "contenu":"<p>...</p><p>...</p>"},
+    {"titre":"...", "contenu":"<p>...</p><p>...</p>"},
+    {"titre":"...", "contenu":"<p>...</p><p>...</p>"},
+    {"titre":"...", "contenu":"<p>...</p><p>...</p>"}
+  ]
+}'''
+
     final_prompt = f'''RÉDIGE UNIQUEMENT LA FIN DU LIVRET.
 Longueur cible totale : 1 100 à 1 500 mots hors mantras.
 
@@ -1968,6 +2008,7 @@ RETOURNE UNIQUEMENT :
         *portrait_tasks,
         ('dynamique', dynamique_prompt, 6200, 2, False, False, None, 1200),
         *enfant_tasks,
+        ('liens', liens_prompt, 6200, 4, False, False, None, 800),
         ('final', final_prompt, 5800, 2, False, True, None, 900),
     ]
 
@@ -2000,6 +2041,7 @@ RETOURNE UNIQUEMENT :
     sections.extend(resultats['dynamique'].get('sections') or [])
     for label, *_ in enfant_tasks:
         sections.extend(resultats[label].get('sections') or [])
+    sections.extend(resultats['liens'].get('sections') or [])
     sections.extend(resultats['final'].get('sections') or [])
 
     if not sections:
