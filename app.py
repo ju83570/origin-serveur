@@ -2339,6 +2339,53 @@ SEED_SVG = """<svg class="seed-svg" viewBox="0 0 200 200" fill="none" xmlns="htt
 <circle r="2.6" fill="url(#sgDot)"><animateMotion dur="6s" begin="5.1s" repeatCount="indefinite"><mpath href="#sgPath7"/></animateMotion></circle>
 </svg>"""
 
+def _section_client_a_du_contenu(sec):
+    """Retourne True uniquement si une section possède un contenu client réel.
+    Évite les pages/sections fantômes quand Claude renvoie un objet vide ou du HTML vide.
+    """
+    if not isinstance(sec, dict):
+        return False
+    contenu = str(sec.get('contenu', '') or '')
+    # Retirer les balises et espaces HTML usuels avant de tester le contenu réel.
+    texte = re.sub(r'<[^>]+>', ' ', contenu)
+    texte = re.sub(r'&(nbsp|#160);', ' ', texte, flags=re.IGNORECASE)
+    return bool(texte.strip())
+
+
+def _sections_client_normalisees(narratif, offre):
+    """Construit la liste finale de sections à rendre en HTML/PDF.
+
+    - supprime toute section vide ;
+    - pour Vocation, retire les éventuels doublons de sections spéciales renvoyés
+      dans `sections`, puis injecte une seule fois les champs dédiés remplis.
+    """
+    brut = narratif.get('sections', []) if isinstance(narratif, dict) else []
+    sections = [dict(sec) for sec in brut if _section_client_a_du_contenu(sec)]
+
+    if offre == 'vocation':
+        def _titre_normalise(sec):
+            titre = str(sec.get('titre', '') or '')
+            return re.sub(r'\s+', ' ', titre).strip().casefold()
+
+        titres_speciaux = {
+            'ton profil de contribution',
+            'tes 5 questions de décision',
+            'tes cinq questions de décision',
+        }
+        sections = [sec for sec in sections if _titre_normalise(sec) not in titres_speciaux]
+
+        for cle, titre in (
+            ('profil_contribution', 'Ton profil de contribution'),
+            ('questions_decision', 'Tes 5 questions de décision'),
+        ):
+            contenu = narratif.get(cle, '') or ''
+            sec = {'titre': titre, 'contenu': contenu}
+            if _section_client_a_du_contenu(sec):
+                sections.append(sec)
+
+    return sections
+
+
 def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     annee = date.today().year
     est_naissance = (type_analyse == 'naissance')
@@ -2351,33 +2398,22 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     elif offre == 'couple':
         noms = f"{clients[0]['prenom']} <span class='cover-amp'>&</span> {clients[1]['prenom']}"
         tagline = "Ce que vos deux lignées ont traversé pour que vous vous retrouviez."
+    elif offre == 'vocation':
+        noms = " · ".join(c['prenom'] for c in clients)
+        tagline = "Ce que ta manière de fonctionner révèle de ta vocation."
     else:
         noms = " · ".join(c['prenom'] for c in clients)
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
 
-    # Pour solo immersif : pas de lettre séparée, mantra unique, sections sans eyebrow
+    # Sections client normalisées : aucune section vide et aucun doublon Vocation.
+    sections_list = _sections_client_normalisees(narratif, offre)
+
+    # Pour solo immersif : mantra unique ; pour les autres offres, mantras standards.
+    narratif_solo_lettre = narratif.get('lettre', '')
     if offre == 'solo':
-        sections_list = narratif.get('sections', [])
-        # Injecter lettre vide (pas de bloc lettre séparé en solo immersif)
-        narratif_solo_lettre = narratif.get('lettre', '')
         narratif_mantras = [narratif['mantra']] if narratif.get('mantra') else narratif.get('mantras', [])
     else:
-        sections_list = list(narratif.get('sections', []))
-        narratif_solo_lettre = narratif.get('lettre', '')
         narratif_mantras = narratif.get('mantras', [])
-        # Pour vocation : injecter profil_contribution et questions_decision
-        # comme sections dédiées si elles existent dans le narratif
-        if offre == 'vocation':
-            if narratif.get('profil_contribution'):
-                sections_list.append({
-                    'titre': 'Ton profil de contribution',
-                    'contenu': narratif['profil_contribution']
-                })
-            if narratif.get('questions_decision'):
-                sections_list.append({
-                    'titre': 'Tes 5 questions de décision',
-                    'contenu': narratif['questions_decision']
-                })
     n_sections = len(sections_list)
 
     sections_html = ""
@@ -2438,7 +2474,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     # Construire le bloc lettre AVANT le grand f-string HTML. Dans l'ancienne
     # version, une expression Python était enfermée dans une chaîne littérale
     # et pouvait apparaître telle quelle dans la version web.
-    lettre_titre = "Une lettre pour toi" if est_naissance else "Une lettre pour vous"
+    lettre_titre = "Une lettre pour toi" if (est_naissance or offre in ('solo', 'vocation')) else "Une lettre pour vous"
     lettre_html = ""
     if narratif_solo_lettre:
         lettre_html = f"""<section class="section section-sep" id="s1">
@@ -2915,6 +2951,9 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     elif offre == 'couple':
         noms_display = f"{clients[0]['prenom']} & {clients[1]['prenom']}"
         tagline = "Ce que vos deux lignées ont traversé pour que vous vous retrouviez."
+    elif offre == 'vocation':
+        noms_display = " · ".join(c['prenom'] for c in clients)
+        tagline = "Ce que ta manière de fonctionner révèle de ta vocation."
     else:
         noms_display = " · ".join(c['prenom'] for c in clients)
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
@@ -2938,25 +2977,14 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     chapter_end_html = f'<div class="chapter-end"><div class="chapter-end-line"></div>{mandala_svg}<p class="chapter-end-word">ORIGIN</p><div class="chapter-end-line"></div></div>'
     seed_footer_html = f'<div id="seed-footer">{seed_footer_svg}</div>'
 
-    sections = list(narratif.get('sections', []))
+    sections = _sections_client_normalisees(narratif, offre)
     if offre == 'solo':
         _mantras_pdf = [narratif['mantra']] if narratif.get('mantra') else narratif.get('mantras', [])
         _lettre_pdf = narratif.get('lettre', '')
     else:
         _mantras_pdf = narratif.get('mantras', [])
         _lettre_pdf = narratif.get('lettre', '')
-    # Pour vocation : injecter profil_contribution et questions_decision
-    if offre == 'vocation':
-        if narratif.get('profil_contribution'):
-            sections.append({
-                'titre': 'Ton profil de contribution',
-                'contenu': narratif['profil_contribution']
-            })
-        if narratif.get('questions_decision'):
-            sections.append({
-                'titre': 'Tes 5 questions de décision',
-                'contenu': narratif['questions_decision']
-            })
+    _lettre_titre_pdf = "Une lettre pour toi" if (est_naissance or offre in ('solo', 'vocation')) else "Une lettre pour vous"
 
     sections_html = ""
     for i, sec in enumerate(sections):
@@ -3085,7 +3113,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </div>
 {('''<div class="section-newpage first-page">
   <span class="eyebrow">Avant tout</span>
-  <h2 class="section-title">Une lettre pour vous</h2>
+  <h2 class="section-title">{_lettre_titre_pdf}</h2>
   <div class="light-line"></div>
   <div class="lettre">
     <div class="prose">''' + _lettre_pdf + '''</div>
