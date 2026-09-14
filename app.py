@@ -1721,7 +1721,7 @@ DONNÉES :
 
 
 def appeler_claude_famille(profils_txt):
-    """Génère le livret Famille en petits blocs fiables.
+    """Génère le livret Famille en petits blocs fiables (finition éditoriale v114).
 
     Chaque appel reste volontairement sous une taille de sortie raisonnable afin
     d'éviter les réponses Claude coupées à max_tokens et les JSON incomplets.
@@ -1765,7 +1765,12 @@ RÈGLES ABSOLUES :
 - Ne montre jamais : positions planétaires, degrés, Soleil/Lune/Ascendant, expression, intime, réalisation, année personnelle, pinnacle, dominants/manquants ou jargon technique.
 - Aucune prédiction certaine. Pour le futur, emploie systématiquement le conditionnel (« pourrait », « peut inviter », « il est possible que »). Interdits : « s'ouvrira », « sentira », « deviendra », « aura besoin toute sa vie », « restera toujours vrai ».
 - Les lectures de personnalité et les conseils éducatifs sont des PISTES symboliques, jamais des diagnostics ni des vérités sur le fonctionnement psychologique. Préfère « peut », « semble inviter à », « une piste à observer », « pourrait l'aider » à « il est », « il a besoin », « il fait toujours ».
-- Ne transforme JAMAIS un enfant en symbole du couple ou du foyer : pas de « ciment », « preuve que l'amour fonctionne », « baromètre », « thermomètre », « miroir du couple/du foyer/de l'ambiance », « trait d'union vivant », « pont entre deux mondes », « enfant qui relie les deux mondes » ou formulation équivalente. N'affirme pas que l'humeur ou le comportement d'un enfant reflète l'état émotionnel du groupe.
+- Ne transforme JAMAIS un enfant en symbole du couple ou du foyer : pas de « ciment », « preuve que l'amour fonctionne », « baromètre », « thermomètre », « miroir du couple/du foyer/de l'ambiance », « trait d'union vivant », « pont entre deux mondes », « enfant qui relie les deux mondes », « centre de gravité » ou formulation équivalente. N'affirme pas que l'humeur ou le comportement d'un enfant reflète l'état émotionnel du groupe.
+- Pour un enfant, interdiction également des métaphores « radar », « antenne », « éponge », « capteur » ou équivalent. Ne prétends pas qu'il capte les non-dits, absorbe les tensions, ressent l'atmosphère avant les autres ou réagit à l'état émotionnel du foyer. Tu peux seulement proposer des repères éducatifs généraux comme options.
+- N'utilise pas le mot « miroir » pour qualifier une personne ou une dynamique relationnelle, même de façon positive ou poétique. Préfère « espace de reconnaissance », « invitation », « repère » ou une formulation neutre.
+- N'invente JAMAIS une rivalité, une alliance, une jalousie, une complicité, un agacement, une réaction à l'arrivée d'un membre, une loyauté conflictuelle ou une difficulté d'adaptation si le contexte client ne l'indique pas explicitement. À la place, parle de différences de rythme, de besoins possibles et de pistes d'ajustement.
+- Ne présente jamais un enfant comme « celui qui relie biologiquement tout le foyer » ni comme un point central de la recomposition. Si la filiation est explicitement connue, elle peut être nommée sobrement uniquement quand elle est utile à un conseil concret.
+- N'attribue pas un état clinique ou quasi-clinique (« anxieux », « anxiété », « dépressif », « hypervigilant », etc.) à partir du profil symbolique. Si un conseil porte sur la sécurité ou les repères, formule-le sans prédire un symptôme.
 - N'utilise JAMAIS une filiation hésitante du type « frère ou demi-frère », « beau-fils ou fils », etc. Si le lien exact n'est pas explicitement établi par les données, utilise seulement le prénom.
 - Pour les transmissions familiales, ne présente jamais une peur, blessure, loyauté ou répétition comme un héritage avéré sans donnée explicite. Parle de « dynamique possible », « vigilance », « tendance à observer ».
 - Évite les formulations de certitude, même positives : « ce qui est certain », « sans aucun doute », « forcément », « toujours », « jamais » lorsqu'elles décrivent la personnalité. Garde le registre d'hypothèse symbolique.
@@ -1860,6 +1865,46 @@ DONNÉES COMPLÈTES DE LA FAMILLE :
                     mantras = data.get('mantras') if isinstance(data, dict) else None
                     ok = ok and isinstance(mantras, list) and len(mantras) >= len(noms) + 1
 
+                # Garde-fous éditoriaux v114 : le prompt ne suffit pas, on refuse
+                # également quelques formulations à risque si elles réapparaissent.
+                if ok:
+                    texte_controle = json.dumps(data, ensure_ascii=False).casefold()
+                    interdits_114 = [
+                        'rivalité sourde', 'radar très fin', 'centre de gravité',
+                        'capte les non-dits', 'capter les non-dits', 'capte les tensions',
+                        'capter les tensions', 'absorbe les tensions',
+                        'lié biologiquement à l’ensemble du foyer',
+                        "lié biologiquement à l'ensemble du foyer",
+                        'miroir doux', 'le rendre anxieux', 'la rendre anxieuse'
+                    ]
+                    trouves = [mot for mot in interdits_114 if mot in texte_controle]
+                    if trouves:
+                        print(f"[famille:{label}] formulation(s) éditoriale(s) refusée(s) : {', '.join(trouves)}", flush=True)
+                        ok = False
+
+                # Le chapitre Liens doit réellement tenir sa promesse : quatre
+                # sections nommées et chaque enfant couvert dans les deux premières.
+                if ok and label == 'liens':
+                    titres_attendus = [
+                        'Accompagner chaque enfant dans ses liens',
+                        'Les liens entre frères et sœurs',
+                        'La juste place de chacun dans une famille recomposée',
+                        'Des gestes simples pour nourrir les liens',
+                    ]
+                    titres_recus = [str(sec.get('titre') or '').strip() for sec in sections_data]
+                    if titres_recus != titres_attendus:
+                        print(f"[famille:liens] titres inattendus : {titres_recus}", flush=True)
+                        ok = False
+                    elif enfants:
+                        bloc_accompagnement = str(sections_data[0].get('contenu') or '').casefold()
+                        bloc_fratrie = str(sections_data[1].get('contenu') or '').casefold()
+                        for enfant in enfants:
+                            prenom = str(enfant).strip().split()[0].casefold()
+                            if prenom and (prenom not in bloc_accompagnement or prenom not in bloc_fratrie):
+                                print(f"[famille:liens] prénom insuffisamment couvert : {prenom}", flush=True)
+                                ok = False
+                                break
+
                 if ok:
                     print(f"[famille:{label}] OK -- {len(sections_data)} section(s) validée(s)", flush=True)
                     return data
@@ -1904,8 +1949,8 @@ RETOURNE EXACTEMENT UN OBJET JSON avec une clé "sections" contenant {len(groupe
     dynamique_prompt = r'''RÉDIGE UNIQUEMENT DEUX SECTIONS.
 Longueur cible totale : 1 300 à 1 700 mots.
 
-1. « CE QUI SE PASSE ENTRE VOUS » : 4 paragraphes longs. Croise tous les profils : ce que chacun apporte, ce que les autres pourraient réveiller, complémentarités, frictions possibles et besoins relationnels. Ne fige personne dans un rôle implicite. Pour un enfant, interdiction absolue de le décrire comme miroir, baromètre, thermomètre, ciment, pont, trait d'union ou reflet de l'état émotionnel du groupe. N'affirme jamais que son humeur reflète les tensions du foyer.
-2. « CE QUI PEUT SE TRANSMETTRE SANS LE VOULOIR » : 4 paragraphes longs. Décris uniquement des dynamiques POSSIBLES à observer dans le foyer à partir des contrastes entre profils. Ne parle de loyauté, blessure, peur ou héritage avéré que si le contexte client le dit explicitement. N'utilise pas le jargon « manque symbolique ». Bienveillant, conditionnel, non déterministe, jamais culpabilisant. Aucune durée précise et aucune filiation hésitante du type « frère ou demi-frère ».
+1. « CE QUI SE PASSE ENTRE VOUS » : 4 paragraphes longs. Croise tous les profils : ce que chacun apporte, complémentarités possibles, différences de rythme et besoins relationnels. Ne fige personne dans un rôle implicite. N'invente aucune rivalité, alliance, jalousie, complicité, agacement ni réaction passée. Pour un enfant, interdiction absolue de le décrire comme miroir, baromètre, thermomètre, radar, antenne, éponge, ciment, pont, trait d'union, centre de gravité ou reflet de l'état émotionnel du groupe. N'affirme jamais qu'il capte les tensions, les non-dits ou l'ambiance du foyer.
+2. « CE QUI PEUT SE TRANSMETTRE SANS LE VOULOIR » : 4 paragraphes longs. Décris uniquement des dynamiques POSSIBLES à observer dans le foyer à partir des contrastes entre profils. Ne parle de loyauté, blessure, peur, anxiété ou héritage avéré que si le contexte client le dit explicitement. N'utilise pas le jargon « manque symbolique ». Bienveillant, conditionnel, non déterministe, jamais culpabilisant. Aucune durée précise et aucune filiation hésitante du type « frère ou demi-frère ».
 
 RETOURNE UNIQUEMENT :
 {
@@ -1933,7 +1978,7 @@ E) des vigilances de transmission formulées au conditionnel, sans attribuer une
 F) ce que la relation avec cette personne peut inviter les adultes à développer ;
 G) une phrase-boussole courte à lui transmettre, intégrée naturellement au dernier paragraphe.
 
-INTERDICTIONS RENFORCÉES : aucune scène supposée, aucun diagnostic, aucune certitude éducative, aucune durée précise, aucun rôle symbolique dans le couple ou la famille. Ne décris jamais l'enfant comme miroir, baromètre, thermomètre, ciment, pont ou reflet de l'état émotionnel du foyer. N'utilise jamais une filiation hésitante (« frère ou demi-frère »). N'invente aucune information absente.
+INTERDICTIONS RENFORCÉES : aucune scène supposée, aucun diagnostic, aucune certitude éducative, aucune durée précise, aucun rôle symbolique dans le couple ou la famille. Ne décris jamais l'enfant comme miroir, baromètre, thermomètre, radar, antenne, éponge, ciment, pont, centre de gravité ou reflet de l'état émotionnel du foyer. Ne prétends pas qu'il capte les non-dits, absorbe les tensions ou ressent l'atmosphère. N'invente pas d'anxiété, de repli, de résistance, de colère, de rivalité ou de loyauté conflictuelle. Les conseils de communication restent des OPTIONS, jamais des prédictions de la façon dont l'enfant réagira. N'utilise jamais une filiation hésitante (« frère ou demi-frère »). N'invente aucune information absente.
 
 RETOURNE EXACTEMENT :
 {{"sections":[{{"titre":"Repères pour {personne.split()[0]}","contenu":"<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}}]}}'''
@@ -1946,49 +1991,58 @@ RETOURNE EXACTEMENT :
         ))
 
 
-    liens_prompt = r'''RÉDIGE LE CHAPITRE PREMIUM : « LES LIENS QUI SE CONSTRUISENT ».
+    liens_prompt = f'''RÉDIGE LE CHAPITRE PREMIUM : « LES LIENS QUI SE CONSTRUISENT ».
 
-Objectif : aider les adultes à accompagner les relations dans le foyer. Ce chapitre ne remplace pas les portraits individuels : il explique comment les différences de tempérament peuvent devenir des occasions de compréhension.
+Objectif : aider les adultes à accompagner concrètement les relations dans le foyer. Ce chapitre ne remplace pas les portraits individuels : il montre comment respecter les différences de tempérament sans inventer l'histoire réelle des relations.
 
+MEMBRES À ACCOMPAGNER APRÈS LES DEUX ADULTES : {enfants_txt}
 Longueur cible totale : 1800 à 2400 mots.
 
 Crée EXACTEMENT 4 sections :
 
 1. « Accompagner chaque enfant dans ses liens »
-- Une lecture transversale de la façon dont chaque enfant peut trouver sa place auprès des autres membres du foyer.
+- Consacre EXACTEMENT un paragraphe substantiel à chaque membre listé après les deux adultes, dans leur ordre d'apparition.
+- Dans CHAQUE paragraphe, traite les trois angles suivants, dans cet ordre et sans sous-titres :
+  a) AVEC LES ADULTES : comment les adultes peuvent lui laisser une place relationnelle adaptée, en ne nommant un lien de filiation que s'il est explicitement présent dans les données ;
+  b) AVEC LA FRATRIE / LES AUTRES JEUNES DU FOYER : ce qui peut faciliter la compréhension mutuelle à partir des différences de rythme ou de tempérament, sans supposer d'événement passé ;
+  c) CLÉ RELATIONNELLE : un geste concret et simple que les adultes peuvent favoriser.
 - Ne transforme jamais un enfant en symbole du couple ou de la famille.
-- Ne dis jamais qu'un enfant ressent les tensions, porte l'équilibre ou reflète l'ambiance du foyer.
+- Interdits : miroir, radar, antenne, éponge, baromètre, thermomètre, ciment, pont, trait d'union, centre de gravité ; ne dis jamais qu'un enfant capte les tensions, les non-dits ou l'ambiance.
 
 2. « Les liens entre frères et sœurs »
-- Explique les complémentarités possibles, les différences de rythme, les occasions d'apprentissage mutuel.
-- Ne prédis jamais une relation future.
-- Ne crée aucun conflit ou événement qui n'existe pas dans les données.
+- Décris les complémentarités POSSIBLES et les différences de rythme entre les membres jeunes du foyer.
+- Couvre l'ensemble du groupe de manière équilibrée : chaque prénom doit apparaître au moins une fois dans cette section et aucun duo ne doit être présenté comme naturellement rival, fusionnel, protecteur ou conflictuel.
+- Tu peux rapprocher deux profils pour montrer une différence ou une complémentarité symbolique, mais formule toujours cela comme une possibilité à observer, jamais comme une relation déjà existante.
+- N'écris pas qu'une arrivée dans le foyer « a représenté un ajustement », qu'il existe déjà une connivence, des alliances, des agacements ou des réactions passées si le contexte ne le dit pas.
+- Ne présente jamais le plus jeune comme celui qui relie biologiquement le foyer ni comme un centre autour duquel les autres s'organisent.
 
 3. « La juste place de chacun dans une famille recomposée »
-- Aborde les questions possibles de place, d'appartenance et de reconnaissance.
-- Ne suppose aucune blessure, jalousie ou difficulté.
-- Parle en termes de pistes à observer.
+- Aborde les questions POSSIBLES de place, d'appartenance et de reconnaissance sans supposer qu'elles existent réellement.
+- Si les liens de filiation sont explicitement fournis, tu peux expliquer qu'un temps individuel avec son parent biologique peut être précieux, sans inventer un manque, une jalousie, une loyauté conflictuelle ou une difficulté d'adaptation.
+- Insiste sur le fait que les liens beau-parent/enfant n'ont pas à imiter une relation père/mère et qu'aucune symétrie parfaite n'est nécessaire.
+- Une durée précise n'est jamais répétée ici.
 
 4. « Des gestes simples pour nourrir les liens »
-- Donne des pistes concrètes : moments individuels, écoute, rituels, valorisation des différences.
+- Donne des pistes concrètes et applicables : moments individuels, écoute, activités partagées, rituels légers, reconnaissance des différences, coordination privée entre adultes.
+- Chaque conseil doit être présenté comme une option à essayer, pas comme la réponse à un problème supposé.
 - Pas de liste à puces dans le texte livré.
 
-STYLE : chaleureux, premium, pratique. Conditionnel obligatoire. Aucune certitude psychologique. Aucune scène inventée.
+STYLE : chaleureux, premium, pratique. Conditionnel obligatoire. Aucune certitude psychologique. Aucune scène inventée. Aucun diagnostic ou quasi-diagnostic. N'utilise pas le mot « miroir » dans ce chapitre.
 
 RETOURNE UNIQUEMENT :
-{
+{{
   "sections": [
-    {"titre":"...", "contenu":"<p>...</p><p>...</p>"},
-    {"titre":"...", "contenu":"<p>...</p><p>...</p>"},
-    {"titre":"...", "contenu":"<p>...</p><p>...</p>"},
-    {"titre":"...", "contenu":"<p>...</p><p>...</p>"}
+    {{"titre":"Accompagner chaque enfant dans ses liens", "contenu":"<p>...</p><p>...</p>"}},
+    {{"titre":"Les liens entre frères et sœurs", "contenu":"<p>...</p><p>...</p>"}},
+    {{"titre":"La juste place de chacun dans une famille recomposée", "contenu":"<p>...</p><p>...</p>"}},
+    {{"titre":"Des gestes simples pour nourrir les liens", "contenu":"<p>...</p><p>...</p>"}}
   ]
-}'''
+}}'''
 
     final_prompt = f'''RÉDIGE UNIQUEMENT LA FIN DU LIVRET.
 Longueur cible totale : 1 100 à 1 500 mots hors mantras.
 
-1. LES GRANDES PÉRIODES CHARNIÈRES DU FOYER : 3 paragraphes. Croise les blocs « CHARNIÈRES TEMPORELLES » de tous les membres. Retiens seulement 2 à 4 grandes fenêtres ; regroupe les années proches. Ne répète PAS les fenêtres individuelles déjà évoquées dans les portraits. Chaque phrase future doit rester explicitement conditionnelle.
+1. LES GRANDES PÉRIODES CHARNIÈRES DU FOYER : 3 paragraphes. Croise les blocs « CHARNIÈRES TEMPORELLES » de tous les membres. Retiens seulement 2 à 4 grandes fenêtres ; regroupe les années proches. Ne répète PAS les fenêtres individuelles déjà évoquées dans les portraits. Chaque phrase future doit rester explicitement conditionnelle. Pour les enfants, ne décris jamais une sensibilité particulière aux changements d'atmosphère, aux non-dits ou aux transformations du foyer ; reste sur leurs propres cycles symboliques.
 2. CE QUE VOUS PORTEZ VERS DEMAIN : 3 paragraphes. Élan, cohésion, maturité et possibilités concrètes. Aucun nouveau fait biographique, aucun rôle familial inventé, aucune promesse.
 3. MANTRAS : exactement un mantra court pour chacun de ces membres : {composition}, puis un dernier mantra nommé « Famille ». Chaque entrée = prénom, texte, note. Aucun détail biographique ou physique nouveau dans les notes.
 4. MESSAGE FINAL : 2 paragraphes longs. Synthèse sobre et chaleureuse ; n'introduis AUCUNE nouvelle information, aucun détail physique, aucun diagnostic et aucune affirmation du type « vous ne vous êtes pas trouvés par hasard ». Ne répète aucune durée précise, même si elle est présente dans le contexte client.
