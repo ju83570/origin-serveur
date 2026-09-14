@@ -938,15 +938,17 @@ INTERDIT : revue année par année, catalogue de dates, événement annoncé com
 [SECTION 8 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
 Clé JSON : "questions_decision"
 1 paragraphe d'intro : ces questions sont ta boussole personnelle, tirées de CE profil,
-pour évaluer toute opportunité en 5 minutes -- poste, projet, reconversion, client.
+pour évaluer toute opportunité en 5 minutes -- orientation, formation, stage, projet ou autre choix concret ; pour un adulte, cela peut aussi concerner un poste, un client ou une reconversion.
 Puis 5 questions en prose continue, chacune formulée en tutoiement direct,
 SPÉCIFIQUES à ce profil (pas génériques), qui révèlent si la personne va vers elle ou loin d'elle.
 
-[SECTION 9] TA PHRASE D'ANCRAGE (1 paragraphe)
-Une phrase courte, unique, puissante -- vérité sur la façon de contribuer.
-À relire les jours de doute. Introduire + expliquer brièvement pourquoi c'est juste.
+[SECTION 9] TA PHRASE D'ANCRAGE / MANTRA
+Cette partie est retournée dans la clé JSON "mantras", PAS dans "sections".
+Une phrase courte, unique, puissante -- vérité sur la façon de contribuer -- suivie d'une note brève expliquant pourquoi elle correspond à CE profil.
+À relire les jours de doute.
 
 [SECTION 10] MESSAGE FINAL (2 paragraphes)
+Cette partie est retournée dans la clé JSON "message_final", PAS dans "sections".
 Chaleureux, porteur, concret. L'élan. Ce qui devient possible quand être et faire s'alignent.
 
 ═══════════════════════════════════════════════
@@ -958,12 +960,11 @@ Les clés "profil_contribution" et "questions_decision" sont OBLIGATOIRES.
 {{
   "lettre": "<p>...</p><p>...</p>",
   "sections": [
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}},
-    {{"titre": "...", "contenu": "<p>...</p><p>...</p>"}}
+    {{"titre": "Ton architecture intérieure", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Ce que cela implique dans ton travail", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Tes territoires d'expression professionnelle", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Tes grandes périodes charnières professionnelles", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Tes prochains pas concrets", "contenu": "<p>...</p><p>...</p>"}}
   ],
   "profil_contribution": "<p>...</p><p>Ton moteur : ...</p><p>Ton besoin fondamental : ...</p><p>Ton mode naturel : ...</p><p>Ta contribution : ...</p><p>Ton environnement idéal : ...</p><p>Ce qui t'éteint : ...</p><p>Ton expression : ...</p>",
   "questions_decision": "<p>...</p><p>Première question : ...</p><p>Deuxième question : ...</p><p>Troisième question : ...</p><p>Quatrième question : ...</p><p>Cinquième question : ...</p>",
@@ -975,16 +976,48 @@ Les clés "profil_contribution" et "questions_decision" sont OBLIGATOIRES.
 def appeler_claude_vocation(profils_txt):
     annee_courante = date.today().year
     prompt = PROMPT_VOCATION.format(annee_courante=annee_courante, profils_txt=profils_txt)
+
+    def _normaliser_resultat(result):
+        if result and "mantra" in result and "mantras" not in result:
+            m = result.pop("mantra") or {}
+            result["mantras"] = [{"prenom": "", "texte": m.get("texte", ""), "note": m.get("note", "")}]
+        if result and "mantras" not in result:
+            result["mantras"] = []
+        return result
+
+    def _structure_de_base_ok(result):
+        if not isinstance(result, dict):
+            return False
+        sections = [s for s in (result.get("sections") or [])
+                    if isinstance(s, dict) and re.sub(r'<[^>]+>', ' ', str(s.get("contenu") or '')).strip()]
+        return (
+            len(sections) >= 5
+            and bool(str(result.get("lettre") or '').strip())
+            and bool(re.sub(r'<[^>]+>', ' ', str(result.get("profil_contribution") or '')).strip())
+            and bool(re.sub(r'<[^>]+>', ' ', str(result.get("questions_decision") or '')).strip())
+            and bool(str(result.get("message_final") or '').strip())
+        )
+
     try:
-        result = _appel_claude_chunk(prompt, max_tokens=14000)
+        result = _normaliser_resultat(_appel_claude_chunk(prompt, max_tokens=14000))
+        if not _structure_de_base_ok(result):
+            print("[vocation] structure incomplète -- retry unique")
+            prompt_retry = prompt + """
+
+CORRECTION IMPÉRATIVE POUR CE RETRY :
+Ta réponse précédente était structurellement incomplète. Retourne EXACTEMENT :
+- une clé lettre non vide ;
+- 5 sections non vides : Architecture intérieure, Travail, Territoires d'expression, Grandes périodes charnières, Prochains pas ;
+- profil_contribution non vide ;
+- questions_decision non vide ;
+- au moins un mantra ;
+- message_final non vide.
+Ne crée aucune section vide et ne duplique pas Profil de contribution ou Questions de décision dans sections.
+"""
+            result = _normaliser_resultat(_appel_claude_chunk(prompt_retry, max_tokens=14000))
     except Exception as ex:
         print(f"[vocation] génération impossible : {ex}")
         return FALLBACK_NARRATIF
-    if result and "mantra" in result and "mantras" not in result:
-        m = result.pop("mantra") or {}
-        result["mantras"] = [{"prenom": "", "texte": m.get("texte", ""), "note": m.get("note", "")}]
-    if result and "mantras" not in result:
-        result["mantras"] = []
     return result or FALLBACK_NARRATIF
 
 
@@ -2419,19 +2452,35 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         if not str(sec.get('titre') or '').strip():
             raise ValueError(f"Narratif {produit} : section sans titre")
 
-    minimums = {'solo': 5, 'vocation': 8, 'couple': 5, 'naissance': 6, 'prestige': 8}
+    minimums = {'solo': 5, 'vocation': 7, 'couple': 5, 'naissance': 6, 'prestige': 8}
     if produit in minimums and len(sections) < minimums[produit]:
         raise ValueError(f"Narratif {produit} incomplet : {len(sections)} section(s), minimum {minimums[produit]}")
     if produit == 'famille' and len(sections) < 10:
         raise ValueError(f"Narratif famille incomplet : {len(sections)} sections")
 
-    if produit in {'naissance', 'prestige', 'famille'} and not str(narratif.get('lettre') or '').strip():
+    if produit in {'naissance', 'prestige', 'famille', 'vocation'} and not str(narratif.get('lettre') or '').strip():
         raise ValueError(f"Narratif {produit} : lettre d'ouverture manquante")
     if produit == 'vocation':
         if not _section_client_a_du_contenu({'contenu': narratif.get('profil_contribution', '')}):
             raise ValueError("Narratif vocation : profil de contribution manquant")
         if not _section_client_a_du_contenu({'contenu': narratif.get('questions_decision', '')}):
             raise ValueError("Narratif vocation : questions de décision manquantes")
+
+        # Contrôle sémantique : 7 blocs sont normaux (5 sections de fond + profil + questions).
+        # On vérifie les blocs indispensables au lieu d'exiger artificiellement une 8e section.
+        titres_vocation = [re.sub(r'\s+', ' ', str(sec.get('titre') or '')).strip().casefold() for sec in sections]
+        requis = {
+            'architecture intérieure': lambda x: 'architecture' in x,
+            'travail': lambda x: 'travail' in x,
+            "territoires d'expression": lambda x: 'territoire' in x,
+            'périodes charnières': lambda x: ('période' in x or 'periode' in x) and ('charni' in x or 'profession' in x),
+            'prochains pas': lambda x: 'prochains pas' in x,
+            'profil de contribution': lambda x: 'profil de contribution' in x,
+            'questions de décision': lambda x: 'questions' in x and ('décision' in x or 'decision' in x),
+        }
+        manquants = [nom for nom, test in requis.items() if not any(test(titre) for titre in titres_vocation)]
+        if manquants:
+            raise ValueError("Narratif vocation : blocs obligatoires manquants : " + ", ".join(manquants))
     if not str(narratif.get('message_final') or '').strip():
         raise ValueError(f"Narratif {produit} : message final manquant")
 
