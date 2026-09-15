@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ORIGIN -- Serveur webhook
-Version audit sorties réelles : v118
+Version commerciale finale : v120
 Reçoit les données Formspree → génère le livret → envoie par email
 """
 
@@ -825,27 +825,35 @@ Tout le reste reste interne : "numérologie", "astrologie", "Soleil", "Lune", "A
 Ces outils sont ton matériau -- pas le texte livré.
 
 ═══════════════════════════════════════════════
-RÈGLE N°2 — INTERDICTION ABSOLUE DES LISTES DE MÉTIERS
+RÈGLE N°2 — VOCATION ADAPTATIVE ET PISTES MÉTIERS
 ═══════════════════════════════════════════════
-INTERDIT : "Tu pourrais être coach, thérapeute, directeur artistique, urbaniste..."
-INTERDIT : Toute liste de métiers, rôles, intitulés de postes, secteurs.
-INTERDIT : "Tu pourrais être X, ou Y, ou encore Z..."
+L'offre Vocation doit s'adapter au MOMENT DE VIE réel du client.
 
-Cette règle est NON NÉGOCIABLE. Si tu génères une liste de métiers, le livret est un échec.
+DÉTERMINE LE CONTEXTE UNIQUEMENT à partir de l'âge exact et du contexte fourni :
+- moins de 18 ans : orientation, découverte, études, stages, projets, exploration ;
+- étudiant(e) / jeune adulte si le contexte le dit : orientation, premières expériences, choix de formation ou de spécialisation ;
+- reconversion / perte de sens / travail subi si le contexte le dit explicitement : compréhension du décalage, compétences transférables, pistes de repositionnement, stratégie de transition ;
+- entrepreneur / indépendant si le contexte le dit explicitement : manière de créer de la valeur, organisation, positionnement, rôle naturel, points de vigilance ;
+- si aucun contexte n'est fourni : reste neutre et n'invente jamais une insatisfaction professionnelle.
 
-À LA PLACE -- décris UNIQUEMENT la FONCTION NATURELLE :
-La manière dont la personne contribue, qui traverse des dizaines de contextes
-sans jamais nommer ces contextes comme des métiers.
+IMPORTANT : « perte de sens », « épuisement », « burn-out », « dégoût du travail » ne doivent JAMAIS être diagnostiqués. Tu peux reprendre ces mots uniquement s'ils figurent explicitement dans le contexte client.
 
-EXEMPLES CORRECTS :
-✓ "Ce qui te nourrit, c'est de transformer quelque chose de complexe en quelque
-  chose de transmissible -- peu importe le contexte dans lequel tu te trouves,
-  c'est toujours cette opération-là que tu accomplis."
-✓ "Ta façon de contribuer est invariable : tu entres dans un système, tu vois
-  ce qui ne tient pas, tu construis ce qui manque, tu transmets ce que tu as compris.
-  Le cadre change. La fonction, jamais."
+LES MÉTIERS SONT AUTORISÉS ET ATTENDUS, MAIS COMME EXEMPLES D'EXPLORATION.
+Jamais : « tu dois devenir X », « tu es fait pour X », « ton métier est X ».
+Toujours : « pistes à explorer », « exemples cohérents avec ce fonctionnement », « familles de métiers qui pourraient résonner ».
 
-JAMAIS : "tu pourrais être entrepreneur, formateur, consultant, architecte..."
+Le livret doit d'abord expliquer la FONCTION NATURELLE (comment la personne crée de la valeur),
+puis la traduire en exemples de métiers concrets. Les métiers ne remplacent jamais l'analyse : ils en sont la traduction pratique.
+
+Pour un jeune : proposer des métiers et domaines à découvrir, en reliant chaque exemple à une compétence ou un environnement à tester.
+Pour un adulte : proposer des métiers/fonctions pouvant servir de pistes de reconversion ou d'évolution, en distinguant ce qui semble proche de ses compétences actuelles de ce qui demanderait une formation ou une transition plus importante.
+Pour un entrepreneur : les « métiers » peuvent inclure des rôles/fonctions entrepreneuriales concrètes, sans prétendre qu'une seule voie est la bonne.
+
+Si le contexte mentionne le salaire, la rémunération ou la sécurité financière :
+- traiter explicitement cette préoccupation ;
+- expliquer quels types d'environnements permettent généralement progression, valeur créée, spécialisation ou responsabilité ;
+- ne jamais promettre un revenu, un niveau de salaire ou une réussite financière ;
+- rappeler que rémunération réelle dépend du secteur, de la formation, de l'expérience, du statut et du marché.
 
 ═══════════════════════════════════════════════
 RÈGLE N°3 — TON ET POSTURE
@@ -856,15 +864,15 @@ RÈGLE N°3 — TON ET POSTURE
 - La personne doit sentir qu'on a passé des heures sur son cas
 
 GENRE : accordé selon les données (Homme/Femme). Accord strict. Jamais inclusif.
-ÂGE / ÉTAPE DE VIE : utilise le repère interne « Âge actuel exact ». Si la personne a moins de 18 ans, adapte TOUT le livret à l'orientation, aux apprentissages, aux projets, aux stages et à l'exploration ; ne parle pas de reconversion, de clients, de management ou de carrière comme si elle était déjà adulte. N'invente jamais un âge : si tu le mentionnes, reprends uniquement l'âge exact fourni.
+ÂGE / ÉTAPE DE VIE : utilise le repère interne « Âge actuel exact » ET le contexte client. Si la personne a moins de 18 ans, adapte TOUT le livret à l'orientation, aux apprentissages, aux projets, aux stages et à l'exploration ; les exemples de métiers servent à ouvrir des pistes, jamais à figer un choix. Pour un adulte, distingue évolution, reconversion, perte de sens ou entrepreneuriat uniquement si le contexte l'indique. N'invente jamais un âge ni une situation professionnelle : si tu les mentionnes, reprends uniquement les informations fournies.
 POSTURE DE FIABILITÉ : ne transforme jamais le profil symbolique en diagnostic ou en comportement supposé déjà observé. Interdits sans contexte explicite : « tu deviens irritable », « tu es provocateur », « tu détectes les mensonges », « tu te fermes », ou toute affirmation équivalente. Formule les points de vigilance comme des hypothèses à tester dans la réalité.
 COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
 - Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
 - Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
 - Toute donnée technique non visible sert à NUANCER le portrait, jamais à produire une certitude psychologique.
-CONTEXTE CLIENT : si le texte libre mentionne explicitement le salaire, la rémunération ou la sécurité financière, reconnais cette préoccupation et explique comment évaluer la capacité d'un environnement à offrir progression, valeur créée et stabilité financière. Ne promets jamais un niveau de revenu et ne donne toujours aucune liste de métiers.
+CONTEXTE CLIENT : utilise le texte libre pour adapter la lecture au besoin réel (orientation, reconversion, perte de sens, entrepreneuriat, sécurité financière), sans jamais transformer une inquiétude en diagnostic. Si le salaire, la rémunération ou la sécurité financière sont mentionnés, traite cette préoccupation explicitement et relie-la aux critères de progression, spécialisation, responsabilité et valeur créée. Ne promets jamais un niveau de revenu.
 ANNÉE EN COURS : {annee_courante}
-LONGUEUR : entre 4500 et 5500 mots. Chaque paragraphe = minimum 6-7 lignes denses.
+LONGUEUR : entre 5000 et 6500 mots. Chaque paragraphe = minimum 6-7 lignes denses. La valeur vient de la précision, pas de la répétition.
 
 ═══════════════════════════════════════════════
 DONNÉES
@@ -908,52 +916,66 @@ Ton expression : [les FONCTIONS (jamais les métiers) dans lesquelles tu t'épan
 
 ━━━ COUCHE 3 : MOUVEMENT ━━━
 
-[SECTION 5] TES TERRITOIRES D'EXPRESSION PROFESSIONNELLE (section centrale, 6-7 paragraphes)
-C'est la section que le client attendait sans le savoir. Il doit fermer le livret en se disant :
-"Je comprends comment je fonctionne ET je vois 5-6 directions concrètes qui activent précisément ma mécanique."
+[SECTION 5] TES TERRITOIRES D'EXPRESSION / D'EXPLORATION (section centrale, 6-7 paragraphes)
+Cette section décrit les fonctions qui activent la mécanique de la personne.
+Si elle a moins de 18 ans, titre EXACT : « Tes territoires d'expression et d'exploration ».
+Sinon, titre EXACT : « Tes territoires d'expression professionnelle ».
 
-Présente 5 à 6 TERRITOIRES nommés par un verbe ou une fonction large (jamais un intitulé de poste).
-Exemples : ORGANISER, CONCEVOIR, TRANSMETTRE, ÉCLAIRER, FONDER, PILOTER, STRUCTURER, RELIER,
-TRANSFORMER -- choisis ceux qui correspondent précisément à CE profil.
+Présente 5 à 6 TERRITOIRES nommés par un verbe ou une fonction large :
+ORGANISER, CONCEVOIR, TRANSMETTRE, ÉCLAIRER, FONDER, PILOTER, STRUCTURER, RELIER,
+TRANSFORMER -- choisis uniquement ceux qui correspondent à CE profil.
 
 Pour CHAQUE territoire, un paragraphe dense qui explique :
-a) POURQUOI ce profil précis s'y épanouit -- la mécanique interne qui s'active, pas des généralités
-b) CE QUI SIGNALE le bon environnement -- situations concrètes, signaux à guetter
-c) LE RISQUE ou point de vigilance -- ce qui peut transformer ce territoire en piège pour CE profil
+a) POURQUOI ce profil pourrait s'y épanouir ;
+b) CE QUI SIGNALE le bon environnement ;
+c) LE RISQUE ou point de vigilance.
+Dernier paragraphe : comment ces territoires s'emboîtent en un écosystème cohérent.
 
-Dernier paragraphe de synthèse : comment ces territoires s'emboîtent dans une trajectoire cohérente.
-La personne ne doit pas choisir UN territoire -- elle doit voir un écosystème qui lui ressemble.
+[SECTION 6] TES PISTES PROFESSIONNELLES À EXPLORER (3 à 4 paragraphes denses)
+C'est une TRADUCTION CONCRÈTE des territoires précédents.
+Donne des EXEMPLES DE MÉTIERS / FONCTIONS / DOMAINES, jamais une prescription.
 
-RÈGLE ABSOLUE : aucun intitulé de poste (consultant, directeur, formateur...). Des fonctions, des
-verbes, des modes de contribution. Le cadre change. La fonction, jamais.
+- Si moins de 18 ans : propose 8 à 10 exemples concrets de métiers ou familles de métiers à DÉCOUVRIR, reliés à des matières, projets, stages ou expériences simples permettant de tester l'intérêt réel.
+- Si étudiant(e) / jeune adulte : propose 8 à 10 pistes concrètes en reliant chacune à une compétence à développer, un type d'étude, de spécialisation ou d'expérience.
+- Si adulte en évolution/reconversion/perte de sens explicitement indiquée : propose 8 à 12 pistes concrètes en distinguant :
+  1) pistes proches / transférables ;
+  2) pistes demandant une montée en compétence ;
+  3) pistes plus ambitieuses nécessitant une transition ou une formation.
+- Si entrepreneur / indépendant explicitement indiqué : propose des rôles, positionnements ou familles d'activités concrètes compatibles avec la mécanique du profil.
 
-[SECTION 6] TES GRANDES PÉRIODES CHARNIÈRES PROFESSIONNELLES (3 paragraphes denses)
+RÈGLES :
+- jamais « tu dois devenir », « tu es fait pour », « ton métier est » ;
+- toujours présenter ces exemples comme des pistes à confronter au réel ;
+- pour chaque groupe, explique POURQUOI il correspond au profil ;
+- si le contexte parle de salaire/sécurité financière, indique quels critères rendent une piste potentiellement plus porteuse (spécialisation, rareté de compétence, responsabilité, secteur, statut), sans chiffrer ni promettre un revenu.
+
+[SECTION 7] TES GRANDES PÉRIODES CHARNIÈRES PROFESSIONNELLES (3 paragraphes denses)
 À partir des repères internes "CHARNIÈRES TEMPORELLES", ne retiens que 2 à 4 grandes fenêtres sur 10 à 20 ans.
 §1 : la prochaine fenêtre de repositionnement ou de changement d'échelle réellement structurante.
 §2 : une ou deux fenêtres plus lointaines seulement si elles marquent une clôture, un redémarrage, une maturation ou une transmission. Regroupe les années proches.
 §3 : ce que cette personne peut garder comme boussole professionnelle à travers ces passages.
 INTERDIT : revue année par année, catalogue de dates, événement annoncé comme certain, jargon technique. TOUT le futur est au conditionnel. N'écris jamais « va s'ouvrir », « s'ouvrira », « ce sera », « tu vivras », « tu seras », « tu auras », « viendra », « il est probable que tu vives » ni « signal fiable ». Préfère « pourrait s'ouvrir », « cette période pourrait », « il serait possible que », « un signal à observer ».
 
-[SECTION 7] TES PROCHAINS PAS CONCRETS (2 paragraphes denses)
-§1 : micro-signaux quotidiens à observer -- situations concrètes, émotions précises.
-     Comment reconnaître qu'on est dans son flux vs hors de son flux.
-§2 : exploration 30 jours -- 3 expériences concrètes pour tester les territoires identifiés.
-     Pour chaque expérience : action précise (2h max) + comment évaluer (énergie en sortie ?
-     facilité ? envie de recommencer ? sensation de contribuer vraiment ?).
+[SECTION 8] TES PROCHAINS PAS CONCRETS (2 paragraphes denses)
+§1 : micro-signaux quotidiens à observer -- situations concrètes, énergie, intérêt, sentiment d'utilité.
+§2 : exploration 30 jours -- 3 expériences concrètes pour tester les territoires et pistes identifiés.
+Pour un jeune : projet, rencontre métier, stage, mini-création, découverte d'une formation.
+Pour un adulte : entretien exploratoire, mini-projet, mise en situation, formation courte, test de compétence transférable.
+Pour un entrepreneur : test d'offre, mission pilote, délégation, création de contenu, expérimentation de positionnement.
 
-[SECTION 8 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
+[SECTION 9 -- OBLIGATOIRE] TES 5 QUESTIONS DE DÉCISION
 Clé JSON : "questions_decision"
 1 paragraphe d'intro : ces questions sont ta boussole personnelle, tirées de CE profil,
-pour évaluer toute opportunité en 5 minutes -- orientation, formation, stage, projet ou autre choix concret ; pour un adulte, cela peut aussi concerner un poste, un client ou une reconversion.
+pour évaluer toute opportunité en 5 minutes -- orientation, formation, stage, projet, poste, mission, client ou reconversion selon la situation réelle.
 Puis 5 questions en prose continue, chacune formulée en tutoiement direct,
 SPÉCIFIQUES à ce profil (pas génériques), qui révèlent si la personne va vers elle ou loin d'elle.
 
-[SECTION 9] TA PHRASE D'ANCRAGE / MANTRA
+[SECTION 10] TA PHRASE D'ANCRAGE / MANTRA
 Cette partie est retournée dans la clé JSON "mantras", PAS dans "sections".
 Une phrase courte, unique, puissante -- repère symbolique sur la façon de contribuer -- suivie d'une note brève expliquant pourquoi elle correspond à CE profil. Ne la qualifie jamais de « vérité », de « vérité opérationnelle » ou de « signal fiable ».
 À relire les jours de doute.
 
-[SECTION 10] MESSAGE FINAL (2 paragraphes)
+[SECTION 11] MESSAGE FINAL (2 paragraphes)
 Cette partie est retournée dans la clé JSON "message_final", PAS dans "sections".
 Chaleureux, porteur, concret. L'élan. Ce qui devient possible quand être et faire s'alignent.
 
@@ -969,6 +991,7 @@ Les clés "profil_contribution" et "questions_decision" sont OBLIGATOIRES.
     {{"titre": "Ton architecture intérieure", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "Ce que cela implique dans ton travail", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "Tes territoires d'expression professionnelle", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p><p>...</p><p>...</p>"}},
+    {{"titre": "Tes pistes professionnelles à explorer", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "Tes grandes périodes charnières professionnelles", "contenu": "<p>...</p><p>...</p><p>...</p>"}},
     {{"titre": "Tes prochains pas concrets", "contenu": "<p>...</p><p>...</p>"}}
   ],
@@ -996,8 +1019,10 @@ def appeler_claude_vocation(profils_txt):
             return False
         sections = [s for s in (result.get("sections") or [])
                     if isinstance(s, dict) and re.sub(r'<[^>]+>', ' ', str(s.get("contenu") or '')).strip()]
+        titres = [re.sub(r'\s+', ' ', str(s.get('titre') or '')).strip().casefold() for s in sections]
         return (
-            len(sections) >= 5
+            len(sections) >= 6
+            and any('piste' in t and ('profession' in t or 'métier' in t or 'metier' in t) for t in titres)
             and bool(str(result.get("lettre") or '').strip())
             and bool(re.sub(r'<[^>]+>', ' ', str(result.get("profil_contribution") or '')).strip())
             and bool(re.sub(r'<[^>]+>', ' ', str(result.get("questions_decision") or '')).strip())
@@ -1025,7 +1050,7 @@ def appeler_claude_vocation(profils_txt):
 CORRECTION IMPÉRATIVE POUR CE RETRY :
 Ta réponse précédente était structurellement incomplète. Retourne EXACTEMENT :
 - une clé lettre non vide ;
-- 5 sections non vides : Architecture intérieure, Travail, Territoires d'expression, Grandes périodes charnières, Prochains pas ;
+- 6 sections non vides : Architecture intérieure, Travail, Territoires d'expression, Pistes professionnelles à explorer, Grandes périodes charnières, Prochains pas ;
 - profil_contribution non vide ;
 - questions_decision non vide ;
 - au moins un mantra ;
@@ -1072,6 +1097,7 @@ RÈGLE ABSOLUE -- CHEMIN DE VIE : Le numéro exact du chemin de vie est la SEULE
 
 RÈGLE ABSOLUE -- FRATRIE : Ne jamais inventer de frères ou sœurs, de fratrie, ou de "ton frère"/"ta sœur" si ces informations ne sont pas explicitement présentes dans les données. Si une fratrie est indiquée dans les données, tu peux en parler. Sinon, n'en mentionne jamais l'existence -- même comme exemple.
 RÈGLE DE FIABILITÉ ENFANT : aucun diagnostic, aucune réaction future présentée comme certaine, aucune scène déjà vécue inventée. Les conseils aux parents sont des options symboliques à observer et tester, jamais des vérités sur ce que l'enfant « fera », « ressentira forcément » ou « aura besoin toute sa vie ».
+RÈGLE FACTUELLE SUR L’HEURE : tu peux rappeler l’heure de naissance et écrire « le matin », « dans la journée », « en soirée » ou « dans la nuit » lorsque le repère horaire le permet. En revanche, ne déduis JAMAIS du seul horaire un coucher de soleil, un crépuscule ou une « bascule entre le jour et la nuit ». Par exemple, 21 h 19 se formule simplement « en soirée », pas « à l’heure où le jour s’achève ».
 COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
 - Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
 - Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
@@ -1184,7 +1210,6 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
         "mantras": b.get("mantras") or [{"prenom": "Votre enfant", "texte": "Tu es exactement là où tu dois être.", "note": ""}],
         "message_final": b.get("message_final", ""),
     }
-
 
 def appeler_claude(offre, profils_txt, type_analyse='adulte'):
     if type_analyse == 'naissance':
@@ -1503,6 +1528,7 @@ CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USA
 
 STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), aucune liste, aucun terme technique visible. Titres libres et poétiques, adaptés à CE profil.
 POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Préfère « tu peux », « il est possible que », « une tendance à observer » aux formulations définitives. Aucun diagnostic ni quasi-diagnostic. N'invente JAMAIS une scène d'enfance ou une réaction d'autrui. Interdits sans contexte explicite : culpabilité, possessivité, rumination, hyper-responsabilisation, trahison vécue, peur secrète, « les gens sentent que », « mettait les adultes mal à l'aise ».
+SOBRIÉTÉ TEMPORELLE ET SYMBOLIQUE : la section sur le présent peut évoquer des thèmes à observer, mais n'affiche jamais de durée de cycle, de « cycle de neuf années », de compte à rebours, d'année personnelle ou de calendrier. N'écris jamais qu'un « soutien invisible » s'installe, que « l'univers facilite » une situation, ni qu'une énergie cosmique provoque concrètement des rencontres ou émotions. Les repères astrologiques/numérologiques restent une grille symbolique, pas une causalité factuelle.
 COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
 - Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
 - Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
@@ -1530,10 +1556,10 @@ IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme)
 - §4 (LUMIÈRE) : les forces naturelles, les élans profonds, ce qui se déploie avec évidence quand cette personne est alignée. Célébrer avec précision -- pas de généralités.
 - §5 (OMBRE) : des points de vigilance POSSIBLES qui peuvent apparaître quand une force est poussée trop loin. Ne parle jamais de « face cachée », de pattern déjà vécu ni de ce qui se répète malgré elle. Formule comme des hypothèses à observer, jamais comme un verdict.
 
-Mouvement 2 -- CE QUE TU TRAVERSES EN CE MOMENT (titre poétique libre, 3 paragraphes longs) :
-- §1 : la qualité de la période actuelle -- sa texture, son énergie, ce qui la caractérise au quotidien.
-- §2 : ce qui est en train de se jouer intérieurement, les mouvements souterrains, les réalignements en cours.
-- §3 : comment naviguer dans cette période -- ce qu'elle/il demande, ce qu'elle/il révèle, ce qu'elle/il promet sans le promettre."""
+Mouvement 2 -- CE QUE TU PEUX OBSERVER DANS TA PÉRIODE ACTUELLE (titre poétique libre, 3 paragraphes longs) :
+- §1 : des thèmes symboliques possibles de la période actuelle, formulés comme des pistes à vérifier dans le réel. Aucun cycle chiffré, aucune durée technique.
+- §2 : des tensions ou ouvertures possibles, toujours au conditionnel ; ne prétends jamais savoir qu'une transformation intérieure est déjà en cours.
+- §3 : comment utiliser cette période comme terrain d'observation et d'expérimentation concrète. Aucun « l'univers facilite », aucun « soutien invisible », aucune promesse implicite."""
 
     prompt_b = base + """
 LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2500-3000 mots hors mantra et message final.
@@ -1838,6 +1864,7 @@ GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme)
 DONNÉES :
 {profils_txt}
 """
+
 
 
 def appeler_claude_famille(profils_txt):
@@ -2547,7 +2574,7 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         if not str(sec.get('titre') or '').strip():
             raise ValueError(f"Narratif {produit} : section sans titre")
 
-    minimums = {'solo': 5, 'vocation': 7, 'couple': 5, 'naissance': 6, 'prestige': 8}
+    minimums = {'solo': 5, 'vocation': 8, 'couple': 5, 'naissance': 6, 'prestige': 8}
     if produit in minimums and len(sections) < minimums[produit]:
         raise ValueError(f"Narratif {produit} incomplet : {len(sections)} section(s), minimum {minimums[produit]}")
     if produit == 'famille' and len(sections) < 10:
@@ -2568,6 +2595,7 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
             'architecture intérieure': lambda x: 'architecture' in x,
             'travail': lambda x: 'travail' in x,
             "territoires d'expression": lambda x: 'territoire' in x,
+            'pistes professionnelles': lambda x: 'piste' in x and ('profession' in x or 'métier' in x or 'metier' in x),
             'périodes charnières': lambda x: ('période' in x or 'periode' in x) and ('charni' in x or 'profession' in x),
             'prochains pas': lambda x: 'prochains pas' in x,
             'profil de contribution': lambda x: 'profil de contribution' in x,
@@ -2598,7 +2626,7 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         r'\bpinnacle\b', r'\btransits?\b', r'\bnombre d[’\' ]expression\b',
         r'\bnombre intime\b', r'\bnombre de réalisation\b', r'\bnombre de realisation\b',
         r'\bchiffre dominant\b', r'\bchiffre manquant\b', r'\bthème natal\b', r'\btheme natal\b',
-        r'\bciel natal\b', r'\bnumérologie\b', r'\bnumerologie\b', r'\bastrologie\b',
+        r'\bciel natal\b',
         r'\bsaturne\b', r'\bjupiter\b', r'\buranus\b', r'\bneptune\b',
         r'\bmercure\b', r'\bvénus\b', r'\bvenus\b', r'\bsoleil en\b', r'\blune en\b',
         r'\bton soleil\b', r'\bta lune\b', r'\ble soleil\b', r'\bla lune\b',
@@ -2635,10 +2663,16 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         if re.search(r'\bgrand cycle\b|\bcycle de \w+ années\b', texte_cf, flags=re.IGNORECASE):
             raise ValueError('Narratif naissance expose une durée/cycle technique au client')
     elif produit == 'solo':
-        bad = ['hyper-responsabilisation', 'possessivité', 'possessivite', 'mettait mal à l’aise les adultes', "mettait mal à l'aise les adultes"]
+        bad = [
+            'hyper-responsabilisation', 'possessivité', 'possessivite',
+            'mettait mal à l’aise les adultes', "mettait mal à l'aise les adultes",
+            'cycle de neuf années', 'cycle de 9 années', 'soutien invisible',
+            "l'univers facilite", "l’univers facilite", 'comme si l’univers facilitait',
+            "comme si l'univers facilitait"
+        ]
         hit = [x for x in bad if x in texte_cf]
         if hit:
-            raise ValueError(f"Narratif solo contient une scène/quasi-diagnostic non fondé : {hit[:2]}")
+            raise ValueError(f"Narratif solo contient une scène, causalité ou durée de cycle non fondée : {hit[:2]}")
     return True
 
 
@@ -2668,7 +2702,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     elif offre == 'vocation':
         noms_plain = " · ".join(_prenom_affiche(c['prenom']) for c in clients)
         noms = _esc(noms_plain)
-        tagline = "Ce que ta manière de fonctionner révèle de ta vocation."
+        tagline = "Comprendre ta voie, explorer tes possibilités, éclairer une reconversion."
     else:
         noms_plain = " · ".join(_prenom_affiche(c['prenom']) for c in clients)
         noms = _esc(noms_plain)
@@ -2775,7 +2809,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
   <div class="cover-bg-pulse"></div>
   <div class="particles" id="particles"></div>
   <div class="cover-content">
-    <p class="cover-eyebrow">Analyse personnalisée · {"Naissance" if est_naissance else offre.capitalize()} · {annee}</p>
+    <p class="cover-eyebrow">Analyse personnalisée · {"Naissance" if est_naissance else ("Vocation / Reconversion professionnelle" if offre == "vocation" else offre.capitalize())} · {annee}</p>
     <h1 class="cover-title">ORIGIN</h1>
     <div class="seed-wrap">
       <div class="seed-pulse"></div>
@@ -3224,7 +3258,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         tagline = "Ce que vos différences révèlent de votre lien, et ce que vous pouvez en construire."
     elif offre == 'vocation':
         noms_display = _esc(" · ".join(_prenom_affiche(c['prenom']) for c in clients))
-        tagline = "Ce que ta manière de fonctionner révèle de ta vocation."
+        tagline = "Comprendre ta voie, explorer tes possibilités, éclairer une reconversion."
     else:
         noms_display = _esc(" · ".join(_prenom_affiche(c['prenom']) for c in clients))
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
@@ -3877,12 +3911,31 @@ def webhook():
                         + contexte_client
                     )
 
+                def _generer_et_valider(offre_gen):
+                    import time
+                    # Une sortie client refusée par les garde-fous est régénérée UNE fois
+                    # pour éviter qu'une tournure isolée déclenche inutilement une relance manuelle.
+                    # Famille et Prestige ont déjà leurs propres stratégies multi-blocs/coûteuses.
+                    max_essais = 1 if offre_gen in {'famille', 'prestige'} else 2
+                    derniere_erreur = None
+                    for tentative in range(1, max_essais + 1):
+                        narr = appeler_claude(offre_gen, profils_txt, type_analyse)
+                        try:
+                            _valider_narratif_client(offre_gen, narr, clients, type_analyse)
+                            if tentative > 1:
+                                print(f"[{offre_gen}] validation réussie au retry {tentative}", flush=True)
+                            return narr
+                        except ValueError as ex:
+                            derniere_erreur = ex
+                            print(f"[{offre_gen}] narratif refusé tentative {tentative}/{max_essais} : {ex}", flush=True)
+                            if tentative < max_essais:
+                                time.sleep(2)
+                    raise derniere_erreur or ValueError(f"Narratif {offre_gen} invalide")
+
                 if offre_label == 'bundle':
                     # Bundle : générer Solo + Vocation et envoyer ensemble
-                    narratif_solo     = appeler_claude('solo',     profils_txt, type_analyse)
-                    narratif_vocation = appeler_claude('vocation', profils_txt, type_analyse)
-                    _valider_narratif_client('solo', narratif_solo, clients, type_analyse)
-                    _valider_narratif_client('vocation', narratif_vocation, clients, type_analyse)
+                    narratif_solo     = _generer_et_valider('solo')
+                    narratif_vocation = _generer_et_valider('vocation')
                     html_solo     = generer_html('solo',     clients, narratif_solo,     astros_clients, type_analyse)
                     pdf_solo      = generer_pdf_imprimable('solo',     clients, narratif_solo,     astros_clients, type_analyse)
                     html_vocation = generer_html('vocation', clients, narratif_vocation, astros_clients, type_analyse)
@@ -3892,8 +3945,7 @@ def webhook():
                     prenoms_log = ' & '.join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, 'bundle', date.today().strftime('%d/%m/%Y'))
                 else:
-                    narratif = appeler_claude(offre, profils_txt, type_analyse)
-                    _valider_narratif_client(offre, narratif, clients, type_analyse)
+                    narratif = _generer_et_valider(offre)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
                     pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
                     envoyer_email(html, pdf, clients, offre_label, email_client, data)
