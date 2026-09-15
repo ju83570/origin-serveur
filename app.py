@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ORIGIN -- Serveur webhook
+Version audit sorties réelles : v118
 Reçoit les données Formspree → génère le livret → envoie par email
 """
 
@@ -857,6 +858,11 @@ RÈGLE N°3 — TON ET POSTURE
 GENRE : accordé selon les données (Homme/Femme). Accord strict. Jamais inclusif.
 ÂGE / ÉTAPE DE VIE : utilise le repère interne « Âge actuel exact ». Si la personne a moins de 18 ans, adapte TOUT le livret à l'orientation, aux apprentissages, aux projets, aux stages et à l'exploration ; ne parle pas de reconversion, de clients, de management ou de carrière comme si elle était déjà adulte. N'invente jamais un âge : si tu le mentionnes, reprends uniquement l'âge exact fourni.
 POSTURE DE FIABILITÉ : ne transforme jamais le profil symbolique en diagnostic ou en comportement supposé déjà observé. Interdits sans contexte explicite : « tu deviens irritable », « tu es provocateur », « tu détectes les mensonges », « tu te fermes », ou toute affirmation équivalente. Formule les points de vigilance comme des hypothèses à tester dans la réalité.
+COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
+- Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
+- Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
+- Toute donnée technique non visible sert à NUANCER le portrait, jamais à produire une certitude psychologique.
+CONTEXTE CLIENT : si le texte libre mentionne explicitement le salaire, la rémunération ou la sécurité financière, reconnais cette préoccupation et explique comment évaluer la capacité d'un environnement à offrir progression, valeur créée et stabilité financière. Ne promets jamais un niveau de revenu et ne donne toujours aucune liste de métiers.
 ANNÉE EN COURS : {annee_courante}
 LONGUEUR : entre 4500 et 5500 mots. Chaque paragraphe = minimum 6-7 lignes denses.
 
@@ -877,7 +883,7 @@ central pour elle avec CE profil. Invitation à lire comme une boussole.
 
 [SECTION 2] TON ARCHITECTURE INTÉRIEURE (3 paragraphes denses)
 MIROIR pur. Ton archétype fondamental. La nature profonde de ton énergie.
-Ce que les autres ressentent quand tu es dans ton élément.
+L'impression que tu PEUX donner quand tu es dans ton élément, formulée comme une hypothèse et jamais comme ce que les autres ressentent forcément.
 Ta FONCTION NATURELLE en prose -- JAMAIS de liste de métiers.
 Une ou deux images ou analogies concrètes pour ancrer l'archétype. Ne cite aucune personnalité réelle : la comparaison doit rester centrée sur le client.
 
@@ -926,7 +932,7 @@ verbes, des modes de contribution. Le cadre change. La fonction, jamais.
 §1 : la prochaine fenêtre de repositionnement ou de changement d'échelle réellement structurante.
 §2 : une ou deux fenêtres plus lointaines seulement si elles marquent une clôture, un redémarrage, une maturation ou une transmission. Regroupe les années proches.
 §3 : ce que cette personne peut garder comme boussole professionnelle à travers ces passages.
-INTERDIT : revue année par année, catalogue de dates, événement annoncé comme certain, jargon technique.
+INTERDIT : revue année par année, catalogue de dates, événement annoncé comme certain, jargon technique. TOUT le futur est au conditionnel. N'écris jamais « va s'ouvrir », « s'ouvrira », « ce sera », « tu vivras », « tu seras », « tu auras », « viendra », « il est probable que tu vives » ni « signal fiable ». Préfère « pourrait s'ouvrir », « cette période pourrait », « il serait possible que », « un signal à observer ».
 
 [SECTION 7] TES PROCHAINS PAS CONCRETS (2 paragraphes denses)
 §1 : micro-signaux quotidiens à observer -- situations concrètes, émotions précises.
@@ -944,7 +950,7 @@ SPÉCIFIQUES à ce profil (pas génériques), qui révèlent si la personne va v
 
 [SECTION 9] TA PHRASE D'ANCRAGE / MANTRA
 Cette partie est retournée dans la clé JSON "mantras", PAS dans "sections".
-Une phrase courte, unique, puissante -- vérité sur la façon de contribuer -- suivie d'une note brève expliquant pourquoi elle correspond à CE profil.
+Une phrase courte, unique, puissante -- repère symbolique sur la façon de contribuer -- suivie d'une note brève expliquant pourquoi elle correspond à CE profil. Ne la qualifie jamais de « vérité », de « vérité opérationnelle » ou de « signal fiable ».
 À relire les jours de doute.
 
 [SECTION 10] MESSAGE FINAL (2 paragraphes)
@@ -998,10 +1004,22 @@ def appeler_claude_vocation(profils_txt):
             and bool(str(result.get("message_final") or '').strip())
         )
 
+    def _qualite_vocation_ok(result):
+        if not isinstance(result, dict):
+            return False
+        txt = json.dumps(result, ensure_ascii=False).casefold()
+        interdits = [
+            'vérité opérationnelle', 'signal fiable',
+            "tu ne seras jamais quelqu'un qui travaille uniquement pour l'argent",
+            "va s'ouvrir", "s'ouvrira", 'il est probable que tu vives',
+            'ce sera le moment', 'tu vivras '
+        ]
+        return not any(x in txt for x in interdits)
+
     try:
         result = _normaliser_resultat(_appel_claude_chunk(prompt, max_tokens=14000))
-        if not _structure_de_base_ok(result):
-            print("[vocation] structure incomplète -- retry unique")
+        if not _structure_de_base_ok(result) or not _qualite_vocation_ok(result):
+            print("[vocation] structure ou qualité éditoriale non conforme -- retry unique")
             prompt_retry = prompt + """
 
 CORRECTION IMPÉRATIVE POUR CE RETRY :
@@ -1013,8 +1031,12 @@ Ta réponse précédente était structurellement incomplète. Retourne EXACTEMEN
 - au moins un mantra ;
 - message_final non vide.
 Ne crée aucune section vide et ne duplique pas Profil de contribution ou Questions de décision dans sections.
+Tout futur doit rester au conditionnel ; bannis « va s'ouvrir », « s'ouvrira », « ce sera », « tu vivras », « signal fiable » et « vérité opérationnelle ».
 """
             result = _normaliser_resultat(_appel_claude_chunk(prompt_retry, max_tokens=14000))
+        if not _structure_de_base_ok(result) or not _qualite_vocation_ok(result):
+            print("[vocation] résultat toujours non conforme après retry -- fallback")
+            return FALLBACK_NARRATIF
     except Exception as ex:
         print(f"[vocation] génération impossible : {ex}")
         return FALLBACK_NARRATIF
@@ -1050,6 +1072,11 @@ RÈGLE ABSOLUE -- CHEMIN DE VIE : Le numéro exact du chemin de vie est la SEULE
 
 RÈGLE ABSOLUE -- FRATRIE : Ne jamais inventer de frères ou sœurs, de fratrie, ou de "ton frère"/"ta sœur" si ces informations ne sont pas explicitement présentes dans les données. Si une fratrie est indiquée dans les données, tu peux en parler. Sinon, n'en mentionne jamais l'existence -- même comme exemple.
 RÈGLE DE FIABILITÉ ENFANT : aucun diagnostic, aucune réaction future présentée comme certaine, aucune scène déjà vécue inventée. Les conseils aux parents sont des options symboliques à observer et tester, jamais des vérités sur ce que l'enfant « fera », « ressentira forcément » ou « aura besoin toute sa vie ».
+COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
+- Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
+- Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
+- Toute donnée technique non visible sert à NUANCER le portrait, jamais à produire une certitude psychologique.
+RÈGLE DE SOBRIÉTÉ : n'écris jamais que l'enfant « a choisi de naître », que « le monde avait besoin de lui », qu'il absorbe/capte les tensions ou les non-dits, qu'il porte des émotions qui ne lui appartiennent pas, ni les métaphores d'antenne, radar, éponge, capteur ou baromètre. Une image poétique ne doit jamais être présentée comme un fait invisible sur l'enfant.
 
 LONGUEUR IMPERATIVE :
 - Chaque paragraphe = MINIMUM 6-7 lignes de prose dense. Tout en prose narrative, zéro liste.
@@ -1063,7 +1090,7 @@ DONNÉES :
 
     prompt_a = base + """STRUCTURE (rédiger UNIQUEMENT ces 4 sections) :
 1. LETTRE D'OUVERTURE (3 paragraphes, tutoiement -- ce que ce jour de naissance révèle, ton énergie fondamentale, ce que tu portes comme lumière)
-2. TON CHEMIN DE VIE (3 paragraphes, tutoiement -- commence par nommer explicitement « Ton chemin de vie X » avec le numéro exact lu sur la ligne Chemin de vie, puis développe ta mission profonde, ce que tu apprends à comprendre et à incarner, comment ce chemin peut se manifester)
+2. TON CHEMIN DE VIE (3 paragraphes, tutoiement -- commence par nommer explicitement « Ton chemin de vie X » avec le numéro exact lu sur la ligne Chemin de vie, puis développe uniquement son sens symbolique, ses ressources et ses apprentissages possibles. INTERDIT dans cette section : âge futur, « autour de X ans », durée de cycle, « grand cycle », fenêtre temporelle, calendrier ou prédiction. Toutes les périodes de vie appartiennent exclusivement à la section 6.)
 3. TES DONS NATURELS (3 paragraphes, tutoiement -- ce qui peut te venir facilement, tes forces possibles ; les exemples d'enfance doivent rester explicitement hypothétiques et au conditionnel, jamais présentés comme des scènes déjà vécues)
 4. TES ZONES DE CROISSANCE (2 paragraphes, tutoiement -- les apprentissages qui t'attendront, zones manquantes avec douceur et espoir)
 
@@ -1084,8 +1111,17 @@ INSTRUCTION ABSOLUE : Si les données contiennent un bloc "CHARNIÈRES TEMPORELL
 - §1 : une ou deux grandes fenêtres de l'enfance et de l'adolescence réellement structurantes pour CE profil -- pas une liste d'âges fixes, pas un calendrier.
 - §2 : une ou deux grandes fenêtres de passage vers l'âge adulte ou de maturation, uniquement si elles correspondent à une vraie bascule de cycle. Utilise "autour de", "entre ... et ...", "ce passage peut".
 - §3 : les ressources profondes de CE profil pour traverser ces changements sans se perdre -- ce qui reste stable quand le décor change.
-RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Aucune prédiction certaine. Le lecteur doit recevoir une carte des GRANDES PÉRIODES DE VIE, jamais une analyse année par année.
-7. VOTRE MODE D'EMPLOI -- CE QUE CET ENFANT VOUS DEMANDE D'ÊTRE (s'adresse aux parents avec "vous" -- c'est la section centrale du carnet, la plus longue, la plus riche, la plus actionnable. Les parents la reliront pendant des années. Traiter les 8 points ci-dessous -- 1 paragraphe dense minimum par point, intégrés dans la prose de façon fluide, jamais comme titres visibles.) : A) QUI EST VRAIMENT CET ENFANT : son profil traduit en images concrètes, ce qu'il ressent à l'intérieur que le monde ne verra pas toujours, sa couleur d'âme unique. B) SES BESOINS FONDAMENTAUX -- LES VRAIS : ce dont il a besoin pour se sentir en sécurité et reconnu dans sa singularité, ce qui se passe en lui quand ces besoins ne sont pas comblés, comment y répondre concrètement au quotidien. C) CE QUI L'ALLUME ET CE QUI L'ÉTEINT : ses conditions pour s'épanouir, ce qui le stimule, ce qui l'écrase sans qu'il sache le dire -- avec des situations du quotidien observables. D) COMMENT LUI PARLER POUR QU'IL VOUS ENTENDE : les formulations qui l'ouvrent, celles qui le ferment sans que vous le voyiez, comment maintenir l'autorité et l'amour sans qu'ils s'excluent. E) CE QU'IL NE FAUT PAS LUI RÉPÉTER ET CE QU'IL A BESOIN D'ENTENDRE : les phrases anodines qui peuvent laisser des traces avec son profil, et à l'inverse les mots précis qui nourrissent son estime propre. F) COMMENT NE PAS LUI TRANSMETTRE CE QUI N'EST PAS À LUI : ce qu'il risque de capter sans que personne ne l'ait voulu, ce que les parents peuvent faire pour qu'il hérite des forces de la lignée sans en porter les blessures. Formulé avec bienveillance, jamais culpabilisant. G) CE QU'IL EST VENU VOUS APPRENDRE : la croissance qu'il demande à ses parents, ce qu'il les invite à devenir -- formulé comme une invitation lumineuse. H) CE QUE VOUS POUVEZ LUI OFFRIR QUE PERSONNE D'AUTRE NE PEUT LUI DONNER : la force de cette alliance particulière, ce qui rend ce lien irremplaçable. Terminer par cette phrase reformulée naturellement dans la prose : "On dit qu'il n'existe pas de mode d'emploi pour être parent. Ce carnet vient de prouver le contraire -- le vôtre, pour [prénom], existe. Il a toujours existé. Il attendait juste d'être lu."
+RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle", « grand cycle », durée de cycle ou aucun autre terme technique. Aucune prédiction certaine. Le lecteur doit recevoir 3 à 4 GRANDES FENÊTRES DE VIE regroupées, jamais une analyse âge par âge. Tout futur reste au conditionnel : interdits « s'ouvrira », « tu entreras », « ce sera », « viendra », « tu auras », « tu seras », « te portera », « changera ta vie ». Préfère « pourrait », « ce passage pourrait », « une période autour de... peut inviter ».
+7. VOTRE MODE D'EMPLOI -- DES REPÈRES POUR ACCOMPAGNER CET ENFANT (s'adresse aux parents avec "vous" -- section centrale, longue et actionnable. Traiter les 8 angles ci-dessous en prose fluide, au moins un paragraphe dense par angle, sans afficher les lettres A-H comme sous-titres.) :
+A) CE QUE LE PROFIL PEUT SUGGÉRER : traduire le profil en tendances POSSIBLES et observables, sans prétendre connaître des pensées ou émotions cachées.
+B) CONDITIONS QUI POURRAIENT LE SOUTENIR : proposer des repères de sécurité, autonomie, rythme et reconnaissance comme OPTIONS à tester, jamais comme besoins psychologiques certains.
+C) CE QUI POURRAIT LE STIMULER OU LE FATIGUER : décrire des contextes concrets à observer, sans inventer de réaction passée ou future.
+D) COMMENT COMMUNIQUER : proposer plusieurs formulations que les parents peuvent essayer ; ne jamais affirmer qu'une phrase « l'ouvre », « le ferme » ou provoque une réaction garantie.
+E) MOTS QUI PEUVENT AIDER : suggérer des encouragements adaptés au profil, sans prétendre que d'autres phrases laisseraient forcément des traces.
+F) NE PAS PROJETER LES PRÉOCCUPATIONS DES ADULTES : encourager les adultes à distinguer leurs propres attentes de l'expérience réelle de l'enfant. INTERDIT de dire qu'il capte, absorbe ou porte les tensions, non-dits, blessures ou émotions des adultes.
+G) CE QUE LA RELATION PEUT INVITER LES PARENTS À DÉVELOPPER : patience, écoute, souplesse ou cadre selon le profil, comme invitation relationnelle et non comme « mission » de l'enfant.
+H) CE QUE LES PARENTS PEUVENT CULTIVER : présence, sécurité, curiosité et qualité du lien, sans prétendre que personne d'autre ne pourrait lui offrir cela.
+Termine en rappelant sobrement qu'il ne s'agit pas d'un mode d'emploi infaillible mais d'une boussole à confronter à l'enfant réel, qui restera toujours la première source de vérité sur lui-même.
 8. UN MOT POUR TOI, PLUS TARD (1 paragraphe long, tutoiement -- écrit directement à l'enfant qui lira ce mot en grandissant, chaleureux, profond, porteur d'espoir)
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
@@ -1099,20 +1135,43 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
   "message_final": "<p>...</p>"
 }"""
 
-    a = _appel_claude_chunk(prompt_a, max_tokens=8000)
-    b = _appel_claude_chunk(prompt_b, max_tokens=12000)  # FIX: section parents très dense
+    def _naissance_a_ok(data):
+        if not isinstance(data, dict) or not data.get("sections"):
+            return False
+        chemin = next((str(s.get('contenu') or '') for s in data.get('sections', []) if isinstance(s, dict) and 'chemin de vie' in str(s.get('titre') or '').casefold()), '')
+        chemin_cf = chemin.casefold()
+        return not bool(re.search(r'grand cycle|cycle de .{0,20}années|autour de .{0,12}ans|vers .{0,12}ans|entre .{0,12}ans', chemin_cf, flags=re.IGNORECASE))
 
-    # FIX: Valider chaque chunk avant fusion
-    if not a or not a.get("sections"):
-        print("⚠️ Chunk A Naissance invalide ou sections vides -- fallback")
+    def _naissance_b_ok(data):
+        if not isinstance(data, dict) or not data.get("sections"):
+            return False
+        all_txt = json.dumps(data, ensure_ascii=False).casefold()
+        parent_bad = ['absorbe les atmosphères', 'capte les tensions', 'capte les non-dits', "émotions qui ne lui appartiennent pas", "emotions qui ne lui appartiennent pas", 'radar', 'antenne', 'éponge', 'baromètre']
+        if any(x in all_txt for x in parent_bad):
+            return False
+        periods = next((str(s.get('contenu') or '') for s in data.get('sections', []) if isinstance(s, dict) and 'périodes' in str(s.get('titre') or '').casefold()), '')
+        pcf = periods.casefold()
+        if re.search(r'\b(s[’\']ouvrira|tu entreras|ce sera|viendra|tu auras|tu seras|te portera)\b', pcf, flags=re.IGNORECASE):
+            return False
+        return True
+
+    a = _appel_claude_chunk(prompt_a, max_tokens=8000)
+    if not _naissance_a_ok(a):
+        print("⚠️ Chunk A Naissance non conforme (temporalité dans chemin de vie) -- retry unique")
+        a = _appel_claude_chunk(prompt_a + "\nRETRY : retire ABSOLUMENT tout âge futur, durée de cycle et fenêtre temporelle de la section Ton chemin de vie.", max_tokens=8000)
+
+    b = _appel_claude_chunk(prompt_b, max_tokens=12000)
+    if not _naissance_b_ok(b):
+        print("⚠️ Chunk B Naissance non conforme (certitude/psychologie/prédiction) -- retry unique")
+        b = _appel_claude_chunk(prompt_b + "\nRETRY : respecte strictement le conditionnel dans les périodes et retire toute affirmation que l'enfant capte/absorbe des émotions ou tensions invisibles.", max_tokens=12000)
+
+    # Valider chaque chunk avant fusion
+    if not _naissance_a_ok(a):
+        print("⚠️ Chunk A Naissance toujours invalide après retry -- fallback")
         return FALLBACK_NARRATIF
-    if not b or not b.get("sections"):
-        print("⚠️ Chunk B Naissance invalide ou sections vides -- retry unique")
-        import time; time.sleep(20)
-        b = _appel_claude_chunk(prompt_b, max_tokens=12000)
-        if not b or not b.get("sections"):
-            print("⚠️ Chunk B Naissance toujours invalide après retry -- fallback")
-            return FALLBACK_NARRATIF
+    if not _naissance_b_ok(b):
+        print("⚠️ Chunk B Naissance toujours invalide après retry -- fallback")
+        return FALLBACK_NARRATIF
 
     sections_fusionnees = (a.get("sections") or []) + (b.get("sections") or [])
     if not sections_fusionnees:
@@ -1277,7 +1336,7 @@ STYLE OBLIGATOIRE :
 - Profond, immersif, le client doit sentir qu'on a passé des heures sur son cas
 - Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
 - Chaque paragraphe apporte quelque chose de nouveau -- jamais de redite
-- Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
+- Nomme des situations concrètes POSSIBLES ou hypothétiques, jamais présentées comme déjà vécues sauf si le contexte client les fournit ; utilise des émotions comme possibilités, pas comme faits
 - Ton bienveillant mais direct sur les zones d'ombre
 
 REGLES ABSOLUES (violations = livret inutilisable) :
@@ -1443,8 +1502,11 @@ LE PRINCIPE ABSOLU : les outils de calcul restent invisibles, SAUF le chemin de 
 CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données ci-dessous, utilise-le pour affiner l'analyse des sections "ce que tu traverses en ce moment" et "ce que tu portes vers demain". Ces éléments colorent la texture de la période, les tensions intérieures, les ouvertures disponibles. JAMAIS exposés dans le texte : aucun terme planétaire, aucun mot "transit".
 
 STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), aucune liste, aucun terme technique visible. Titres libres et poétiques, adaptés à CE profil.
-POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Préfère « tu peux », « il est possible que », « une tendance à observer » aux formulations définitives. Aucun diagnostic ni quasi-diagnostic.
-
+POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Préfère « tu peux », « il est possible que », « une tendance à observer » aux formulations définitives. Aucun diagnostic ni quasi-diagnostic. N'invente JAMAIS une scène d'enfance ou une réaction d'autrui. Interdits sans contexte explicite : culpabilité, possessivité, rumination, hyper-responsabilisation, trahison vécue, peur secrète, « les gens sentent que », « mettait les adultes mal à l'aise ».
+COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
+- Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
+- Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
+- Toute donnée technique non visible sert à NUANCER le portrait, jamais à produire une certitude psychologique.
 DONNÉES :
 {profils_txt}
 """
@@ -1463,10 +1525,10 @@ CHUNK A -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 Mouvement 1 -- QUI TU ES (titre poétique libre, 5 paragraphes longs) :
 IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence tout au long du texte.
 - §1 : ouvre naturellement en nommant UNE FOIS le numéro exact de son chemin de vie (ex. « Ton chemin de vie 22... »), puis traduis immédiatement ce que cela raconte humainement. Ensuite développe ce qui caractérise fondamentalement cette personne -- son rapport au monde, à l'existence, aux autres. Très concret, très ancré, impossible à généraliser.
-- §2 : son intelligence, sa façon de traiter le réel, ce qui se passe dans sa tête que les autres ne voient pas. Précis, intime.
-- §3 : ce que cette personne dégage sans s'en rendre compte -- son impact sur les autres, l'atmosphère qu'elle/il crée, ce que les gens ressentent en sa présence.
+- §2 : sa façon POSSIBLE de traiter l'information et le réel, formulée comme une hypothèse symbolique à vérifier. Ne prétends jamais savoir ce qui se passe dans sa tête.
+- §3 : l'impression que cette personne POURRAIT donner lorsqu'elle se sent à l'aise, sans jamais affirmer ce que les autres ressentent ni inventer une atmosphère observée.
 - §4 (LUMIÈRE) : les forces naturelles, les élans profonds, ce qui se déploie avec évidence quand cette personne est alignée. Célébrer avec précision -- pas de généralités.
-- §5 (OMBRE) : ce qui résiste, se cache, ou coûte à cette personne. Les patterns limitants, la face cachée même à elle-même, ce qui se répète malgré elle. Nommé avec bienveillance et courage -- jamais comme un verdict. "Cette même force a son revers..." est un bon ancrage.
+- §5 (OMBRE) : des points de vigilance POSSIBLES qui peuvent apparaître quand une force est poussée trop loin. Ne parle jamais de « face cachée », de pattern déjà vécu ni de ce qui se répète malgré elle. Formule comme des hypothèses à observer, jamais comme un verdict.
 
 Mouvement 2 -- CE QUE TU TRAVERSES EN CE MOMENT (titre poétique libre, 3 paragraphes longs) :
 - §1 : la qualité de la période actuelle -- sa texture, son énergie, ce qui la caractérise au quotidien.
@@ -1490,7 +1552,7 @@ CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 Mouvement 3 -- TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes longs) :
 RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les données (Homme/Femme).
 - §1 : les forces naturelles -- ce qui vient facilement, ce qui distingue vraiment cette personne. Célébrer avec précision, pas avec des généralités.
-- §2 : les zones de résistance et angles morts -- ce qui résiste, ce qui coince, ce que cette personne évite sans le savoir. Nommer avec courage et bienveillance.
+- §2 : les zones de croissance possibles -- ce qui pourrait demander plus de pratique, de confiance ou de cadre. Ne dis jamais que la personne évite quelque chose « sans le savoir » et veille à ne pas contredire une force identifiée ailleurs.
 - §3 : la transformation à portée -- ce qui est déjà en train de changer, ce qui cherche à émerger, le prochain seuil.
 
 Mouvement 4 -- LES GRANDES PÉRIODES CHARNIÈRES (titre poétique libre, 3 paragraphes longs) :
@@ -1498,13 +1560,13 @@ INSTRUCTION ABSOLUE : si les données contiennent un bloc "CHARNIÈRES TEMPORELL
 - §1 : la prochaine grande fenêtre de bascule réellement structurante -- idéalement une période de 1 à 3 ans, avec sa texture et ce qu'elle peut inviter à reconsidérer.
 - §2 : une ou deux grandes fenêtres plus lointaines sur les 10 à 20 prochaines années, uniquement si elles représentent un changement de cycle, une clôture, un redémarrage, une maturation ou une transformation profonde. Mieux vaut 2 périodes fortes que 6 années faibles.
 - §3 : la logique d'ensemble de ces passages et les ressources de CE profil pour les traverser -- ce qui reste stable en lui/elle lorsque le décor change.
-RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. Employer "autour de", "entre ... et ...", "cette fenêtre peut", "ce passage invite". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
+RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. TOUT le futur est au conditionnel. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
 - §2 : une note finale qui donne confiance à cette personne dans sa propre trajectoire. Chaleureux, ancré, jamais vague ni prédictif.
 
-Mantra : une phrase poétique courte (max 15 mots) impossible à donner à quelqu'un d'autre + note de 3 lignes qui explique pourquoi CE mantra pour CE profil précisément.
+Mantra : une phrase poétique courte (max 15 mots) impossible à donner à quelqu'un d'autre + note de 3 lignes qui explique pourquoi CE mantra peut servir de repère à CE profil. Ne parle jamais de vérité absolue ni de destin.
 Message final : 2 paragraphes qui donnent envie de refermer le livret avec le sentiment d'avoir été profondément vu."""
 
     a = _appel_claude_chunk(prompt_a, max_tokens=9000)
@@ -1545,7 +1607,7 @@ STYLE OBLIGATOIRE :
 - Profond, immersif, le client doit sentir qu'on a passé des heures sur son cas
 - Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
 - Chaque paragraphe apporte quelque chose de nouveau -- jamais de redite
-- Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
+- Nomme des situations concrètes POSSIBLES ou hypothétiques ; jamais une scène ou émotion présentée comme déjà vécue sans contexte client
 - Ton bienveillant mais direct sur les zones d'ombre
 
 REGLES ABSOLUES :
@@ -1557,6 +1619,11 @@ REGLES ABSOLUES :
 - La lecture relationnelle reste une hypothèse symbolique : ne diagnostique aucun comportement, conflit, peur, jalousie, blessure ou mode d'attachement si le contexte client ne l'indique pas explicitement.
 - Si le contexte libre mentionne des enfants ou d'autres proches, ne calcule et n'affirme JAMAIS un nombre total de personnes dans le foyer ; cite les prénoms connus ou dis simplement « votre foyer ».
 - Le pinnacle reste un repère INTERNE : ne jamais afficher son nom ni sa valeur au client.
+- Aucun langage de destinée amoureuse : interdits « votre lien n'est pas un accident », « ce n'est pas un hasard », « faits l'un pour l'autre », « âme sœur », ou toute affirmation équivalente. N'invente jamais que des masques sont tombés, qu'ils ont choisi de rester malgré une épreuve, ou toute histoire relationnelle non fournie.
+COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
+- Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
+- Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
+- Toute donnée technique non visible sert à NUANCER le portrait, jamais à produire une certitude psychologique.
 
 DONNÉES :
 {profils_txt}
@@ -1599,7 +1666,7 @@ STYLE OBLIGATOIRE :
 - Tutoiement systematique, chaleureux, direct
 - Tout en prose narrative -- zero liste a puces
 - Profond, immersif, utilise les prenoms regulierement
-- Nomme des situations concretes, des emotions precises
+- Nomme des situations concrètes possibles, des émotions formulées comme hypothèses à vérifier
 
 REGLES ABSOLUES :
 - JAMAIS de positions planetaires au degre exact
@@ -1609,6 +1676,11 @@ REGLES ABSOLUES :
 - La lecture relationnelle reste une hypothèse symbolique : ne diagnostique aucun comportement, conflit, peur, jalousie, blessure ou mode d'attachement si le contexte client ne l'indique pas explicitement.
 - Si le contexte libre mentionne des enfants ou d'autres proches, ne calcule et n'affirme JAMAIS un nombre total de personnes dans le foyer ; cite les prénoms connus ou dis simplement « votre foyer ».
 - Le pinnacle reste un repère INTERNE : ne jamais afficher son nom ni sa valeur au client.
+- Aucun langage de destinée amoureuse : interdits « votre lien n'est pas un accident », « ce n'est pas un hasard », « faits l'un pour l'autre », « âme sœur », ou toute affirmation équivalente. N'invente jamais que des masques sont tombés, qu'ils ont choisi de rester malgré une épreuve, ou toute histoire relationnelle non fournie.
+COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
+- Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
+- Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
+- Toute donnée technique non visible sert à NUANCER le portrait, jamais à produire une certitude psychologique.
 
 DONNÉES :
 {profils_txt}
@@ -1636,7 +1708,7 @@ INSTRUCTION ABSOLUE : si les données contiennent des blocs "CHARNIÈRES TEMPORE
 - §1 : la prochaine fenêtre structurante du couple -- ce qui peut demander un ajustement, une décision, un nouvel équilibre ou une consolidation.
 - §2 : une ou deux fenêtres plus lointaines sur 10 à 20 ans -- uniquement les bascules majeures, regroupées en périodes lorsque plusieurs repères se suivent.
 - §3 : les ressources du lien pour traverser ces passages et ce qui peut rester stable entre eux malgré les changements.
-RÈGLES : aucun terme technique ("Saturne", "Jupiter", "année personnelle", etc.), aucune prédiction certaine, aucun catalogue annuel. Parler de fenêtres possibles, de seuils et de tendances de fond.
+RÈGLES : aucun terme technique ("Saturne", "Jupiter", "année personnelle", etc.), aucune prédiction certaine, aucun catalogue annuel. Parler de fenêtres possibles, de seuils et de tendances de fond. Tout futur est au conditionnel : n'écris jamais « s'apprête à traverser », « le lien devra », « tu seras », « vous serez », « s'ouvrira », « ce sera ». Préfère « pourrait traverser », « le lien pourrait avoir besoin », « vous pourriez », « cette fenêtre pourrait ».
 
 Mouvement 6 -- Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
@@ -1647,7 +1719,7 @@ Mantras -- RÈGLES STRICTES, 5 mantras au total :
 - Mantra 4 [Personne 2] : une invitation précise vers ce qui lui résiste. Ne cite aucune donnée astrologique brute ni autre nombre technique.
 - Mantra 5 [Ensemble] : né de la COMBINAISON des deux profils. Si la note cite des nombres, elle DOIT citer exclusivement les DEUX chemins de vie exacts indiqués dans « CHEMINS DE VIE — VALEURS À NE JAMAIS CONFONDRE », en disant clairement « le chemin de vie X de [prénom] » et « le chemin de vie Y de [prénom] ». JAMAIS le nombre d'expression ou un autre nombre. Pas un mantra générique sur l'amour.
 Chaque mantra : une phrase poétique courte (max 20 mots) + note de 2-3 lignes qui explique POURQUOI ce mantra correspond à ce profil, sans exposer les calculs.
-Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de predictions certaines."""
+Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de prédictions certaines. Ne dis jamais que le lien « n'est pas un accident », que la rencontre « n'est pas un hasard », que des « masques sont tombés » ni qu'ils ont « choisi de rester malgré tout » si ces faits ne viennent pas du contexte client."""
 
     import time
     # Chunk A
@@ -1736,7 +1808,7 @@ STYLE OBLIGATOIRE :
 - Profond, immersif, le client doit sentir qu'on a passé des heures sur son cas
 - Utilise les prenoms regulierement (minimum 2 fois par paragraphe)
 - Chaque paragraphe apporte quelque chose de nouveau -- jamais de redite
-- Nomme des situations concretes et vecues, des emotions precises, des images sensorielles
+- Nomme des situations concrètes POSSIBLES ou hypothétiques ; jamais une scène ou émotion présentée comme déjà vécue sans contexte client
 - Ton bienveillant mais direct sur les zones d'ombre
 
 REGLES ABSOLUES :
@@ -1749,12 +1821,16 @@ REGLES ABSOLUES :
 - Aucun diagnostic ou quasi-diagnostic psychologique. N'invente aucune scène familiale passée pour illustrer le propos.
 - Si des blocs "CHARNIÈRES TEMPORELLES" sont présents : ce sont des repères internes. Ne jamais les restituer année par année ; les regrouper en 2 à 4 grandes fenêtres maximum.
 - Le pinnacle reste un repère INTERNE : ne jamais afficher son nom ni sa valeur au client.
+COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
+- Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
+- Un chiffre manquant n'annule JAMAIS une force indiquée ailleurs. Si deux indicateurs semblent tirer dans des directions différentes, synthétise-les : « potentiel réel qui peut demander confiance, pratique ou cadre », jamais deux affirmations opposées dans le même livret.
+- Toute donnée technique non visible sert à NUANCER le portrait, jamais à produire une certitude psychologique.
 
 UTILISATION DES DONNEES ENRICHIES :
-- L'annee personnelle, son theme et son focus sont deja calcules -- developpe-les narrativement
-- Les chiffres dominants = forces naturelles a nommer, celebrer et illustrer
-- Les chiffres manquants = zones de croissance a explorer avec bienveillance
-- Le pinnacle permanent = le grand cycle de vie traverse -- relie-le a ce que la personne vit concretement aujourd'hui
+- L'année personnelle est un repère INTERNE : elle peut seulement nuancer la tonalité, jamais produire une prévision datée ou une phrase « cette année » dans un portrait individuel.
+- Les chiffres dominants = forces possibles à traduire humainement, sans certitude.
+- Les chiffres manquants = zones à exercer ; ils n'annulent jamais une force indiquée ailleurs.
+- Le pinnacle est un repère INTERNE : ne jamais nommer sa valeur, sa durée ni en déduire ce que la personne vit « aujourd'hui ». Toutes les temporalités client doivent rester dans la section dédiée aux grandes périodes charnières.
 - Croise TOUJOURS numerologie + astrologie -- ne traite jamais une donnee de facon isolee
 
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, participes passés et pronoms en conséquence dans chaque portrait individuel. Ne jamais utiliser "elle/la" pour un homme ni "il/le" pour une femme.
@@ -1824,6 +1900,8 @@ RÈGLES ABSOLUES :
 - Respecte le genre indiqué pour chaque personne.
 - Utilise les prénoms régulièrement, sans répétition mécanique.
 - VARIATION DE STYLE : limite fortement les métaphores « bâtir / fondation / pilier / structure / architecture / sol / constellation / trait d'union ». N'utilise pas la même image plus d'une fois par bloc.
+- Pour les adultes principaux, n'utilise pas les étiquettes « jeune femme » ou « jeune homme » : utilise leur prénom ou « adulte ».
+- Les indicateurs doivent rester cohérents entre eux : un chiffre manquant n'annule jamais un potentiel signalé par Expression/Réalisation/dominants ; formule les tensions comme un potentiel qui peut demander pratique ou cadre.
 - Chaque réponse doit être un JSON STRICTEMENT valide, sans markdown, sans texte avant ou après.
 
 DONNÉES COMPLÈTES DE LA FAMILLE :
@@ -1926,6 +2004,21 @@ DONNÉES COMPLÈTES DE LA FAMILLE :
                         print(f"[famille:{label}] formulation(s) éditoriale(s) refusée(s) : {', '.join(trouves)}", flush=True)
                         ok = False
 
+                # Les portraits individuels Famille ne doivent contenir AUCUNE prévision.
+                # Toutes les temporalités sont réservées au chapitre collectif des charnières.
+                if ok and str(label).startswith('portrait'):
+                    portrait_txt = json.dumps(data, ensure_ascii=False).casefold()
+                    motifs_temporels = [
+                        r'\b20\d{2}\b', r'année en cours', r'periode actuelle', r'période actuelle',
+                        r'traverse actuellement', r'prochaines années', r'années à venir',
+                        r"d['’]ici quelques années", r'autour de ses? \d+ ans',
+                        r"fin de l['’]adolescence", r'fenêtre (?:de|d[’\'])', r'cycle long'
+                    ]
+                    trouves_temps = [pat for pat in motifs_temporels if re.search(pat, portrait_txt, flags=re.IGNORECASE)]
+                    if trouves_temps:
+                        print(f"[famille:{label}] temporalité interdite dans portrait : {trouves_temps[:3]}", flush=True)
+                        ok = False
+
                 # Le chapitre Liens doit réellement tenir sa promesse : quatre
                 # sections nommées et chaque enfant couvert dans les deux premières.
                 if ok and label == 'liens':
@@ -1985,7 +2078,9 @@ RETOURNE EXACTEMENT CETTE FORME JSON :
         consigne = f'''RÉDIGE UNIQUEMENT LES PORTRAITS DE : {groupe_txt}.
 Longueur cible : 450 à 600 mots PAR PERSONNE.
 
-Pour chaque personne, crée UNE section distincte de 3 à 4 paragraphes denses : fonctionnement intérieur, forces, besoins, zones de croissance et manière d'être en relation avec ce foyer. Dans le premier paragraphe, nomme UNE FOIS son numéro exact sous la forme « chemin de vie X », puis traduis immédiatement son sens humainement. N'affiche aucun autre nombre technique.
+Pour chaque personne, crée UNE section distincte de 3 à 4 paragraphes denses : fonctionnement intérieur possible, forces, besoins possibles, zones de croissance et manière d'être en relation avec ce foyer. Dans le premier paragraphe, nomme UNE FOIS son numéro exact sous la forme « chemin de vie X », puis traduis immédiatement son sens humainement. N'affiche aucun autre nombre technique.
+
+PORTRAITS SANS PRÉVISION -- ABSOLU : aucun calendrier, aucune période actuelle, aucun futur, aucun cycle, aucune fenêtre temporelle. Interdits dans ces portraits : année en cours, période actuelle, traverse actuellement, années à venir, prochaines années, d'ici quelques années, autour de ses X ans, fin de l'adolescence, fenêtre de transformation, cycle long, date 20XX. Toutes les temporalités appartiennent EXCLUSIVEMENT à la section collective « Les grandes périodes charnières du foyer ».
 
 RETOURNE EXACTEMENT UN OBJET JSON avec une clé "sections" contenant {len(groupe)} section(s), une par personne, dans cet ordre : {groupe_txt}. Chaque section = {{"titre":"...", "contenu":"<p>...</p>..."}}.'''
         portrait_tasks.append((label, consigne, 5200, len(groupe), False, False, list(groupe), 1200))
@@ -2519,7 +2614,38 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         raise ValueError(f"Narratif {produit} : chemin(s) de vie attendu(s) non cité(s) ({sorted(attendus)} vs {sorted(cites)})")
     if not cites.issubset(attendus):
         raise ValueError(f"Narratif {produit} : chemin de vie étranger détecté ({sorted(cites - attendus)})")
+
+    # Garde-fous sémantiques ciblés issus des tests réels v117.
+    # Ils évitent qu'un prompt imparfait laisse passer une formulation déjà identifiée comme dangereuse.
+    if produit == 'vocation':
+        bad = ['vérité opérationnelle', 'signal fiable', "tu ne seras jamais quelqu'un qui travaille uniquement pour l'argent"]
+        hit = [x for x in bad if x in texte_cf]
+        if hit:
+            raise ValueError(f"Narratif vocation trop déterministe : {hit[:2]}")
+    elif produit == 'couple':
+        bad = ["votre lien n'est pas un accident", "ce n'est pas un hasard si", 'âme sœur', 'ame soeur', "faits l'un pour l'autre", 'masques sont tombés']
+        hit = [x for x in bad if x in texte_cf]
+        if hit:
+            raise ValueError(f"Narratif couple contient une certitude relationnelle non fondée : {hit[:2]}")
+    elif produit == 'naissance':
+        bad = ["tu as choisi de naître", 'le monde avait besoin de toi', 'absorbe les atmosphères', 'capte les tensions', 'capte les non-dits', "émotions qui ne lui appartiennent pas", "emotions qui ne lui appartiennent pas"]
+        hit = [x for x in bad if x in texte_cf]
+        if hit:
+            raise ValueError(f"Narratif naissance contient une certitude invisible/non observable : {hit[:2]}")
+        if re.search(r'\bgrand cycle\b|\bcycle de \w+ années\b', texte_cf, flags=re.IGNORECASE):
+            raise ValueError('Narratif naissance expose une durée/cycle technique au client')
+    elif produit == 'solo':
+        bad = ['hyper-responsabilisation', 'possessivité', 'possessivite', 'mettait mal à l’aise les adultes', "mettait mal à l'aise les adultes"]
+        hit = [x for x in bad if x in texte_cf]
+        if hit:
+            raise ValueError(f"Narratif solo contient une scène/quasi-diagnostic non fondé : {hit[:2]}")
     return True
+
+
+def _prenom_affiche(v):
+    """Normalise uniquement l'affichage d'un prénom sans altérer les données de calcul."""
+    s = str(v or '').strip()
+    return (s[:1].upper() + s[1:]) if s else ''
 
 
 def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
@@ -2528,23 +2654,23 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     def _esc(v):
         return html_lib.escape(str(v or ''), quote=True)
     if est_naissance:
-        noms_plain = f"{clients[0]['prenom']} {clients[0].get('nom','')}".strip()
+        noms_plain = f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip()
         noms = _esc(noms_plain)
         tagline = "Une boussole de naissance à relire à chaque étape de la vie."
     elif offre == 'solo':
-        noms_plain = f"{clients[0]['prenom']} {clients[0].get('nom','')}".strip()
+        noms_plain = f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip()
         noms = _esc(noms_plain)
         tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
     elif offre == 'couple':
-        noms_plain = f"{clients[0]['prenom']} & {clients[1]['prenom']}"
-        noms = f"{_esc(clients[0]['prenom'])} <span class='cover-amp'>&amp;</span> {_esc(clients[1]['prenom'])}"
-        tagline = "Ce que vos deux lignées ont traversé pour que vous vous retrouviez."
+        noms_plain = f"{_prenom_affiche(clients[0]['prenom'])} & {_prenom_affiche(clients[1]['prenom'])}"
+        noms = f"{_esc(_prenom_affiche(clients[0]['prenom']))} <span class='cover-amp'>&amp;</span> {_esc(_prenom_affiche(clients[1]['prenom']))}"
+        tagline = "Ce que vos différences révèlent de votre lien, et ce que vous pouvez en construire."
     elif offre == 'vocation':
-        noms_plain = " · ".join(str(c['prenom']) for c in clients)
+        noms_plain = " · ".join(_prenom_affiche(c['prenom']) for c in clients)
         noms = _esc(noms_plain)
         tagline = "Ce que ta manière de fonctionner révèle de ta vocation."
     else:
-        noms_plain = " · ".join(str(c['prenom']) for c in clients)
+        noms_plain = " · ".join(_prenom_affiche(c['prenom']) for c in clients)
         noms = _esc(noms_plain)
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
 
@@ -3088,19 +3214,19 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         return html_lib.escape(str(v or ''), quote=True)
 
     if est_naissance:
-        noms_display = _esc(f"{clients[0]['prenom']} {clients[0].get('nom','')}".strip())
+        noms_display = _esc(f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip())
         tagline = "Une boussole de naissance à relire à chaque étape de la vie."
     elif offre == 'solo':
-        noms_display = _esc(f"{clients[0]['prenom']} {clients[0].get('nom','')}".strip())
+        noms_display = _esc(f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip())
         tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
     elif offre == 'couple':
-        noms_display = f"{_esc(clients[0]['prenom'])} &amp; {_esc(clients[1]['prenom'])}"
-        tagline = "Ce que vos deux lignées ont traversé pour que vous vous retrouviez."
+        noms_display = f"{_esc(_prenom_affiche(clients[0]['prenom']))} &amp; {_esc(_prenom_affiche(clients[1]['prenom']))}"
+        tagline = "Ce que vos différences révèlent de votre lien, et ce que vous pouvez en construire."
     elif offre == 'vocation':
-        noms_display = _esc(" · ".join(str(c['prenom']) for c in clients))
+        noms_display = _esc(" · ".join(_prenom_affiche(c['prenom']) for c in clients))
         tagline = "Ce que ta manière de fonctionner révèle de ta vocation."
     else:
-        noms_display = _esc(" · ".join(str(c['prenom']) for c in clients))
+        noms_display = _esc(" · ".join(_prenom_affiche(c['prenom']) for c in clients))
         tagline = "Ce que votre lignée vous a transmis, et ce que vous pouvez en faire."
 
     # ── Logo page de garde ──────────────────────────────────────────────────
@@ -3218,12 +3344,14 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 "Quel geste concret peut incarner cette transmission dès maintenant ?"
             ]
         else:
+            _genre_carnet = str((clients[0] if clients else {}).get('genre') or '').strip().casefold()
+            _pret = "prête" if _genre_carnet == "femme" else "prêt"
             questions_list = [
                 "Qu'est-ce qui t'a le plus touché dans ta lecture ?",
                 "Quelle phrase résonne encore en toi ?",
                 "Qu'as-tu envie de changer à partir d'aujourd'hui ?",
                 "Comment ce que tu as lu éclaire ta relation à toi-même ?",
-                "Quelle ancienne histoire es-tu prêt·e à lâcher ?",
+                f"Quelle ancienne histoire es-tu {_pret} à lâcher ?",
                 "Quel premier pas concret peux-tu faire dès demain ?"
             ]
         carnet_pages_html = "".join(
@@ -3249,6 +3377,17 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     else:
         demarche_p2 = "Ce que tu tiens entre les mains n'est pas un horoscope, ni un portrait psychologique, ni une prédiction. C'est une carte -- la tienne. Elle montre le terrain, les reliefs, les zones d'ombre et les lignes de force. Ce que tu en fais t'appartient entièrement."
         demarche_p3 = "Pour en tirer le meilleur : lis lentement. Laisse résonner ce qui résonne. Note ce qui te surprend. Reviens dans quelques semaines -- certaines choses prennent du temps à se déposer."
+
+    lettre_page_html = ""
+    if _lettre_pdf:
+        lettre_page_html = f'''<div class="section-newpage first-page">
+  <span class="eyebrow">Avant tout</span>
+  <h2 class="section-title">{_lettre_titre_pdf}</h2>
+  <div class="light-line"></div>
+  <div class="lettre">
+    <div class="prose">{_lettre_pdf}</div>
+  </div>
+</div>'''
 
     final_txt = str(narratif.get('message_final') or '').strip()
     if final_txt:
@@ -3295,21 +3434,14 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 <div class="section-newpage center-page" style="justify-content:center;display:flex;flex-direction:column;align-items:center;padding:3cm 2.5cm;">
   <span class="eyebrow" style="margin-bottom:1cm;">La démarche ORIGIN</span>
   <div class="light-line" style="margin:0 auto 1.2cm;"></div>
-  <div class="prose" style="text-align:left;max-width:14cm;">
+  <div class="prose" style="text-align:left;max-width:14cm;font-size:11pt;line-height:1.55;">
     <p>Ce livret est le fruit d'une lecture croisée : numérologie, astrologie, et lecture des cycles de vie. Ces trois approches ne se substituent pas l'une à l'autre -- elles se répondent, se complètent, révèlent ensemble ce qu'aucune ne pourrait montrer seule.</p>
     <p>{demarche_p2}</p>
     <p>{demarche_p3}</p>
   </div>
   <div class="light-line" style="margin:1.2cm auto 0;"></div>
 </div>
-{('''<div class="section-newpage first-page">
-  <span class="eyebrow">Avant tout</span>
-  <h2 class="section-title">{_lettre_titre_pdf}</h2>
-  <div class="light-line"></div>
-  <div class="lettre">
-    <div class="prose">''' + _lettre_pdf + '''</div>
-  </div>
-</div>''') if _lettre_pdf else ''}
+{lettre_page_html}
 
 {sections_html}
 
