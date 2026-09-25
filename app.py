@@ -664,6 +664,107 @@ def build_natal_wheel_svg(planetes, ascendant=None):
     parts.append('</svg>')
     return "".join(parts)
 
+# ── Numérologie karmique (matériau interne, jamais nommé au client) ─────────
+NOMBRES_DETTES = {13, 14, 16, 19}
+SENS_DETTES = {
+    13: "apprendre la constance et l'effort patient ; tendance à chercher des raccourcis ou à se décourager devant le travail de fond",
+    14: "apprendre la mesure dans la liberté ; tendance aux excès, à la dispersion ou à fuir l'engagement",
+    16: "apprendre l'humilité et la reconstruction ; des remises en question qui obligent à rebâtir sur des bases plus vraies",
+    19: "apprendre l'autonomie juste ; tendance à tout porter seul, à refuser l'aide ou à imposer sa manière",
+}
+SENS_LECONS = {
+    1: "oser s'affirmer, prendre l'initiative, décider pour soi",
+    2: "coopérer, écouter, accepter la lenteur et la douceur",
+    3: "s'exprimer, montrer ses émotions, faire place à la légèreté",
+    4: "s'organiser, persévérer, poser un cadre concret",
+    5: "s'adapter, accueillir le changement, oser le mouvement",
+    6: "assumer ses responsabilités affectives, prendre soin sans s'oublier",
+    7: "se faire confiance intérieurement, prendre du recul, approfondir",
+    8: "trouver un rapport juste à l'argent, au pouvoir et à sa propre valeur",
+    9: "s'ouvrir aux autres, lâcher prise, pardonner",
+}
+_T_LETTRES = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8,'I':9,
+              'J':1,'K':2,'L':3,'M':4,'N':5,'O':6,'P':7,'Q':8,'R':9,
+              'S':1,'T':2,'U':3,'V':4,'W':5,'X':6,'Y':7,'Z':8}
+
+
+def _chaine_reduction(n):
+    """Toutes les valeurs traversées pendant la réduction (ex. 49 → 13 → 4)."""
+    vals = [n]
+    while n > 9 and n not in MAITRES:
+        n = sum(int(d) for d in str(n))
+        vals.append(n)
+    return vals
+
+
+def lecons_karmiques(prenom, nom_naissance):
+    """Nombres 1-9 absents du nom complet de naissance. [] si le nom de famille est inconnu."""
+    if not str(nom_naissance or '').strip():
+        return []
+    texte = _normaliser_lettres_numerologie(f"{prenom} {nom_naissance}").upper()
+    presents = {_T_LETTRES[c] for c in texte if c in _T_LETTRES}
+    return [n for n in range(1, 10) if n not in presents]
+
+
+def dettes_karmiques(j, m, a, prenom, nom):
+    """Nombres 13/14/16/19 rencontrés dans le jour de naissance ou les calculs intermédiaires."""
+    trouves = []
+    def _ajoute(n, source):
+        if n in NOMBRES_DETTES and (n, source) not in trouves:
+            trouves.append((n, source))
+    _ajoute(j, 'jour de naissance')
+    for v in _chaine_reduction(sum(int(d) for d in f"{j:02d}{m:02d}{a}")):
+        _ajoute(v, 'chemin de vie')
+    for v in _chaine_reduction(reduire(j) + reduire(m) + reduire(sum(int(d) for d in str(a)))):
+        _ajoute(v, 'chemin de vie')
+    if not str(nom or '').strip():
+        return trouves          # sans nom de famille : seulement ce qui vient de la date
+    texte = _normaliser_lettres_numerologie(f"{prenom}{nom}").upper()
+    voy = set('AEIOUY')
+    sommes = {
+        'nom complet': sum(_T_LETTRES.get(c, 0) for c in texte),
+        'élan intérieur': sum(_T_LETTRES.get(c, 0) for c in texte if c in voy),
+        'manière d\'agir': sum(_T_LETTRES.get(c, 0) for c in texte if c.isalpha() and c not in voy),
+    }
+    for source, total in sommes.items():
+        if total:
+            for v in _chaine_reduction(total):
+                _ajoute(v, source)
+    return trouves
+
+
+def bloc_karmique_prompt(p):
+    """Bloc interne injecté dans le profil envoyé à Claude (toutes offres)."""
+    try:
+        j, m, a = p['jour'], p['mois'], p['annee']
+        pr, nm = p.get('prenom', ''), p.get('nom', '')
+        nom_naiss = p.get('nom_naissance') or nm
+        lecons = lecons_karmiques(pr, nom_naiss)
+        dettes = dettes_karmiques(j, m, a, pr, nom_naiss)
+    except Exception as ex:
+        print(f"[karmique] Calcul ignoré : {ex}")
+        return ""
+    if not lecons and not dettes:
+        return ""
+    lignes = ["", "APPRENTISSAGES DE FOND (matériau strictement interne)"]
+    if lecons:
+        lignes.append("  Apprentissages à intégrer : " + " ; ".join(f"{n} = {SENS_LECONS[n]}" for n in lecons))
+    vus = set()
+    for n, source in dettes:
+        if n in vus:
+            continue
+        vus.add(n)
+        sources = ", ".join(s for k, s in dettes if k == n)
+        lignes.append(f"  Schéma qui se répète ({sources}) : {SENS_DETTES[n]}")
+    lignes.append(
+        "  CONSIGNE : ne jamais écrire « karma », « karmique », « dette », « leçon karmique » ni citer ces nombres. "
+        "Traduis-les en apprentissages qui reviennent, en situations concrètes du quotidien, avec douceur et sans fatalisme : "
+        "ce sont des terrains d'exercice, jamais des punitions ni des fardeaux. Intègre-les dans les passages sur les zones de "
+        "croissance, les défis ou les liens (1 à 2 paragraphes au total, pas une section à part). Si plusieurs membres d'une "
+        "même famille partagent un apprentissage ou un schéma, c'est un fil transgénérationnel à mettre en lumière avec délicatesse.")
+    return "\n".join(lignes)
+
+
 def fmt_profil(p, avec_transits=False):
     j,m,a = p['jour'],p['mois'],p['annee']
     pr,nm = p['prenom'],p.get('nom','')
@@ -715,6 +816,11 @@ def fmt_profil(p, avec_transits=False):
         f"  Cycle de vie  : {pin_str}",
         f"  Dominants     : {dom_str}",
         f"  Manquants     : {man_str}",
+    ]
+    bloc_k = bloc_karmique_prompt(p)
+    if bloc_k:
+        lines.extend(bloc_k.split("\n"))
+    lines += [
         "",
         "ASTROLOGIE",
     ]
@@ -2728,7 +2834,7 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         r'\bpinnacle\b', r'\btransits?\b', r'\bnombre d[’\' ]expression\b',
         r'\bnombre intime\b', r'\bnombre de réalisation\b', r'\bnombre de realisation\b',
         r'\bchiffre dominant\b', r'\bchiffre manquant\b', r'\bthème natal\b', r'\btheme natal\b',
-        r'\bciel natal\b',
+        r'\bciel natal\b', r'\bkarm\w*', r'\bdettes? karmiques?\b',
         r'\bsaturne\b', r'\bjupiter\b', r'\buranus\b', r'\bneptune\b',
         r'\bmercure\b', r'\bvénus\b', r'\bvenus\b', r'\bsoleil en\b', r'\blune en\b',
         r'\bton soleil\b', r'\bta lune\b', r'\ble soleil\b', r'\bla lune\b',
@@ -3311,8 +3417,8 @@ CSS_PRINT = """@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght
 body {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 400;
-  font-size: 12.6pt;
-  line-height: 1.62;
+  font-size: 14.2pt;
+  line-height: 1.66;
   color: #231C11;
   hyphens: auto;
   -weasy-hyphens: auto;
@@ -3325,20 +3431,15 @@ body {
   background: #FBF7EE;
   @top-left {
     content: "ORIGIN";
-    font-family: 'Cinzel', serif; font-size: 7pt; letter-spacing: .38em; color: #B08A3A;
+    font-family: 'Cinzel', serif; font-size: 8pt; letter-spacing: .38em; color: #B08A3A;
     vertical-align: bottom; padding-bottom: 6mm;
   }
   @top-right {
     content: string(chap);
-    font-family: 'Jost', sans-serif; font-size: 6.4pt; letter-spacing: .22em; text-transform: uppercase; color: #8F8472;
+    font-family: 'Jost', sans-serif; font-size: 7.2pt; letter-spacing: .2em; text-transform: uppercase; color: #8F8472;
     vertical-align: bottom; padding-bottom: 6mm;
   }
-  @bottom-center { content: element(seedfoot); vertical-align: middle; }
-  @bottom-right {
-    content: counter(page);
-    font-family: 'Cinzel', serif; font-size: 8pt; color: #B08A3A; letter-spacing: .1em;
-    vertical-align: middle;
-  }
+  @bottom-center { content: element(seedfoot); vertical-align: top; padding-top: 3mm; }
 }
 @page front {
   @top-left { content: none; } @top-right { content: none; }
@@ -3358,15 +3459,17 @@ body {
 @page carnet {
   margin: 18mm 22mm 40mm;
   @top-left { content: none; } @top-right { content: none; }
-  @bottom-center { content: element(seedfoot); vertical-align: middle; }
-  @bottom-right { content: counter(page); font-family: 'Cinzel', serif; font-size: 7pt; color: #C9B27A; vertical-align: middle; }
+  @bottom-center { content: element(seedfoot); vertical-align: top; padding-top: 3mm; }
 }
 #seed-footer { position: running(seedfoot); text-align: center; }
-#seed-footer svg { width: 34mm; height: 34mm; }
+#seed-footer svg { width: 26mm; height: 26mm; display: block; margin: 0 auto; }
+#seed-footer .pnum { font-family: 'Cinzel', serif; font-size: 11pt; letter-spacing: .12em; color: #8C6A2A; margin-top: -3.5mm; }
+#seed-footer .pnum::before { content: "— "; color: #C9A84C; }
+#seed-footer .pnum::after { content: counter(page) " —"; }
 
 .eyebrow {
-  display: block; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt;
-  letter-spacing: .38em; text-transform: uppercase; color: #A5612A; margin-bottom: 3mm;
+  display: block; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 7.6pt;
+  letter-spacing: .36em; text-transform: uppercase; color: #A5612A; margin-bottom: 3mm;
 }
 .rule { width: 22mm; height: .7pt; background: #B08A3A; margin: 5mm 0 8mm; }
 .rule-c { margin-left: auto; margin-right: auto; }
@@ -3397,22 +3500,22 @@ body {
 .cv-site { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .3em; color: #C9A84C; }
 
 /* ── Démarche ────────────────────────────────────────────── */
-.front { page: front; break-before: page; padding-top: 30mm; }
-.front-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 21pt; letter-spacing: .06em; color: #231C11; line-height: 1.25; }
-.lede { font-size: 15pt; font-style: italic; line-height: 1.55; color: #4E4332; margin-bottom: 6mm; }
+.front { page: front; break-before: page; padding-top: 16mm; }
+.front-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 23pt; letter-spacing: .06em; color: #231C11; line-height: 1.25; }
+.lede { font-size: 16.5pt; font-style: italic; line-height: 1.55; color: #4E4332; margin-bottom: 6mm; }
 .front .prose p { text-align: left; }
 .pillars { display: table; width: 100%; margin-top: 14mm; border-top: .6pt solid rgba(176,138,58,.30); border-bottom: .6pt solid rgba(176,138,58,.30); }
 .pillar { display: table-cell; width: 33.33%; padding: 7mm 4mm 6mm; text-align: center; vertical-align: top; }
 .pillar + .pillar { border-left: .6pt solid rgba(176,138,58,.30); }
 .pillar-ico { width: 13mm; height: 13mm; margin: 0 auto 3.5mm; }
 .pillar-ico svg { width: 100%; height: 100%; }
-.pillar-t { font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt; letter-spacing: .3em; text-transform: uppercase; color: #A5612A; margin-bottom: 2mm; }
-.pillar-d { font-size: 11pt; font-style: italic; line-height: 1.4; color: #4E4332; }
+.pillar-t { font-family: 'Jost', sans-serif; font-weight: 500; font-size: 7.6pt; letter-spacing: .3em; text-transform: uppercase; color: #A5612A; margin-bottom: 2mm; }
+.pillar-d { font-size: 12.5pt; font-style: italic; line-height: 1.4; color: #4E4332; }
 
 /* ── Sommaire ────────────────────────────────────────────── */
 .toc { list-style: none; margin-top: 4mm; }
 .toc li { border-bottom: .5pt solid rgba(176,138,58,.30); }
-.toc a { display: block; padding: 3.6mm 0; color: #231C11; text-decoration: none; font-size: 13.5pt; }
+.toc a { display: block; padding: 2.5mm 0; color: #231C11; text-decoration: none; font-size: 15pt; }
 .toc a::after { content: leader(' ') target-counter(attr(href), page); font-family: 'Cinzel', serif; font-size: 9pt; color: #B08A3A; }
 .toc-num { display: inline-block; width: 13mm; font-family: 'Cinzel', serif; font-size: 9.5pt; color: #B08A3A; letter-spacing: .08em; }
 .toc-sub { color: #8F8472; font-style: italic; }
@@ -3420,28 +3523,32 @@ body {
 /* ── Lettre ──────────────────────────────────────────────── */
 .lettre-wrap { break-before: page; string-set: chap "Avant tout"; padding-top: 6mm; }
 .lettre-q { font-family: 'Cinzel', serif; font-size: 64pt; line-height: .6; color: #D6B466; height: 14mm; margin-top: 4mm; }
-.lettre .prose { font-size: 13.2pt; }
+.lettre .prose { font-size: 14.6pt; }
 .lettre-sign { text-align: right; font-family: 'Cinzel', serif; font-size: 8pt; letter-spacing: .35em; color: #A5612A; margin-top: 6mm; }
 
 /* ── Chapitres ───────────────────────────────────────────── */
-.ch { margin-top: 13mm; }
+.ch { margin-top: 9mm; }
+.ch .rule { margin: 3.5mm 0 5.5mm; }
 .ch.first, .ch.newpage { break-before: page; margin-top: 0; padding-top: 6mm; }
 .ch-head { break-inside: avoid; break-after: avoid; page-break-after: avoid; margin-bottom: 1mm; }
-.ch-num { font-family: 'Cinzel', serif; font-size: 34pt; font-weight: 400; line-height: 1; color: #D6B466; letter-spacing: .04em; margin-bottom: 4mm; }
-.ch-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 18.5pt; line-height: 1.3; letter-spacing: .04em; color: #231C11; string-set: chap content(text); }
-.ch-end { text-align: center; margin-top: 7mm; }
+.ch-head + p { orphans: 3; }
+.ch-num { font-family: 'Cinzel', serif; font-size: 30pt; font-weight: 400; line-height: 1; color: #D6B466; letter-spacing: .04em; margin-bottom: 2mm; }
+.ch-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 21pt; line-height: 1.3; letter-spacing: .04em; color: #231C11; string-set: chap content(text); }
+.ch-end { text-align: center; margin-top: 5mm; break-before: avoid; page-break-before: avoid; }
 .ch-end svg { width: 22mm; height: 3mm; }
 .ch-open, .ch-close { break-inside: avoid; page-break-inside: avoid; }
 
-.prose p { margin: 0 0 3.2mm; text-align: justify; orphans: 3; widows: 3; }
+.prose p { margin: 0 0 4.2mm; text-align: justify; orphans: 3; widows: 3; }
 .ch-close .prose p:last-child, .final .prose p:last-child, .lettre .prose p:last-child { margin-bottom: 0; }
 .prose em { font-style: italic; color: #A5612A; }
 .prose strong, .prose b { font-weight: 600; color: #231C11; }
-.prose * { color: inherit; }
+.prose p * { color: inherit; }
 .prose em, .prose em * { color: #A5612A; }
+.prose p .dc { color: #B08A3A; }
 .dc {
-  float: left; font-family: 'Cinzel', serif; font-size: 44pt; line-height: 1; color: #B08A3A;
-  padding: 1.4mm 2.6mm 0 0; font-style: normal;
+  /* Lettrine « levée » (sans float : un float empêche WeasyPrint de garder le titre avec le texte) */
+  font-family: 'Cinzel', serif; font-size: 30pt; line-height: .9; color: #B08A3A;
+  font-style: normal; padding-right: .6mm;
 }
 
 /* Profil de contribution / questions */
@@ -3449,12 +3556,12 @@ body {
 .o-trait { display: table-row; break-inside: avoid; }
 .o-trait-label, .o-trait-txt { display: table-cell; border-top: .5pt solid rgba(176,138,58,.30); padding: 3.4mm 0; vertical-align: top; }
 .o-trait:last-child .o-trait-label, .o-trait:last-child .o-trait-txt { border-bottom: .5pt solid rgba(176,138,58,.30); }
-.o-trait-label { width: 44mm; padding-right: 5mm; padding-top: 4.6mm; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt; letter-spacing: .24em; text-transform: uppercase; color: #A5612A; line-height: 1.5; hyphens: manual; -weasy-hyphens: manual; }
-.o-trait-txt { font-size: 12.6pt; line-height: 1.5; }
+.o-trait-label { width: 44mm; padding-right: 5mm; padding-top: 4.6mm; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 7.6pt; letter-spacing: .22em; text-transform: uppercase; color: #A5612A; line-height: 1.5; hyphens: manual; -weasy-hyphens: manual; }
+.o-trait-txt { font-size: 14pt; line-height: 1.5; }
 .o-questions { list-style: none; margin: 3mm 0 5mm; }
 .o-q { display: table; width: 100%; margin-bottom: 3.2mm; break-inside: avoid; background: rgba(176,138,58,.07); border-left: 1.6pt solid #B08A3A; }
 .o-q-num { display: table-cell; width: 15mm; vertical-align: middle; text-align: center; font-family: 'Cinzel', serif; font-size: 17pt; color: #B08A3A; padding: 3mm 0; }
-.o-q-txt { display: table-cell; vertical-align: middle; font-style: italic; font-size: 13pt; line-height: 1.45; padding: 3.5mm 5mm 3.5mm 0; }
+.o-q-txt { display: table-cell; vertical-align: middle; font-style: italic; font-size: 14.5pt; line-height: 1.45; padding: 3.5mm 5mm 3.5mm 0; }
 
 /* ── Mantras (page nuit) ─────────────────────────────────── */
 .nuit { page: nuit; color: #F2ECD8; text-align: center; }
@@ -3465,8 +3572,8 @@ body {
 .nuit-seed svg { width: 100%; height: 100%; }
 .mantra { break-inside: avoid; padding: 7mm 6mm; }
 .mantra-prenom { font-family: 'Jost', sans-serif; font-size: 6.8pt; letter-spacing: .45em; text-transform: uppercase; color: #C98B4F; margin-bottom: 3.5mm; }
-.mantra-txt { font-family: 'Cinzel', serif; font-size: 19pt; line-height: 1.5; color: #E8C97A; letter-spacing: .02em; }
-.mantra-note { font-style: italic; font-size: 11.5pt; color: rgba(242,236,216,.55); margin-top: 3mm; }
+.mantra-txt { font-family: 'Cinzel', serif; font-size: 21pt; line-height: 1.5; color: #E8C97A; letter-spacing: .02em; }
+.mantra-note { font-style: italic; font-size: 13pt; color: rgba(242,236,216,.55); margin-top: 3mm; }
 .compact .mantra { padding: 3.5mm 4mm; }
 .compact .mantra-txt { font-size: 15pt; }
 .compact .mantra-note { font-size: 10.5pt; margin-top: 1.5mm; }
@@ -3476,7 +3583,7 @@ body {
 /* ── Dernier mot ─────────────────────────────────────────── */
 .final { break-before: page; padding-top: 10mm; }
 .final-head { text-align: center; }
-.final .ch-title { font-size: 19pt; }
+.final .ch-title { font-size: 21pt; }
 .final-close { text-align: center; margin-top: 12mm; break-inside: avoid; }
 .final-close svg { width: 20mm; height: 20mm; }
 .final-sign { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .5em; color: #A5612A; margin-top: 3mm; }
@@ -3509,7 +3616,7 @@ body {
 .cp-kick, .cp-brand { display: table-cell; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt; letter-spacing: .32em; text-transform: uppercase; }
 .cp-kick { color: #A5612A; }
 .cp-brand { text-align: right; font-family: 'Cinzel', serif; color: #B08A3A; letter-spacing: .38em; }
-.cp-q { position: relative; background: rgba(176,138,58,.08); border-left: 1.8pt solid #B08A3A; padding: 6mm 8mm; font-style: italic; font-size: 16pt; line-height: 1.45; color: #231C11; margin-bottom: 6mm; }
+.cp-q { position: relative; background: rgba(176,138,58,.08); border-left: 1.8pt solid #B08A3A; padding: 6mm 8mm; font-style: italic; font-size: 17.5pt; line-height: 1.45; color: #231C11; margin-bottom: 6mm; }
 .cp-line { position: relative; height: 9.4mm; border-bottom: .5pt solid rgba(176,138,58,.38); }
 
 /* ── Page finale ─────────────────────────────────────────── */
@@ -3529,7 +3636,7 @@ CH_END_SVG = ('<div class="ch-end"><svg viewBox="0 0 88 12" xmlns="http://www.w3
               '<path d="M44 1l5 5-5 5-5-5z" fill="#B08A3A"/><circle cx="34" cy="6" r="1.2" fill="#B08A3A"/><circle cx="54" cy="6" r="1.2" fill="#B08A3A"/></svg></div>')
 
 
-def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='adulte'):
+def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='adulte', imprimeur=False, format_papier='A5'):
     annee = date.today().year
     est_naissance = (type_analyse == 'naissance')
     tutoie = est_naissance or offre in ('solo', 'vocation')
@@ -3621,16 +3728,12 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   {f'<p class="inter-note">{note}</p>' if note else ''}
 </section>'''
 
-    n_sec = len(sections)
+    # Les images sont placées uniquement là où le livret change déjà de page
+    # (avant la lettre, avant le 1er chapitre, avant les mantras, avant le dernier mot,
+    # en ouverture du carnet) : elles n'ajoutent ainsi aucune demi-page vide.
     familial = offre in ('famille', 'prestige')
-    inter_avant = {}
-    if n_sec >= 6:
-        inter_avant[n_sec // 3] = ('racines', 'Les racines', 'Ce qui nous porte vient de loin.') if familial else \
-                                  ('chemin', 'Le chemin', 'Chaque pas éclaire le suivant.')
-        inter_avant[(2 * n_sec) // 3] = ('saisons', 'Les saisons', 'Rien ne dure, tout revient autrement.')
-    elif n_sec >= 3:
-        inter_avant[n_sec // 2] = ('racines', 'Les racines', 'Ce qui nous porte vient de loin.') if familial else \
-                                  ('chemin', 'Le chemin', 'Chaque pas éclaire le suivant.')
+    inter_avant = {0: (('racines', 'Les racines', 'Ce qui nous porte vient de loin.') if familial else
+                       ('chemin', 'Le chemin', 'Chaque pas éclaire le suivant.'))}
 
     sections_html = ""
     for i, sec in enumerate(sections):
@@ -3645,27 +3748,21 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         _p1 = re.match(r'\s*<p[^>]*>(.*?)</p>', contenu, flags=re.DOTALL)
         if _p1 and len(re.sub(r'<[^>]+>', '', _p1.group(1))) > 220:
             contenu = _lettrine(contenu)
-        # Titre + 1er paragraphe insécables (jamais de titre orphelin en bas de page),
-        # dernier paragraphe + ornement insécables (jamais d'ornement seul sur une page).
-        parts = re.findall(r'<p[^>]*>.*?</p>|<ol class="o-questions">.*?</ol>|<div class="o-traits">.*?<!--/o-traits-->', contenu, flags=re.DOTALL)
-        if parts and ''.join(parts).replace(' ', '') == contenu.replace(' ', ''):
-            k = 2 if (len(parts) >= 2 and len(re.sub(r'<[^>]+>', '', parts[0])) < 260) else 1
-            first, middle, last = ''.join(parts[:k]), ''.join(parts[k:-1]), (parts[-1] if len(parts) > k else '')
-        else:
-            first, middle, last = '', contenu, ''
+        # Titre, paragraphes et ornement sont frères dans un même bloc : le titre reste
+        # accroché au texte qui suit (break-after: avoid) sans créer de gros blocs insécables
+        # qui laissaient des demi-pages vides.
         sections_html += f"""
 <section class="{classes}" id="ch-{i+1}">
-  <div class="ch-open">
+  <div class="prose">
     <div class="ch-head">
       <div class="ch-num">{i+1:02d}</div>
       <span class="eyebrow">{eyebrow}</span>
       <h2 class="ch-title">{sec.get('titre','')}</h2>
       <div class="rule"></div>
     </div>
-    <div class="prose">{first}</div>
+    {contenu}
+    {CH_END_SVG}
   </div>
-  <div class="prose">{middle}</div>
-  <div class="ch-close"><div class="prose">{last}</div>{CH_END_SVG}</div>
 </section>"""
 
     # ── Mantras ─────────────────────────────────────────────────────────────
@@ -3811,6 +3908,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   </div>
 </section>'''
 
+    inter_saisons_html = _interlude('saisons', 'ORIGIN', 'Les saisons', 'Rien ne dure, tout revient autrement.')
     if final_txt:
         if est_naissance:
             final_titre = "Pour terminer"
@@ -3839,7 +3937,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                   else ('Vos réflexions · Vos prises de conscience · Votre chemin' if not tutoie
                         else 'Tes réflexions · Tes prises de conscience · Ton chemin'))
 
-    carnet_cover_html = _interlude('carnet', 'ORIGIN', carnet_titre, carnet_sub, 'À imprimer · À compléter à la main', anchor='carnet')
+    note_carnet = 'À compléter à la main' if imprimeur else 'À imprimer · À compléter à la main'
+    carnet_cover_html = _interlude('carnet', 'ORIGIN', carnet_titre, carnet_sub, note_carnet, anchor='carnet')
     if not carnet_cover_html:
         carnet_cover_html = f'''<div class="carnet-cover" id="carnet">
   <div class="cc-inner">
@@ -3847,7 +3946,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     <h2 class="cc-title">{carnet_titre}</h2>
     <p class="cc-sub">{carnet_sub}</p>
   </div>
-  <p class="cc-note">À imprimer · À compléter à la main</p>
+  <p class="cc-note">{note_carnet}</p>
 </div>'''
 
     html_print = f"""<!DOCTYPE html>
@@ -3859,10 +3958,9 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </head>
 <body>
 
-<div id="seed-footer">{seed_svg}</div>
+<div id="seed-footer">{seed_svg}<div class="pnum"></div></div>
 
 <div class="cover">
-  <div class="cv-geo">{FLEUR_VIE_SVG}</div>
   <div class="cv-frame"></div><div class="cv-frame2"></div>
   <div class="cv-corner" style="top:9.5mm;left:9.5mm">✦</div><div class="cv-corner" style="top:9.5mm;right:9.5mm">✦</div>
   <div class="cv-corner" style="bottom:9.5mm;left:9.5mm">✦</div><div class="cv-corner" style="bottom:9.5mm;right:9.5mm">✦</div>
@@ -3909,14 +4007,16 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
 {mantras_page_html}
 
+{inter_saisons_html if final_txt else ''}
+
 {final_message_html}
 
 {carnet_cover_html}
 
 {carnet_pages_html}
 
+<!--BLANCS-->
 <div class="finale">
-  <div class="fn-geo">{FLEUR_VIE_SVG}</div>
   <div class="fn-inner">
     {finale_logo_html}
     <p class="fn-site">origin-famille.fr</p>
@@ -3927,7 +4027,91 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </body>
 </html>"""
 
+    if imprimeur:
+        return _rendu_imprimeur(html_print, format_papier)
     return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf(presentational_hints=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  VERSION IMPRIMEUR : fonds perdus 3 mm + nombre de pages multiple de 4
+# ══════════════════════════════════════════════════════════════════════════
+FOND_PERDU_MM = 3.0
+
+
+def _rendu_imprimeur(html_print, format_papier='A5'):
+    """Transforme le HTML du livret client en PDF prêt pour un imprimeur.
+
+    - Format final A5 (148×210) ou A4 (210×297), + 3 mm de fond perdu de chaque côté
+      (PDF livré en 154×216 mm ou 216×303 mm, comme le demandent les imprimeurs en ligne).
+    - Les pages pleine page (couverture, images, mantras, page finale) débordent dans le fond perdu :
+      aucune marge blanche après la coupe.
+    - Pages blanches ajoutées avant la 4e de couverture pour obtenir un multiple de 4 (reliure).
+    La mise en page est construite en A4 puis réduite à l'échelle pour l'A5.
+    """
+    fmt = str(format_papier or 'A5').upper()
+    fw, fh = (210, 297) if fmt == 'A4' else (148, 210)
+    zoom = fw / 210
+    b = FOND_PERDU_MM / zoom                      # fond perdu exprimé en mm « A4 »
+    W, H = (fw + 2 * FOND_PERDU_MM) / zoom, (fh + 2 * FOND_PERDU_MM) / zoom
+
+    css = html_print[html_print.index('<style>') + 7: html_print.index('</style>')]
+    css_bleed = css
+
+    # 1) Taille de page = format fini + fond perdu ; toutes les marges de page décalées d'autant
+    css_bleed = css_bleed.replace('size: A4;', f'size: {W:.3f}mm {H:.3f}mm;')
+    def _marges(m):
+        vals = [float(v) for v in re.findall(r'([\d.]+)mm', m.group(1))]
+        if len(vals) == 1: vals = vals * 4
+        elif len(vals) == 2: vals = [vals[0], vals[1], vals[0], vals[1]]
+        elif len(vals) == 3: vals = [vals[0], vals[1], vals[2], vals[1]]
+        return 'margin: ' + ' '.join(f'{v + b:.3f}mm' for v in vals) + ';'
+    css_bleed = re.sub(r'margin: ((?:[\d.]+mm ?){1,4});(?=\s*(?:background|@|\n))', _marges, css_bleed)
+    css_bleed = css_bleed.replace('margin: 0;', f'margin: 0;')  # pages pleine page : pas de marge
+
+    # 2) Éléments pleine page : agrandis au format fond perdu
+    css_bleed = css_bleed.replace('width: 210mm; height: 297mm;', f'width: {W:.3f}mm; height: {H:.3f}mm;')
+    css_bleed = css_bleed.replace('width: 210mm;\n  height: 297mm;', f'width: {W:.3f}mm;\n  height: {H:.3f}mm;')
+
+    # 3) Tout ce qui est positionné dans ces pages est recalé de la valeur du fond perdu
+    def _decale(rule):
+        sel, body = rule.group(1), rule.group(2)
+        if not re.match(r'\s*\.(cv-|inter-(?!img)|fn-|cc-)', sel):
+            return rule.group(0)
+        body = re.sub(r'\b(top|bottom|left|right): ([\d.]+)mm',
+                      lambda m: f'{m.group(1)}: {float(m.group(2)) + b:.3f}mm', body)
+        return sel + '{' + body + '}'
+    css_bleed = re.sub(r'([^{}]+)\{([^{}]*)\}', _decale, css_bleed)
+
+    # 4) A5 : texte un peu plus grand pour rester confortable après réduction
+    if fmt != 'A4':
+        css_bleed += '\nbody { font-size: 15.6pt; }\n.lettre .prose { font-size: 15.8pt; }\n'
+    css_bleed += '\n.notes-titre { font-family: \'Cinzel\', serif; font-size: 16pt; letter-spacing: .14em; color: #231C11; margin: 2mm 0 6mm; }\n'
+
+    html_b = html_print.replace(css, css_bleed, 1)
+    # coins de la couverture (styles en ligne)
+    html_b = re.sub(r'(top|bottom|left|right):9\.5mm', lambda m: f'{m.group(1)}:{9.5 + b:.3f}mm', html_b)
+
+    def _rendu(h):
+        return WeasyprintHTML(string=h, base_url="https://origin-famille.fr").render(presentational_hints=True)
+
+    doc = _rendu(html_b.replace('<!--BLANCS-->', ''))
+    manque = (-len(doc.pages)) % 4
+    if manque:
+        # Pages « Notes » lignées (même style que le carnet) plutôt que des pages blanches
+        lignes = '<div class="cp-line"></div>' * 19
+        notes = ''.join(
+            '<div class="cp"><div class="cp-head"><span class="cp-kick">Notes</span>'
+            '<span class="cp-brand">ORIGIN</span></div>' + lignes + '</div>'
+            for _ in range(manque))
+        doc = _rendu(html_b.replace('<!--BLANCS-->', notes))
+    return doc.write_pdf(zoom=zoom)
+
+
+def generer_pdf_imprimeur(offre, clients, narratif, astros=None, type_analyse='adulte', format_papier='A5'):
+    """PDF prêt à envoyer à un imprimeur (fonds perdus 3 mm, pages multiple de 4).
+    Même contenu et même design que le PDF client, qui lui reste inchangé."""
+    return generer_pdf_imprimable(offre, clients, narratif, astros, type_analyse,
+                                  imprimeur=True, format_papier=format_papier)
 
 
 
@@ -4033,7 +4217,50 @@ def _extraire_contexte_client(data):
     return "\n\n".join(uniques)
 
 
-def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, form_data=None):
+# ══════════════════════════════════════════════════════════════════════════
+#  OPTION « LIVRET IMPRIMÉ » — PDF imprimeur joint à l'email interne
+# ══════════════════════════════════════════════════════════════════════════
+# ORIGIN_PDF_IMPRIMEUR : "auto" (défaut) = seulement si le formulaire demande l'impression,
+#                        "toujours" = pour chaque commande, "jamais" = désactivé.
+# ORIGIN_FORMAT_IMPRIMEUR : "A5" (défaut) ou "A4".
+_CHAMPS_IMPRESSION = ('impression', 'option_impression', 'livret_imprime', 'version_imprimee', 'imprime')
+
+
+def _option_impression(data):
+    mode = str(os.environ.get('ORIGIN_PDF_IMPRIMEUR', 'auto')).strip().lower()
+    if mode == 'jamais':
+        return False
+    if mode == 'toujours':
+        return True
+    data = data or {}
+    for champ in _CHAMPS_IMPRESSION:
+        v = str(data.get(champ) or '').strip().lower()
+        if v in ('1', 'true', 'oui', 'yes', 'on', 'a5', 'a4') or v.startswith('oui'):
+            return True
+    return False
+
+
+def _format_impression(data):
+    data = data or {}
+    v = str(data.get('format_impression') or os.environ.get('ORIGIN_FORMAT_IMPRIMEUR', 'A5')).strip().upper()
+    return 'A4' if v == 'A4' else 'A5'
+
+
+def _pieces_imprimeur(data, offre, clients, narratif, astros, type_analyse, etiquette):
+    """Retourne [(nom_fichier, bytes)] ou [] ; une erreur ici ne bloque jamais l'envoi du livret."""
+    if not _option_impression(data):
+        return []
+    try:
+        fmt = _format_impression(data)
+        pdf = generer_pdf_imprimeur(offre, clients, narratif, astros, type_analyse, format_papier=fmt)
+        prenoms = "_".join(str(c.get('prenom', '')) for c in clients).replace(' ', '_')
+        return [(f"ORIGIN_{etiquette}_{prenoms}_{date.today().strftime('%Y%m%d')}_IMPRIMEUR_{fmt}.pdf", pdf)]
+    except Exception as e:
+        print(f"⚠ PDF imprimeur non généré : {e}")
+        return []
+
+
+def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, form_data=None, pieces_imprimeur=None):
     """Envoie les 2 livrets Bundle (Solo + Vocation) dans un seul email."""
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
@@ -4068,6 +4295,10 @@ Pièces jointes :
 Valide le contenu puis transfère les 2 livrets au client.
 """
 
+    for nom_imp, pdf_imp in (pieces_imprimeur or []):
+        attachments.append({"content": base64.b64encode(pdf_imp).decode('utf-8'), "name": nom_imp})
+        body_txt += f"\n✦ OPTION LIVRET IMPRIMÉ : {nom_imp} → à envoyer tel quel à l'imprimeur (fonds perdus 3 mm inclus).\n"
+
     payload = {
         "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
         "to": [{"email": EMAIL_DEST}],
@@ -4087,7 +4318,7 @@ Valide le contenu puis transfère les 2 livrets au client.
     print(f"✅ Email Bundle envoyé à {EMAIL_DEST}")
 
 
-def envoyer_email(html_content, pdf_bytes, clients, offre, email_client, form_data=None):
+def envoyer_email(html_content, pdf_bytes, clients, offre, email_client, form_data=None, pieces_imprimeur=None):
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
     filename_html = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}.html"
@@ -4126,6 +4357,10 @@ Valide le contenu puis transfère au client.
                 })
         else:
             print(f"⚠ Ebook introuvable : {ebook_path}")
+
+    for nom_imp, pdf_imp in (pieces_imprimeur or []):
+        attachments.append({"content": base64.b64encode(pdf_imp).decode('utf-8'), "name": nom_imp})
+        body_txt += f"\n✦ OPTION LIVRET IMPRIMÉ : {nom_imp} → à envoyer tel quel à l'imprimeur (fonds perdus 3 mm inclus).\n"
 
     payload = {
         "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
@@ -4213,6 +4448,7 @@ def webhook():
             clients = [{
                 'prenom': data.get('prenom1', ''),
                 'nom':    data.get('nom1', ''),
+                'nom_naissance': data.get('nom_naissance1', ''),
                 'genre':  data.get('genre1', ''),
                 'jour':   safe_int(data.get('jour1'), None),
                 'mois':   safe_int(data.get('mois1'), None),
@@ -4228,6 +4464,7 @@ def webhook():
             clients.append({
                 'prenom': data.get('prenom1',''),
                 'nom':    data.get('nom1',''),
+                'nom_naissance': data.get('nom_naissance1',''),
                 'genre':  data.get('genre1',''),
                 'jour':   safe_int(data.get('jour1'), None),
                 'mois':   safe_int(data.get('mois1'), None),
@@ -4241,6 +4478,7 @@ def webhook():
             clients.append({
                 'prenom': data.get('prenom2',''),
                 'nom':    data.get('nom2',''),
+                'nom_naissance': data.get('nom_naissance2',''),
                 'genre':  data.get('genre2',''),
                 'jour':   safe_int(data.get('jour2'), None),
                 'mois':   safe_int(data.get('mois2'), None),
@@ -4257,6 +4495,7 @@ def webhook():
                         clients.append({
                             'prenom': data.get(f'prenom{i}',''),
                             'nom':    data.get(f'nom{i}',''),
+                            'nom_naissance': data.get(f'nom_naissance{i}',''),
                             'genre':  data.get(f'genre{i}',''),
                             'jour':   safe_int(data.get(f'jour{i}'), None),
                             'mois':   safe_int(data.get(f'mois{i}'), None),
@@ -4349,7 +4588,9 @@ def webhook():
                     pdf_solo      = generer_pdf_imprimable('solo',     clients, narratif_solo,     astros_clients, type_analyse)
                     html_vocation = generer_html('vocation', clients, narratif_vocation, astros_clients, type_analyse)
                     pdf_vocation  = generer_pdf_imprimable('vocation', clients, narratif_vocation, astros_clients, type_analyse)
-                    envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, data)
+                    envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, data,
+                                         pieces_imprimeur=_pieces_imprimeur(data, 'solo', clients, narratif_solo, astros_clients, type_analyse, 'Solo')
+                                                          + _pieces_imprimeur(data, 'vocation', clients, narratif_vocation, astros_clients, type_analyse, 'Vocation'))
                     print(f'✅ Bundle envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}')
                     prenoms_log = ' & '.join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, 'bundle', date.today().strftime('%d/%m/%Y'))
@@ -4357,7 +4598,8 @@ def webhook():
                     narratif = _generer_et_valider(offre)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
                     pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
-                    envoyer_email(html, pdf, clients, offre_label, email_client, data)
+                    envoyer_email(html, pdf, clients, offre_label, email_client, data,
+                                  pieces_imprimeur=_pieces_imprimeur(data, offre, clients, narratif, astros_clients, type_analyse, offre_label))
                     print(f"✅ Livret {offre_label} envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}")
                     prenoms_log = " & ".join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
