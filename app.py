@@ -2987,15 +2987,9 @@ def _get_logo_transparent_b64():
 
 
 FLEUR_VIE_SVG = """<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#C9A84C">
-<g stroke-width=".8">
-<circle cx="200" cy="200" r="50"/><circle cx="200" cy="150" r="50"/><circle cx="243.3" cy="175" r="50"/>
-<circle cx="243.3" cy="225" r="50"/><circle cx="200" cy="250" r="50"/><circle cx="156.7" cy="225" r="50"/>
-<circle cx="156.7" cy="175" r="50"/><circle cx="200" cy="100" r="50"/><circle cx="286.6" cy="150" r="50"/>
-<circle cx="286.6" cy="250" r="50"/><circle cx="200" cy="300" r="50"/><circle cx="113.4" cy="250" r="50"/>
-<circle cx="113.4" cy="150" r="50"/><circle cx="243.3" cy="125" r="50"/><circle cx="243.3" cy="275" r="50"/>
-<circle cx="156.7" cy="275" r="50"/><circle cx="156.7" cy="125" r="50"/><circle cx="286.6" cy="200" r="50"/>
-<circle cx="113.4" cy="200" r="50"/>
-</g>
+<defs><clipPath id="fdvClip"><circle cx="200.0" cy="100" r="50"/><circle cx="243.3" cy="125" r="50"/><circle cx="286.6" cy="150" r="50"/><circle cx="156.7" cy="125" r="50"/><circle cx="200.0" cy="150" r="50"/><circle cx="243.3" cy="175" r="50"/><circle cx="286.6" cy="200" r="50"/><circle cx="113.4" cy="150" r="50"/><circle cx="156.7" cy="175" r="50"/><circle cx="200.0" cy="200" r="50"/><circle cx="243.3" cy="225" r="50"/><circle cx="286.6" cy="250" r="50"/><circle cx="113.4" cy="200" r="50"/><circle cx="156.7" cy="225" r="50"/><circle cx="200.0" cy="250" r="50"/><circle cx="243.3" cy="275" r="50"/><circle cx="113.4" cy="250" r="50"/><circle cx="156.7" cy="275" r="50"/><circle cx="200.0" cy="300" r="50"/></clipPath></defs>
+<g stroke-width=".8"><circle cx="200.0" cy="100" r="50"/><circle cx="243.3" cy="125" r="50"/><circle cx="286.6" cy="150" r="50"/><circle cx="156.7" cy="125" r="50"/><circle cx="200.0" cy="150" r="50"/><circle cx="243.3" cy="175" r="50"/><circle cx="286.6" cy="200" r="50"/><circle cx="113.4" cy="150" r="50"/><circle cx="156.7" cy="175" r="50"/><circle cx="200.0" cy="200" r="50"/><circle cx="243.3" cy="225" r="50"/><circle cx="286.6" cy="250" r="50"/><circle cx="113.4" cy="200" r="50"/><circle cx="156.7" cy="225" r="50"/><circle cx="200.0" cy="250" r="50"/><circle cx="243.3" cy="275" r="50"/><circle cx="113.4" cy="250" r="50"/><circle cx="156.7" cy="275" r="50"/><circle cx="200.0" cy="300" r="50"/></g>
+<g stroke-width=".8" clip-path="url(#fdvClip)"><circle cx="200.0" cy="50" r="50"/><circle cx="243.3" cy="75" r="50"/><circle cx="286.6" cy="100" r="50"/><circle cx="329.9" cy="125" r="50"/><circle cx="156.7" cy="75" r="50"/><circle cx="329.9" cy="175" r="50"/><circle cx="113.4" cy="100" r="50"/><circle cx="329.9" cy="225" r="50"/><circle cx="70.1" cy="125" r="50"/><circle cx="329.9" cy="275" r="50"/><circle cx="70.1" cy="175" r="50"/><circle cx="286.6" cy="300" r="50"/><circle cx="70.1" cy="225" r="50"/><circle cx="243.3" cy="325" r="50"/><circle cx="70.1" cy="275" r="50"/><circle cx="113.4" cy="300" r="50"/><circle cx="156.7" cy="325" r="50"/><circle cx="200.0" cy="350" r="50"/></g>
 <circle cx="200" cy="200" r="150" stroke-width="1.2"/><circle cx="200" cy="200" r="158" stroke-width=".5"/>
 <circle cx="200" cy="200" r="190" stroke-width=".4" stroke-dasharray="2 6"/>
 </svg>"""
