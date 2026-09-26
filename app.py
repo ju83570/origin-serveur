@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 ORIGIN -- Serveur webhook
-Version commerciale finale : v124 (couverture personnalisée habillée + dédicace en dernière page)
+Version commerciale finale : v125 (police agrandie, images de chapitre en grand bandeau avec titre, graine de vie agrandie ; HTML: petites images retirées)
 Reçoit les données Formspree → génère le livret → envoie par email
 """
 
@@ -2464,7 +2464,7 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 .ch-num{position:absolute;right:-.5rem;top:-3.6rem;font-family:'Cinzel',serif;font-size:clamp(5rem,14vw,8.5rem);line-height:1;color:transparent;-webkit-text-stroke:1px rgba(201,168,76,.28);pointer-events:none;user-select:none;}
 .ch-kicker{font-family:'Cinzel',serif;color:var(--or);font-size:.8rem;letter-spacing:.2em;margin-right:.8rem;}
 
-.prose{font-size:clamp(1.14rem,1.9vw,1.24rem);line-height:1.85;color:var(--txt-soft);}
+.prose{font-size:clamp(1.26rem,2.2vw,1.4rem);line-height:1.85;color:var(--txt-soft);}
 .prose p{margin-bottom:1.5rem;}
 .prose p:last-child{margin-bottom:0;}
 .prose em{color:var(--accent);font-style:italic;}
@@ -3167,7 +3167,6 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     <span class="s-eyebrow">Avant tout</span>
     <h2 class="s-title">{lettre_titre}</h2>
     <div class="s-rule"></div>
-    {_fig_web(illus.get('lettre'), 'o-fig-lettre')}
     <div class="lettre">
       <div class="prose">{lettre}</div>
       <p class="lettre-sign">— ORIGIN</p>
@@ -3192,7 +3191,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
       <h2 class="s-title">{sec.get('titre','')}</h2>
       <div class="s-rule"></div>
     </div>
-    <div class="prose">{_fig_web(illus['sections'].get(i), 'o-fig-ch')}{contenu}</div>
+    <div class="prose">{contenu}</div>
     <div class="ch-end"><span></span></div>
   </div>
 </section>"""
@@ -3216,7 +3215,6 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
       <h2 class="s-title">{titre_mantras}</h2>
       <div class="s-rule"></div>
     </div>
-    {_fig_web(illus.get('mantras'), 'o-fig-mantras')}
     <div class="mantras">{mantras_html}</div>
   </div>
 </section>"""
@@ -3454,8 +3452,8 @@ CSS_PRINT = """@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght
 body {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 400;
-  font-size: 12.6pt;
-  line-height: 1.62;
+  font-size: 14.5pt;
+  line-height: 1.6;
   color: #231C11;
   hyphens: auto;
   -weasy-hyphens: auto;
@@ -3501,7 +3499,7 @@ body {
   @bottom-right { content: counter(page); font-family: 'Cinzel', serif; font-size: 7pt; color: #C9B27A; vertical-align: middle; }
 }
 #seed-footer { position: running(seedfoot); text-align: center; }
-#seed-footer svg { width: 17mm; height: 17mm; }
+#seed-footer svg { width: 24mm; height: 24mm; }
 
 .eyebrow {
   display: block; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt;
@@ -3558,12 +3556,12 @@ body {
 .pillar-ico { width: 13mm; height: 13mm; margin: 0 auto 3.5mm; }
 .pillar-ico svg { width: 100%; height: 100%; }
 .pillar-t { font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt; letter-spacing: .3em; text-transform: uppercase; color: #A5612A; margin-bottom: 2mm; }
-.pillar-d { font-size: 11pt; font-style: italic; line-height: 1.4; color: #4E4332; }
+.pillar-d { font-size: 12.5pt; font-style: italic; line-height: 1.4; color: #4E4332; }
 
 /* ── Sommaire ────────────────────────────────────────────── */
 .toc { list-style: none; margin-top: 4mm; }
 .toc li { border-bottom: .5pt solid rgba(176,138,58,.30); }
-.toc a { display: block; padding: 3.6mm 0; color: #231C11; text-decoration: none; font-size: 13.5pt; }
+.toc a { display: block; padding: 3.6mm 0; color: #231C11; text-decoration: none; font-size: 15.5pt; }
 .toc a::after { content: leader(' ') target-counter(attr(href), page); font-family: 'Cinzel', serif; font-size: 9pt; color: #B08A3A; }
 .toc-num { display: inline-block; width: 13mm; font-family: 'Cinzel', serif; font-size: 9.5pt; color: #B08A3A; letter-spacing: .08em; }
 .toc-sub { color: #8F8472; font-style: italic; }
@@ -3571,20 +3569,28 @@ body {
 /* ── Lettre ──────────────────────────────────────────────── */
 .lettre-wrap { break-before: page; string-set: chap "Avant tout"; padding-top: 6mm; }
 .lettre-q { font-family: 'Cinzel', serif; font-size: 64pt; line-height: .6; color: #D6B466; height: 14mm; margin-top: 4mm; }
-.lettre .prose { font-size: 13.2pt; }
+.lettre .prose { font-size: 15.2pt; }
 .lettre-sign { text-align: right; font-family: 'Cinzel', serif; font-size: 8pt; letter-spacing: .35em; color: #A5612A; margin-top: 6mm; }
 
 /* ── Chapitres ───────────────────────────────────────────── */
 .ch { margin-top: 13mm; }
 .ch.first, .ch.newpage { break-before: page; margin-top: 0; padding-top: 6mm; }
 .ch-head { break-inside: avoid; break-after: avoid; page-break-after: avoid; margin-bottom: 1mm; }
-.ch-num { font-family: 'Cinzel', serif; font-size: 34pt; font-weight: 400; line-height: 1; color: #D6B466; letter-spacing: .04em; margin-bottom: 4mm; }
-.ch-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 18.5pt; line-height: 1.3; letter-spacing: .04em; color: #231C11; string-set: chap content(text); }
+.ch-num { font-family: 'Cinzel', serif; font-size: 36pt; font-weight: 400; line-height: 1; color: #D6B466; letter-spacing: .04em; margin-bottom: 4mm; }
+.ch-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 20.5pt; line-height: 1.3; letter-spacing: .04em; color: #231C11; string-set: chap content(text); }
 .ch-end { text-align: center; margin-top: 7mm; clear: both; }
 /* Illustrations par offre (v122) */
 .pfig { float: right; width: 35mm; margin: 1mm 0 4mm 8mm; }
 .pfig img { display: block; width: 35mm; height: auto; border: .5pt solid rgba(176,138,58,.55); border-radius: 1.6mm; }
 .lettre .pfig { margin-top: 3mm; }
+/* Grand bandeau image + titre en surimpression (v125) */
+.ch-banner { position: relative; width: 100%; height: 80mm; margin: 0 0 6mm; overflow: hidden; border-radius: 2mm; break-inside: avoid; }
+.ch-banner img { width: 100%; height: 80mm; object-fit: cover; display: block; }
+.ch-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,10,8,0) 28%, rgba(11,10,8,.58) 66%, rgba(11,10,8,.93) 100%); }
+.ch-banner-text { position: absolute; left: 7mm; right: 7mm; bottom: 6mm; z-index: 2; }
+.ch-banner .eyebrow-b { display: block; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 8pt; letter-spacing: .34em; text-transform: uppercase; color: #D6B466; margin-bottom: 2.4mm; }
+.ch-banner .ch-title-b { font-family: 'Cinzel', serif; font-weight: 400; font-size: 22pt; line-height: 1.22; letter-spacing: .03em; color: #F8F3E4; margin: 0; text-shadow: 0 1px 8px rgba(0,0,0,.55); string-set: chap content(text); }
+.ch-banner + .prose { margin-top: 0; }
 .nfig { text-align: center; margin: 0 auto 8mm; }
 .nfig img { height: 84mm; width: auto; border: .5pt solid rgba(201,168,76,.5); border-radius: 1.6mm; }
 .nfig-s img { height: 62mm; }
@@ -3608,11 +3614,11 @@ body {
 .o-trait-label, .o-trait-txt { display: table-cell; border-top: .5pt solid rgba(176,138,58,.30); padding: 3.4mm 0; vertical-align: top; }
 .o-trait:last-child .o-trait-label, .o-trait:last-child .o-trait-txt { border-bottom: .5pt solid rgba(176,138,58,.30); }
 .o-trait-label { width: 44mm; padding-right: 5mm; padding-top: 4.6mm; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt; letter-spacing: .24em; text-transform: uppercase; color: #A5612A; line-height: 1.5; hyphens: manual; -weasy-hyphens: manual; }
-.o-trait-txt { font-size: 12.6pt; line-height: 1.5; }
+.o-trait-txt { font-size: 14.5pt; line-height: 1.5; }
 .o-questions { list-style: none; margin: 3mm 0 5mm; }
 .o-q { display: table; width: 100%; margin-bottom: 3.2mm; break-inside: avoid; background: rgba(176,138,58,.07); border-left: 1.6pt solid #B08A3A; }
 .o-q-num { display: table-cell; width: 15mm; vertical-align: middle; text-align: center; font-family: 'Cinzel', serif; font-size: 17pt; color: #B08A3A; padding: 3mm 0; }
-.o-q-txt { display: table-cell; vertical-align: middle; font-style: italic; font-size: 13pt; line-height: 1.45; padding: 3.5mm 5mm 3.5mm 0; }
+.o-q-txt { display: table-cell; vertical-align: middle; font-style: italic; font-size: 15pt; line-height: 1.45; padding: 3.5mm 5mm 3.5mm 0; }
 
 /* ── Mantras (page nuit) ─────────────────────────────────── */
 .nuit { page: nuit; color: #F2ECD8; text-align: center; }
@@ -3624,10 +3630,10 @@ body {
 .mantra { break-inside: avoid; padding: 7mm 6mm; }
 .mantra-prenom { font-family: 'Jost', sans-serif; font-size: 6.8pt; letter-spacing: .45em; text-transform: uppercase; color: #C98B4F; margin-bottom: 3.5mm; }
 .mantra-txt { font-family: 'Cinzel', serif; font-size: 19pt; line-height: 1.5; color: #E8C97A; letter-spacing: .02em; }
-.mantra-note { font-style: italic; font-size: 11.5pt; color: rgba(242,236,216,.55); margin-top: 3mm; }
+.mantra-note { font-style: italic; font-size: 13pt; color: rgba(242,236,216,.55); margin-top: 3mm; }
 .compact .mantra { padding: 3.5mm 4mm; }
 .compact .mantra-txt { font-size: 15pt; }
-.compact .mantra-note { font-size: 10.5pt; margin-top: 1.5mm; }
+.compact .mantra-note { font-size: 12pt; margin-top: 1.5mm; }
 .compact .rule { margin: 4mm auto 3mm; }
 .mantra-sep { color: #C9A84C; font-size: 7pt; opacity: .6; }
 
@@ -3664,9 +3670,9 @@ body {
 .fn-geo svg { width: 100%; height: 100%; }
 .fn-inner { position: absolute; top: 96mm; left: 0; right: 0; }
 .fn-logo { width: 92mm; height: auto; margin: 0 auto 12mm; display: block; }
-.fn-dedicace { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13.5pt; line-height: 1.55; color: rgba(242,236,216,.86); max-width: 130mm; margin: 0 auto 10mm; }
+.fn-dedicace { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15.5pt; line-height: 1.55; color: rgba(242,236,216,.86); max-width: 130mm; margin: 0 auto 10mm; }
 .fn-site { font-family: 'Cinzel', serif; font-size: 8.5pt; letter-spacing: .42em; color: #C9A84C; }
-.fn-sub { font-style: italic; font-size: 11pt; color: rgba(242,236,216,.45); margin-top: 3mm; }
+.fn-sub { font-style: italic; font-size: 12.5pt; color: rgba(242,236,216,.45); margin-top: 3mm; }
 """
 
 
@@ -3773,16 +3779,26 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             first, middle, last = ''.join(parts[:k]), ''.join(parts[k:-1]), (parts[-1] if len(parts) > k else '')
         else:
             first, middle, last = '', contenu, ''
-        sections_html += f"""
-<section class="{classes}" id="ch-{i+1}">
-  <div class="ch-open">
-    {_fig_pdf(illus['sections'].get(i))}
-    <div class="ch-head">
+        _ch_img = illus['sections'].get(i)
+        if _ch_img:
+            ch_head_block = f'''<div class="ch-banner">
+      <img src="{_ch_img}" alt="" />
+      <div class="ch-banner-text">
+        <span class="eyebrow-b">{eyebrow}</span>
+        <h2 class="ch-title-b">{sec.get('titre','')}</h2>
+      </div>
+    </div>'''
+        else:
+            ch_head_block = f'''<div class="ch-head">
       <div class="ch-num">{i+1:02d}</div>
       <span class="eyebrow">{eyebrow}</span>
       <h2 class="ch-title">{sec.get('titre','')}</h2>
       <div class="rule"></div>
-    </div>
+    </div>'''
+        sections_html += f"""
+<section class="{classes}" id="ch-{i+1}">
+  <div class="ch-open">
+    {ch_head_block}
     <div class="prose">{first}</div>
   </div>
   <div class="prose">{middle}</div>
@@ -3940,12 +3956,22 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     lettre_page_html = ""
     if _lettre_pdf:
-        lettre_page_html = f'''<section class="lettre-wrap" id="lettre">
-  <span class="eyebrow">Avant tout</span>
+        _lettre_img = illus.get('lettre')
+        if _lettre_img:
+            _lettre_head = f'''<div class="ch-banner">
+      <img src="{_lettre_img}" alt="" />
+      <div class="ch-banner-text">
+        <span class="eyebrow-b">Avant tout</span>
+        <h2 class="ch-title-b">{_lettre_titre_pdf}</h2>
+      </div>
+    </div>'''
+        else:
+            _lettre_head = f'''<span class="eyebrow">Avant tout</span>
   <h2 class="front-title">{_lettre_titre_pdf}</h2>
-  <div class="rule"></div>
+  <div class="rule"></div>'''
+        lettre_page_html = f'''<section class="lettre-wrap" id="lettre">
+  {_lettre_head}
   <div class="lettre">
-    {_fig_pdf(illus.get('lettre'))}
     <div class="lettre-q">“</div>
     <div class="prose">{_lettre_pdf}</div>
     <p class="lettre-sign">— ORIGIN</p>
