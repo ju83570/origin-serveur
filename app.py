@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -2424,7 +2425,7 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 .cover-bg[data-photo]::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 78% 68% at 50% 34%,rgba(10,9,7,.10) 0%,rgba(10,9,7,.74) 68%,rgba(10,9,7,.93) 100%);}
 [data-theme="light"] .cover-bg[data-photo]{display:none;}
 [data-theme="light"] .cover{background:#08070F var(--cosmos) center/cover no-repeat;color:#EDE6D2;}
-.cover-geo{position:absolute;width:min(760px,130vw);aspect-ratio:1;left:50%;top:42%;transform:translate(-50%,-50%);opacity:.07;animation:sr 240s linear infinite;}
+.cover-geo{position:absolute;width:min(760px,130vw);aspect-ratio:1;left:50%;top:42%;transform:translate(-50%,-50%);opacity:.18;animation:sr 90s linear infinite;}
 .cover-geo svg{width:100%;height:100%;}
 @keyframes sr{to{transform:translate(-50%,-50%) rotate(360deg)}}
 .particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
@@ -3075,17 +3076,20 @@ def _cover_bg_uri(offre, type_analyse):
 
 
 FLEUR_VIE_SVG = """<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#C9A84C">
-<g stroke-width=".8">
-<circle cx="200" cy="200" r="50"/><circle cx="200" cy="150" r="50"/><circle cx="243.3" cy="175" r="50"/>
-<circle cx="243.3" cy="225" r="50"/><circle cx="200" cy="250" r="50"/><circle cx="156.7" cy="225" r="50"/>
-<circle cx="156.7" cy="175" r="50"/><circle cx="200" cy="100" r="50"/><circle cx="286.6" cy="150" r="50"/>
-<circle cx="286.6" cy="250" r="50"/><circle cx="200" cy="300" r="50"/><circle cx="113.4" cy="250" r="50"/>
-<circle cx="113.4" cy="150" r="50"/><circle cx="243.3" cy="125" r="50"/><circle cx="243.3" cy="275" r="50"/>
-<circle cx="156.7" cy="275" r="50"/><circle cx="156.7" cy="125" r="50"/><circle cx="286.6" cy="200" r="50"/>
-<circle cx="113.4" cy="200" r="50"/>
+<defs><clipPath id="fovBoundary"><circle cx="200" cy="200" r="107.1"/></clipPath></defs>
+<g stroke-width=".9" clip-path="url(#fovBoundary)">
+<circle cx="200.00" cy="116.00" r="42"/>
+<circle cx="163.63" cy="137.00" r="42"/><circle cx="236.37" cy="137.00" r="42"/>
+<circle cx="127.25" cy="158.00" r="42"/><circle cx="200.00" cy="158.00" r="42"/><circle cx="272.75" cy="158.00" r="42"/>
+<circle cx="163.63" cy="179.00" r="42"/><circle cx="236.37" cy="179.00" r="42"/>
+<circle cx="127.25" cy="200.00" r="42"/><circle cx="200.00" cy="200.00" r="42"/><circle cx="272.75" cy="200.00" r="42"/>
+<circle cx="163.63" cy="221.00" r="42"/><circle cx="236.37" cy="221.00" r="42"/>
+<circle cx="127.25" cy="242.00" r="42"/><circle cx="200.00" cy="242.00" r="42"/><circle cx="272.75" cy="242.00" r="42"/>
+<circle cx="163.63" cy="263.00" r="42"/><circle cx="236.37" cy="263.00" r="42"/>
+<circle cx="200.00" cy="284.00" r="42"/>
 </g>
-<circle cx="200" cy="200" r="150" stroke-width="1.2"/><circle cx="200" cy="200" r="158" stroke-width=".5"/>
-<circle cx="200" cy="200" r="190" stroke-width=".4" stroke-dasharray="2 6"/>
+<circle cx="200" cy="200" r="107.1" stroke-width="1.1"/>
+<circle cx="200" cy="200" r="124.2" stroke-width=".5"/>
 </svg>"""
 
 
@@ -3287,10 +3291,8 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
   <div class="particles" id="particles"></div>
   <div class="cover-content">
     <p class="cover-eyebrow">{offre_label} · {annee}</p>
-    {cover_logo}
     <p class="cover-pour">Livret personnel de</p>
     <p class="cover-names">{noms}</p>
-    <div class="seed-wrap"><div class="seed-pulse"></div><div class="seed-pulse"></div>{SEED_SVG}</div>
     <p class="cover-tagline">{tagline}</p>
     <div class="cover-chips">
       <span class="chip"><b>{n_chap}</b> chapitres</span>
@@ -3585,7 +3587,7 @@ body {
 .lettre .pfig { margin-top: 3mm; }
 /* Grand bandeau image + titre en surimpression (v125) */
 .ch-banner { position: relative; width: 100%; height: 80mm; margin: 0 0 6mm; overflow: hidden; border-radius: 2mm; break-inside: avoid; }
-.ch-banner img { width: 100%; height: 80mm; object-fit: cover; display: block; }
+.ch-banner img { width: 100%; height: 80mm; object-fit: cover; object-position: top center; display: block; }
 .ch-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,10,8,0) 28%, rgba(11,10,8,.58) 66%, rgba(11,10,8,.93) 100%); }
 .ch-banner-text { position: absolute; left: 7mm; right: 7mm; bottom: 6mm; z-index: 2; }
 .ch-banner .eyebrow-b { display: block; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 8pt; letter-spacing: .34em; text-transform: uppercase; color: #D6B466; margin-bottom: 2.4mm; }
@@ -3723,6 +3725,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         cover_logo_html = '<p class="cv-symbol">✦ ORIGIN ✦</p>'
         carnet_logo_html = '<p class="cv-symbol">✦</p>'
         finale_logo_html = '<p class="cv-symbol">✦ ORIGIN ✦</p>'
+    # Page 2 (couverture personnalisee) : le logo est deja sur la page de garde juste avant.
+    cover_logo_html = ''
 
     seed_svg = ('<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#C9A84C">'
                 '<circle cx="100" cy="100" r="28" stroke-width="1.4"/><circle cx="100" cy="72" r="28" stroke-width="1.1" opacity=".8"/>'
