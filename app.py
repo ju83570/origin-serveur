@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -1021,22 +1020,30 @@ def appeler_claude_vocation(profils_txt):
             result["mantras"] = []
         return result
 
-    def _structure_de_base_ok(result):
+    def _structure_de_base_ok(result, verbose=False):
         if not isinstance(result, dict):
+            if verbose:
+                print("[vocation]   -> résultat n'est pas un objet JSON")
             return False
         sections = [s for s in (result.get("sections") or [])
                     if isinstance(s, dict) and re.sub(r'<[^>]+>', ' ', str(s.get("contenu") or '')).strip()]
         titres = [re.sub(r'\s+', ' ', str(s.get('titre') or '')).strip().casefold() for s in sections]
-        return (
-            len(sections) >= 6
-            and any('piste' in t and ('profession' in t or 'métier' in t or 'metier' in t) for t in titres)
-            and bool(str(result.get("lettre") or '').strip())
-            and bool(re.sub(r'<[^>]+>', ' ', str(result.get("profil_contribution") or '')).strip())
-            and bool(re.sub(r'<[^>]+>', ' ', str(result.get("questions_decision") or '')).strip())
-            and bool(str(result.get("message_final") or '').strip())
-        )
+        checks = {
+            "au moins 6 sections non vides (trouvé %d)" % len(sections): len(sections) >= 6,
+            "une section 'pistes professionnelles/métier'": any(
+                'piste' in t and ('profession' in t or 'métier' in t or 'metier' in t) for t in titres),
+            "lettre non vide": bool(str(result.get("lettre") or '').strip()),
+            "profil_contribution non vide": bool(re.sub(r'<[^>]+>', ' ', str(result.get("profil_contribution") or '')).strip()),
+            "questions_decision non vide": bool(re.sub(r'<[^>]+>', ' ', str(result.get("questions_decision") or '')).strip()),
+            "message_final non vide": bool(str(result.get("message_final") or '').strip()),
+        }
+        if verbose:
+            for label, ok in checks.items():
+                if not ok:
+                    print(f"[vocation]   -> structure KO : {label}")
+        return all(checks.values())
 
-    def _qualite_vocation_ok(result):
+    def _qualite_vocation_ok(result, verbose=False):
         if not isinstance(result, dict):
             return False
         txt = json.dumps(result, ensure_ascii=False).casefold()
@@ -1046,12 +1053,17 @@ def appeler_claude_vocation(profils_txt):
             "va s'ouvrir", "s'ouvrira", 'il est probable que tu vives',
             'ce sera le moment', 'tu vivras '
         ]
-        return not any(x in txt for x in interdits)
+        trouves = [x for x in interdits if x in txt]
+        if verbose and trouves:
+            print(f"[vocation]   -> qualité KO : formulation(s) interdite(s) détectée(s) : {trouves}")
+        return not trouves
 
     try:
         result = _normaliser_resultat(_appel_claude_chunk(prompt, max_tokens=14000))
         if not _structure_de_base_ok(result) or not _qualite_vocation_ok(result):
             print("[vocation] structure ou qualité éditoriale non conforme -- retry unique")
+            _structure_de_base_ok(result, verbose=True)
+            _qualite_vocation_ok(result, verbose=True)
             prompt_retry = prompt + """
 
 CORRECTION IMPÉRATIVE POUR CE RETRY :
@@ -1068,6 +1080,8 @@ Tout futur doit rester au conditionnel ; bannis « va s'ouvrir », « s'ouvrira 
             result = _normaliser_resultat(_appel_claude_chunk(prompt_retry, max_tokens=14000))
         if not _structure_de_base_ok(result) or not _qualite_vocation_ok(result):
             print("[vocation] résultat toujours non conforme après retry -- fallback")
+            _structure_de_base_ok(result, verbose=True)
+            _qualite_vocation_ok(result, verbose=True)
             return FALLBACK_NARRATIF
     except Exception as ex:
         print(f"[vocation] génération impossible : {ex}")
