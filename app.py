@@ -3185,7 +3185,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     _logo_garde = _get_logo_transparent_b64()
     _garde_logo_html = (f'<img class="garde-logo" src="data:image/png;base64,{_logo_garde}" alt="ORIGIN">'
                         if _logo_garde else '<p class="garde-names" style="letter-spacing:.3em">ORIGIN</p>')
-    _garde_bg_html = f'<img class="garde-bg" src="{_garde_uri}" alt="" decoding="async">' if _garde_uri else ''
+    _garde_bg_html = ''  # v138 : plus de photo en fond de garde (titre parfois gravé dedans -> fantome)
     garde_html = f"""<section class="garde">
   {_garde_bg_html}
   <div class="garde-inner">
@@ -3841,7 +3841,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     _garde_uri_pdf = _page_garde_uri(offre, type_analyse)
     _garde_logo_pdf = (f'<img class="garde-logo" src="data:image/png;base64,{logo_t_b64}" alt="ORIGIN" />'
                        if logo_t_b64 else '<p class="garde-names" style="letter-spacing:.3em">ORIGIN</p>')
-    _garde_bg_pdf = f'<img class="garde-bg" src="{_garde_uri_pdf}" alt="" />' if _garde_uri_pdf else ''
+    _garde_bg_pdf = ''  # v138 : plus de photo en fond de garde
     garde_pdf_html = f'''<div class="garde">
   {_garde_bg_pdf}
   <div class="garde-veil"></div>
