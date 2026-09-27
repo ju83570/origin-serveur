@@ -2529,7 +2529,7 @@ html:not([data-theme="light"]) .o-fig img{filter:brightness(.9) saturate(.95);}
 }
 /* Page de garde illustree (v123) */
 .garde{position:relative;min-height:100vh;min-height:100svh;overflow:hidden;background:#0B0A08;}
-.garde img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.garde img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}
 
 @media(max-width:700px){
   .section{padding:5.5rem 0 2rem;}
@@ -3515,7 +3515,7 @@ body {
   @bottom-center { content: none; } @bottom-right { content: none; }
 }
 .garde { page: garde; position: relative; width: 210mm; height: 297mm; overflow: hidden; }
-.garde img { width: 210mm; height: 297mm; object-fit: cover; display: block; }
+.garde img { width: 210mm; height: 297mm; object-fit: cover; object-position: top center; display: block; }
 
 /* ── Couverture ──────────────────────────────────────────── */
 .cover {
