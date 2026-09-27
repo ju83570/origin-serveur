@@ -2449,7 +2449,7 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 @keyframes twinkle{0%,100%{opacity:0}50%{opacity:.8;transform:scale(1.5)}}
 .cover-content{position:relative;z-index:2;max-width:760px;margin:0 auto;animation:rise 1.6s cubic-bezier(.2,.7,.2,1) both;}
 @keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
-.cover-eyebrow{display:inline-block;font-family:'Jost',sans-serif;font-size:.66rem;letter-spacing:.42em;text-transform:uppercase;color:#C98B4F;padding:.55rem 1.1rem;border:1px solid rgba(201,168,76,.22);border-radius:99px;margin-bottom:2.6rem;}
+.cover-eyebrow{display:inline-block;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#F0C878;padding:.55rem 1.1rem;border:1px solid rgba(201,168,76,.35);border-radius:99px;margin-bottom:2.6rem;}
 .cover-logo{display:block;width:min(330px,70vw);height:auto;margin:0 auto 2.2rem;filter:drop-shadow(0 0 40px rgba(232,160,60,.25));}
 .cover-pour{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.45em;text-transform:uppercase;color:rgba(237,230,210,.45);margin-bottom:.9rem;}
 .cover-names{font-style:italic;font-size:clamp(2.2rem,6vw,3.4rem);line-height:1.1;color:#F2ECD8;margin-bottom:1.4rem;}
@@ -2469,7 +2469,7 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 .cover-meta{position:absolute;bottom:1.8rem;left:0;right:0;font-family:'Jost',sans-serif;font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:rgba(237,230,210,.35);z-index:2;}
 
 /* Sections */
-.wrap{max-width:760px;margin:0 auto;padding:0 1.5rem;}
+.wrap{max-width:920px;margin:0 auto;padding:0 1.5rem;}
 .section{padding:7.5rem 0 3rem;scroll-margin-top:3rem;}
 .s-eyebrow{display:block;font-family:'Jost',sans-serif;font-size:.64rem;letter-spacing:.4em;text-transform:uppercase;color:var(--cuivre);margin-bottom:1rem;}
 .s-title{font-family:'Cinzel',serif;font-weight:400;font-size:clamp(1.55rem,3.6vw,2.3rem);line-height:1.25;letter-spacing:.04em;color:var(--txt);}
@@ -2542,16 +2542,22 @@ html:not([data-theme="light"]) .o-fig img{filter:brightness(.9) saturate(.95);}
 @media(min-width:900px){
   .prose>.o-fig-ch{float:right;width:200px;margin:.45rem 0 1.4rem 2.4rem;}
 }
-/* Page de garde illustree (v123) */
-.garde{position:relative;min-height:100vh;min-height:100svh;overflow:hidden;background:#0B0A08;}
-.garde img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;display:block;}
+/* Page de garde (v129) : logo mesuré + nom du client, photo en fond assombri */
+.garde{position:relative;min-height:100vh;min-height:100svh;overflow:hidden;background:#0B0A08;display:flex;align-items:center;justify-content:center;text-align:center;padding:4rem 1.5rem;}
+.garde img.garde-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;opacity:.3;}
+.garde::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 45%,rgba(11,10,8,.35),rgba(11,10,8,.92));}
+.garde-inner{position:relative;z-index:2;max-width:640px;margin:0 auto;}
+.garde-logo{display:block;width:min(200px,46vw);height:auto;margin:0 auto 2.6rem;filter:drop-shadow(0 0 32px rgba(232,160,60,.3));}
+.garde-pour{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.45em;text-transform:uppercase;color:rgba(237,230,210,.5);margin-bottom:1rem;}
+.garde-names{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(2rem,5.5vw,3rem);line-height:1.15;color:#F2ECD8;}
+.garde-orn{margin:2.2rem auto 0;width:120px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6),transparent);}
 
 @media(max-width:700px){
   .section{padding:5.5rem 0 2rem;}
   .lettre{padding:2.8rem 1.4rem 2rem;border-radius:14px;}
   .ch-num{top:-2.6rem;right:0;}
   .tb-chap{display:none;}
-  .cover-eyebrow{letter-spacing:.25em;font-size:.6rem;}
+  .cover-eyebrow{letter-spacing:.2em;font-size:.7rem;}
   .cover{padding-top:3.5rem;}
   .mantra{padding:2.2rem 1.2rem;}
   .o-q{padding:1rem;gap:.9rem;}
@@ -3090,21 +3096,51 @@ def _cover_bg_uri(offre, type_analyse):
 
 
 FLEUR_VIE_SVG = """<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#C9A84C">
-<defs><clipPath id="fovBoundary"><circle cx="200" cy="200" r="107.1"/></clipPath></defs>
-<g stroke-width=".9" clip-path="url(#fovBoundary)">
-<circle cx="200.00" cy="116.00" r="42"/>
-<circle cx="163.63" cy="137.00" r="42"/><circle cx="236.37" cy="137.00" r="42"/>
-<circle cx="127.25" cy="158.00" r="42"/><circle cx="200.00" cy="158.00" r="42"/><circle cx="272.75" cy="158.00" r="42"/>
-<circle cx="163.63" cy="179.00" r="42"/><circle cx="236.37" cy="179.00" r="42"/>
-<circle cx="127.25" cy="200.00" r="42"/><circle cx="200.00" cy="200.00" r="42"/><circle cx="272.75" cy="200.00" r="42"/>
-<circle cx="163.63" cy="221.00" r="42"/><circle cx="236.37" cy="221.00" r="42"/>
-<circle cx="127.25" cy="242.00" r="42"/><circle cx="200.00" cy="242.00" r="42"/><circle cx="272.75" cy="242.00" r="42"/>
-<circle cx="163.63" cy="263.00" r="42"/><circle cx="236.37" cy="263.00" r="42"/>
-<circle cx="200.00" cy="284.00" r="42"/>
+<g stroke-width="1.2">
+<circle cx="200.00" cy="200.00" r="62"/>
+<circle cx="200.00" cy="138.00" r="62"/>
+<circle cx="253.69" cy="169.00" r="62"/>
+<circle cx="253.69" cy="231.00" r="62"/>
+<circle cx="200.00" cy="262.00" r="62"/>
+<circle cx="146.31" cy="231.00" r="62"/>
+<circle cx="146.31" cy="169.00" r="62"/>
 </g>
-<circle cx="200" cy="200" r="107.1" stroke-width="1.1"/>
-<circle cx="200" cy="200" r="124.2" stroke-width=".5"/>
+<circle cx="200" cy="200" r="136.0" stroke-width="1.5"/>
+<circle cx="200" cy="200" r="146.0" stroke-width=".5" opacity=".6"/>
+<path id="sdP1" d="M 138.0,200.0 A 62.0,62.0 0 1,1 262.0,200.0 A 62.0,62.0 0 1,1 138.0,200.0" fill="none"/>
+<path id="sdP2" d="M 138.0,138.0 A 62.0,62.0 0 1,1 262.0,138.0 A 62.0,62.0 0 1,1 138.0,138.0" fill="none"/>
+<path id="sdP3" d="M 138.0,262.0 A 62.0,62.0 0 1,1 262.0,262.0 A 62.0,62.0 0 1,1 138.0,262.0" fill="none"/>
+<circle r="2.4" fill="#E8C97A"><animateMotion dur="9s" repeatCount="indefinite"><mpath href="#sdP1"/></animateMotion></circle>
+<circle r="2.4" fill="#E8C97A"><animateMotion dur="9s" begin="3s" repeatCount="indefinite"><mpath href="#sdP2"/></animateMotion></circle>
+<circle r="2.4" fill="#E8C97A"><animateMotion dur="9s" begin="6s" repeatCount="indefinite"><mpath href="#sdP3"/></animateMotion></circle>
 </svg>"""
+
+# Fleur de vie doree pleine page (v131) : couverture personnalisee du PDF.
+FLEUR_VIE_OR_SVG = """<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="none">
+<defs>
+<radialGradient id="sdHalo" cx="50%" cy="50%" r="50%">
+<stop offset="0%" stop-color="#F6DFA0" stop-opacity=".28"/>
+<stop offset="55%" stop-color="#C9A84C" stop-opacity=".10"/>
+<stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="sdTrait" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#F6DFA0"/><stop offset="45%" stop-color="#D6B466"/><stop offset="100%" stop-color="#A5762A"/>
+</linearGradient>
+</defs>
+<circle cx="200" cy="200" r="190" fill="url(#sdHalo)"/>
+<g stroke="url(#sdTrait)" stroke-width="1.8">
+<circle cx="200.00" cy="200.00" r="62"/>
+<circle cx="200.00" cy="138.00" r="62"/>
+<circle cx="253.69" cy="169.00" r="62"/>
+<circle cx="253.69" cy="231.00" r="62"/>
+<circle cx="200.00" cy="262.00" r="62"/>
+<circle cx="146.31" cy="231.00" r="62"/>
+<circle cx="146.31" cy="169.00" r="62"/>
+</g>
+<circle cx="200" cy="200" r="136.0" stroke="url(#sdTrait)" stroke-width="2.2"/>
+<circle cx="200" cy="200" r="146.0" stroke="#C9A84C" stroke-width=".7" opacity=".6"/>
+</svg>"""
+
 
 
 def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
@@ -3146,8 +3182,19 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     sections_list = _sections_client_normalisees(narratif, offre)
     illus = _illustrations_livret(offre, type_analyse, sections_list, clients)
     _garde_uri = _page_garde_uri(offre, type_analyse)
-    garde_html = (f'<section class="garde" aria-hidden="true"><img src="{_garde_uri}" alt="" decoding="async"></section>'
-                  if _garde_uri else '')
+    _logo_garde = _get_logo_transparent_b64()
+    _garde_logo_html = (f'<img class="garde-logo" src="data:image/png;base64,{_logo_garde}" alt="ORIGIN">'
+                        if _logo_garde else '<p class="garde-names" style="letter-spacing:.3em">ORIGIN</p>')
+    _garde_bg_html = f'<img class="garde-bg" src="{_garde_uri}" alt="" decoding="async">' if _garde_uri else ''
+    garde_html = f"""<section class="garde">
+  {_garde_bg_html}
+  <div class="garde-inner">
+    {_garde_logo_html}
+    <p class="garde-pour">Livret personnel de</p>
+    <p class="garde-names">{noms}</p>
+    <div class="garde-orn"></div>
+  </div>
+</section>"""
     _cover_bg_img = _cover_bg_uri(offre, type_analyse)
     cover_bg_attr = f" data-photo style=\"background-image:url('{_cover_bg_img}')\"" if _cover_bg_img else ''
     lettre = narratif.get('lettre', '')
@@ -3446,6 +3493,40 @@ def _get_logo_b64():
     return ''
 
 
+def _get_fleur_vie_b64():
+    """PNG de la fleur de vie fourni par Julien, lu dans static/ comme le logo.
+    Fichier attendu : static/fleur-vie.png (doré, fond transparent).
+    Absent -> '' et on retombe sur le SVG de secours."""
+    candidats = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'fleur-vie.png'),
+        os.path.join(os.getcwd(), 'static', 'fleur-vie.png'),
+        '/opt/render/project/src/static/fleur-vie.png',
+        'static/fleur-vie.png',
+    ]
+    for p in candidats:
+        if os.path.exists(p):
+            try:
+                with open(p, 'rb') as f:
+                    raw = f.read()
+                if raw[:8] == b'\x89PNG\r\n\x1a\n':
+                    print(f"[fleur-vie] Trouvée : {p}")
+                    return base64.b64encode(raw).decode('utf-8')
+                print(f"[fleur-vie] {p} n'est pas un PNG valide")
+            except Exception as e:
+                print(f"[fleur-vie] Erreur lecture {p} : {e}")
+    print("[fleur-vie] static/fleur-vie.png absent -- repli sur le motif SVG")
+    return ''
+
+
+def _fleur_vie_html():
+    """Le PNG de Julien s'il est présent, sinon le SVG de secours."""
+    b64 = _get_fleur_vie_b64()
+    if b64:
+        return (f'<img src="data:image/png;base64,{b64}" alt="" '
+                f'style="width:100%;height:100%;object-fit:contain;display:block" />')
+    return FLEUR_VIE_OR_SVG
+
+
 # Mettre True pour que chaque chapitre commence sur une nouvelle page (rendu « livre »).
 # False = les chapitres s'enchaînent (aucune demi-page vide).
 PDF_CHAPITRE_NOUVELLE_PAGE = False
@@ -3468,7 +3549,7 @@ CSS_PRINT = """@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght
 body {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 400;
-  font-size: 14.5pt;
+  font-size: 15.5pt;
   line-height: 1.6;
   color: #231C11;
   hyphens: auto;
@@ -3524,14 +3605,20 @@ body {
 .rule { width: 22mm; height: .7pt; background: #B08A3A; margin: 5mm 0 8mm; }
 .rule-c { margin-left: auto; margin-right: auto; }
 
-/* ── Page de garde illustree (v123) ─────────────────────────*/
+/* ── Page de garde (v129) : logo mesuré + nom du client ─────*/
 @page garde {
   margin: 0; background: #0B0A08;
   @top-left { content: none; } @top-right { content: none; }
   @bottom-center { content: none; } @bottom-right { content: none; }
 }
-.garde { page: garde; position: relative; width: 210mm; height: 297mm; overflow: hidden; }
-.garde img { width: 210mm; height: 297mm; object-fit: cover; object-position: top center; display: block; }
+.garde { page: garde; position: relative; width: 210mm; height: 297mm; overflow: hidden; background: #0B0A08; }
+.garde img.garde-bg { position: absolute; top: 0; left: 0; width: 210mm; height: 297mm; object-fit: cover; object-position: center; display: block; opacity: .3; }
+.garde-veil { position: absolute; top: 0; left: 0; width: 210mm; height: 297mm; background: radial-gradient(ellipse at 50% 45%, rgba(11,10,8,.35), rgba(11,10,8,.94)); }
+.garde-inner { position: absolute; top: 96mm; left: 0; right: 0; text-align: center; }
+.garde-logo { width: 74mm; height: auto; margin: 0 auto 14mm; display: block; }
+.garde-pour { font-family: 'Jost', sans-serif; font-size: 6.8pt; letter-spacing: .45em; text-transform: uppercase; color: rgba(242,236,216,.5); margin-bottom: 5mm; }
+.garde-names { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 30pt; line-height: 1.15; color: #F2ECD8; }
+.garde-orn { width: 44mm; height: .6pt; background: #C9A84C; opacity: .55; margin: 11mm auto 0; }
 
 /* ── Couverture ──────────────────────────────────────────── */
 .cover {
@@ -3542,19 +3629,19 @@ body {
 .cv-photo[data-photo]{position:absolute;inset:0;}
 .cv-photo[data-photo] img{width:210mm;height:297mm;object-fit:cover;display:block;opacity:.4;}
 .cv-photo[data-photo]::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 40%, rgba(36,26,11,.20) 0%, rgba(18,14,8,.84) 55%, rgba(11,10,8,.95) 100%);}
-.cv-geo { position: absolute; left: 25mm; top: 47mm; width: 160mm; height: 160mm; opacity: .10; }
+.cv-geo { position: absolute; left: 55.5mm; top: 163mm; width: 99mm; height: 99mm; opacity: .9; }
 .cv-geo svg { width: 100%; height: 100%; }
 .cv-frame { position: absolute; top: 11mm; left: 11mm; right: 11mm; bottom: 11mm; border: .7pt solid rgba(201,168,76,.55); }
 .cv-frame2 { position: absolute; top: 13.5mm; left: 13.5mm; right: 13.5mm; bottom: 13.5mm; border: .3pt solid rgba(201,168,76,.25); }
 .cv-corner { position: absolute; width: 5mm; height: 5mm; font-size: 8pt; line-height: 5mm; color: #C9A84C; background: #0B0A08; text-align: center; }
 .cv-top { position: absolute; top: 27mm; left: 0; right: 0; font-family: 'Jost', sans-serif; font-size: 7pt; font-weight: 400; letter-spacing: .5em; text-transform: uppercase; color: #C98B4F; }
-.cv-mid { position: absolute; top: 64mm; left: 20mm; right: 20mm; }
+.cv-mid { position: absolute; top: 72mm; left: 20mm; right: 20mm; }
 .cv-logo { width: 104mm; height: auto; display: block; margin: 0 auto 13mm; }
 .cv-symbol { font-size: 30pt; color: #C9A84C; margin-bottom: 12mm; }
-.cv-pour { font-family: 'Jost', sans-serif; font-size: 6.8pt; letter-spacing: .45em; text-transform: uppercase; color: rgba(242,236,216,.45); margin-bottom: 4mm; }
-.cv-names { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 400; font-size: 34pt; line-height: 1.15; color: #F2ECD8; }
-.cv-amp { font-family: 'Cinzel', serif; font-style: normal; color: #C9A84C; font-size: 24pt; padding: 0 3mm; }
-.cv-orn { margin: 8mm auto 7mm; width: 70mm; text-align: center; color: #C9A84C; font-size: 8pt; }
+.cv-pour { font-family: 'Jost', sans-serif; font-size: 7.2pt; letter-spacing: .45em; text-transform: uppercase; color: rgba(242,236,216,.55); margin-bottom: 5mm; }
+.cv-names { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 400; font-size: 42pt; line-height: 1.12; color: #F5EEDA; }
+.cv-amp { font-family: 'Cinzel', serif; font-style: normal; color: #C9A84C; font-size: 28pt; padding: 0 3mm; }
+.cv-orn { margin: 9mm auto 7mm; width: 70mm; text-align: center; color: #C9A84C; font-size: 8pt; }
 .cv-orn span { display: inline-block; width: 26mm; height: .5pt; background: rgba(201,168,76,.6); vertical-align: middle; margin: 0 3mm; }
 .cv-tagline { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 14pt; line-height: 1.5; color: rgba(242,236,216,.72); max-width: 125mm; margin: 0 auto; }
 .cv-bottom { position: absolute; bottom: 26mm; left: 0; right: 0; }
@@ -3585,7 +3672,7 @@ body {
 /* ── Lettre ──────────────────────────────────────────────── */
 .lettre-wrap { break-before: page; string-set: chap "Avant tout"; padding-top: 6mm; }
 .lettre-q { font-family: 'Cinzel', serif; font-size: 64pt; line-height: .6; color: #D6B466; height: 14mm; margin-top: 4mm; }
-.lettre .prose { font-size: 15.2pt; }
+.lettre .prose { font-size: 16.2pt; }
 .lettre-sign { text-align: right; font-family: 'Cinzel', serif; font-size: 8pt; letter-spacing: .35em; color: #A5612A; margin-top: 6mm; }
 
 /* ── Chapitres ───────────────────────────────────────────── */
@@ -3600,13 +3687,13 @@ body {
 .pfig img { display: block; width: 35mm; height: auto; border: .5pt solid rgba(176,138,58,.55); border-radius: 1.6mm; }
 .lettre .pfig { margin-top: 3mm; }
 /* Grand bandeau image + titre en surimpression (v125) */
-.ch-banner { position: relative; width: 100%; height: 80mm; margin: 0 0 6mm; overflow: hidden; border-radius: 2mm; break-inside: avoid; }
-.ch-banner img { width: 100%; height: 80mm; object-fit: cover; object-position: top center; display: block; }
-.ch-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,10,8,0) 28%, rgba(11,10,8,.58) 66%, rgba(11,10,8,.93) 100%); }
-.ch-banner-text { position: absolute; left: 7mm; right: 7mm; bottom: 6mm; z-index: 2; }
-.ch-banner .eyebrow-b { display: block; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 8pt; letter-spacing: .34em; text-transform: uppercase; color: #D6B466; margin-bottom: 2.4mm; }
-.ch-banner .ch-title-b { font-family: 'Cinzel', serif; font-weight: 400; font-size: 22pt; line-height: 1.22; letter-spacing: .03em; color: #F8F3E4; margin: 0; text-shadow: 0 1px 8px rgba(0,0,0,.55); string-set: chap content(text); }
-.ch-banner + .prose { margin-top: 0; }
+/* Bandeau de chapitre : page pleine (v129), plus un encart dans le texte */
+.ch-banner { page: garde; break-before: page; break-after: page; position: relative; width: 210mm; height: 297mm; overflow: hidden; }
+.ch-banner img { width: 210mm; height: 297mm; object-fit: cover; object-position: top center; display: block; }
+.ch-banner::after { content: ''; position: absolute; top: 0; left: 0; width: 210mm; height: 297mm; background: linear-gradient(180deg, rgba(11,10,8,0) 38%, rgba(11,10,8,.62) 74%, rgba(11,10,8,.96) 100%); }
+.ch-banner-text { position: absolute; left: 20mm; right: 20mm; bottom: 24mm; z-index: 2; }
+.ch-banner .eyebrow-b { display: block; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 10pt; letter-spacing: .36em; text-transform: uppercase; color: #D6B466; margin-bottom: 4mm; }
+.ch-banner .ch-title-b { font-family: 'Cinzel', serif; font-weight: 400; font-size: 34pt; line-height: 1.2; letter-spacing: .03em; color: #F8F3E4; margin: 0; text-shadow: 0 2px 14px rgba(0,0,0,.6); string-set: chap content(text); }
 .nfig { text-align: center; margin: 0 auto 8mm; }
 .nfig img { height: 84mm; width: auto; border: .5pt solid rgba(201,168,76,.5); border-radius: 1.6mm; }
 .nfig-s img { height: 62mm; }
@@ -3750,10 +3837,23 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     sections = _sections_client_normalisees(narratif, offre)
     illus = _illustrations_livret(offre, type_analyse, sections, clients)
+    fleur_vie_page2 = _fleur_vie_html()
     _garde_uri_pdf = _page_garde_uri(offre, type_analyse)
-    garde_pdf_html = f'<div class="garde"><img src="{_garde_uri_pdf}" alt="" /></div>' if _garde_uri_pdf else ''
-    _cover_bg_img_pdf = _cover_bg_uri(offre, type_analyse)
-    cv_photo_html = f'<div class="cv-photo" data-photo><img src="{_cover_bg_img_pdf}" alt="" /></div>' if _cover_bg_img_pdf else ''
+    _garde_logo_pdf = (f'<img class="garde-logo" src="data:image/png;base64,{logo_t_b64}" alt="ORIGIN" />'
+                       if logo_t_b64 else '<p class="garde-names" style="letter-spacing:.3em">ORIGIN</p>')
+    _garde_bg_pdf = f'<img class="garde-bg" src="{_garde_uri_pdf}" alt="" />' if _garde_uri_pdf else ''
+    garde_pdf_html = f'''<div class="garde">
+  {_garde_bg_pdf}
+  <div class="garde-veil"></div>
+  <div class="garde-inner">
+    {_garde_logo_pdf}
+    <p class="garde-pour">Livret personnel de</p>
+    <p class="garde-names">{noms_display}</p>
+    <div class="garde-orn"></div>
+  </div>
+</div>'''
+    _cover_bg_img_pdf = ''  # v131 : page 2 sans photo, fleur de vie dorée à la place
+    cv_photo_html = ''
     if offre == 'solo':
         _mantras_pdf = [narratif['mantra']] if narratif.get('mantra') else narratif.get('mantras', [])
     else:
@@ -3797,15 +3897,20 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             first, middle, last = ''.join(parts[:k]), ''.join(parts[k:-1]), (parts[-1] if len(parts) > k else '')
         else:
             first, middle, last = '', contenu, ''
-        _ch_img = illus['sections'].get(i)
+        # v130 : plus d'illustration dans le corps du PDF (seule la page de garde en garde une).
+        _ch_img = None
+        ch_banner_page = ''
         if _ch_img:
-            ch_head_block = f'''<div class="ch-banner">
+            # Bandeau illustré : sa propre page pleine, le texte du chapitre commence juste après.
+            classes += ' first'
+            ch_banner_page = f'''<div class="ch-banner">
       <img src="{_ch_img}" alt="" />
       <div class="ch-banner-text">
         <span class="eyebrow-b">{eyebrow}</span>
         <h2 class="ch-title-b">{sec.get('titre','')}</h2>
       </div>
     </div>'''
+            ch_head_block = ''
         else:
             ch_head_block = f'''<div class="ch-head">
       <div class="ch-num">{i+1:02d}</div>
@@ -3814,6 +3919,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
       <div class="rule"></div>
     </div>'''
         sections_html += f"""
+{ch_banner_page}
 <section class="{classes}" id="ch-{i+1}">
   <div class="ch-open">
     {ch_head_block}
@@ -3837,7 +3943,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     n_m = len(_mantras_pdf)
     pad_mantras = 52 if n_m <= 1 else (30 if n_m <= 2 else (12 if n_m <= 3 else 0))
     compact = ' compact' if n_m >= 4 else ''
-    _fig_m = illus.get('mantras') if n_m <= 2 else ''
+    _fig_m = ''  # v130 : plus d'illustration dans le corps du PDF
     if _fig_m:
         pad_mantras = 16 if n_m <= 1 else 6
         _tete_mantras = _fig_pdf(_fig_m, 'nfig' + (' nfig-s' if n_m == 2 else ''))
@@ -3974,20 +4080,24 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     lettre_page_html = ""
     if _lettre_pdf:
-        _lettre_img = illus.get('lettre')
+        _lettre_img = None  # v130 : plus d'illustration dans le corps du PDF
+        _lettre_banner_page = ''
         if _lettre_img:
-            _lettre_head = f'''<div class="ch-banner">
+            # Bandeau illustré sur sa propre page pleine ; la lettre commence sur la page suivante.
+            _lettre_banner_page = f'''<div class="ch-banner">
       <img src="{_lettre_img}" alt="" />
       <div class="ch-banner-text">
         <span class="eyebrow-b">Avant tout</span>
         <h2 class="ch-title-b">{_lettre_titre_pdf}</h2>
       </div>
     </div>'''
+            _lettre_head = ''
         else:
             _lettre_head = f'''<span class="eyebrow">Avant tout</span>
   <h2 class="front-title">{_lettre_titre_pdf}</h2>
   <div class="rule"></div>'''
-        lettre_page_html = f'''<section class="lettre-wrap" id="lettre">
+        lettre_page_html = f'''{_lettre_banner_page}
+<section class="lettre-wrap" id="lettre">
   {_lettre_head}
   <div class="lettre">
     <div class="lettre-q">“</div>
@@ -4037,8 +4147,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
 {garde_pdf_html}
 <div class="cover">
-  {cv_photo_html}
-  <div class="cv-geo">{FLEUR_VIE_SVG}</div>
+  <div class="cv-geo">{fleur_vie_page2}</div>
   <div class="cv-frame"></div><div class="cv-frame2"></div>
   <div class="cv-corner" style="top:9.5mm;left:9.5mm">✦</div><div class="cv-corner" style="top:9.5mm;right:9.5mm">✦</div>
   <div class="cv-corner" style="bottom:9.5mm;left:9.5mm">✦</div><div class="cv-corner" style="bottom:9.5mm;right:9.5mm">✦</div>
@@ -4095,7 +4204,6 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 {carnet_pages_html}
 
 <div class="finale">
-  <div class="fn-geo">{FLEUR_VIE_SVG}</div>
   <div class="fn-inner">
     {finale_logo_html}
     <p class="fn-dedicace">{fn_dedicace}</p>
