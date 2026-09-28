@@ -2400,7 +2400,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Cormorant Garamond',Geor
   radial-gradient(38% 34% at 20% 18%, rgba(185,115,51,.10), transparent 70%),
   radial-gradient(34% 40% at 82% 76%, rgba(201,168,76,.07), transparent 72%);}
 [data-theme="light"] .ambient{opacity:.5;}
-.cosmos{position:fixed;inset:-4%;z-index:-3;pointer-events:none;background:#08070F var(--cosmos) center/cover no-repeat;animation:cosmosDrift 90s ease-in-out infinite alternate;}
+.cosmos{position:fixed;inset:-4%;z-index:-3;pointer-events:none;background:#08070F var(--cosmos) center/cover no-repeat;filter:brightness(1.25) saturate(1.1);animation:cosmosDrift 90s ease-in-out infinite alternate;}
 @keyframes cosmosDrift{from{transform:scale(1) translate3d(0,0,0)}to{transform:scale(1.08) translate3d(-1.5%,1%,0)}}
 .cosmos-veil{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 90% 80% at 50% 50%,rgba(8,7,6,.55),rgba(8,7,6,.92));opacity:.15;transition:opacity .2s linear;}
 [data-theme="light"] .cosmos,[data-theme="light"] .cosmos-veil{display:none;}
@@ -2442,6 +2442,20 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 .cover-geo{position:absolute;width:min(760px,130vw);aspect-ratio:1;left:50%;top:42%;transform:translate(-50%,-50%);opacity:.24;animation:sr 90s linear infinite;}
 .cover-geo svg{width:100%;height:100%;}
 @keyframes sr{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+[data-theme="light"] .sky{display:none;}
+.sky .cst{position:absolute;overflow:visible;opacity:0;animation:cstFade var(--dur) var(--delay) ease-in-out infinite;}
+.sky .cst line{stroke:#C9A84C;stroke-width:.6;opacity:.42;}
+.sky .cst circle{fill:#F6E3B0;}
+@keyframes cstFade{0%,100%{opacity:0}18%,72%{opacity:.75}}
+.sky .shoot{position:absolute;width:150px;height:1px;opacity:0;
+  background:linear-gradient(90deg,rgba(246,227,176,0),rgba(246,227,176,.95),rgba(255,255,255,.9));
+  filter:drop-shadow(0 0 5px rgba(232,201,122,.8));transform:rotate(22deg);
+  animation:shoot var(--dur) var(--delay) linear infinite;}
+@keyframes shoot{0%{opacity:0;transform:translate3d(0,0,0) rotate(22deg) scaleX(.2)}
+  4%{opacity:1}22%{opacity:1;transform:translate3d(52vw,30vh,0) rotate(22deg) scaleX(1)}
+  30%,100%{opacity:0;transform:translate3d(72vw,42vh,0) rotate(22deg) scaleX(.3)}}
+@media(prefers-reduced-motion:reduce){.sky{display:none;}}
 .particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
 .particle{position:absolute;border-radius:50%;opacity:0;animation:pf var(--dur) var(--delay) ease-in-out infinite;}
 @keyframes pf{0%{opacity:0;transform:translateY(0) scale(0)}15%{opacity:.9}70%{opacity:.3}100%{opacity:0;transform:translateY(-150px) scale(2)}}
@@ -2449,6 +2463,8 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 @keyframes twinkle{0%,100%{opacity:0}50%{opacity:.8;transform:scale(1.5)}}
 .cover-content{position:relative;z-index:2;max-width:760px;margin:0 auto;animation:rise 1.6s cubic-bezier(.2,.7,.2,1) both;}
 @keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.cover-offre{font-family:'Cinzel',serif;font-weight:500;font-size:clamp(2.1rem,6.2vw,3.6rem);letter-spacing:.2em;text-transform:uppercase;color:#F6E3B0;margin:0 0 .5rem;text-shadow:0 2px 26px rgba(0,0,0,.75),0 0 44px rgba(232,160,60,.3);line-height:1.1;}
+.cover-offre::after{content:'';display:block;width:min(240px,52vw);height:1px;margin:.85rem auto 0;background:linear-gradient(90deg,transparent,rgba(201,168,76,.75),transparent);}
 .cover-eyebrow{display:inline-block;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:#F0C878;padding:.55rem 1.1rem;border:1px solid rgba(201,168,76,.35);border-radius:99px;margin-bottom:2.6rem;}
 .cover-logo{display:block;width:min(330px,70vw);height:auto;margin:0 auto 2.2rem;filter:drop-shadow(0 0 40px rgba(232,160,60,.25));}
 .cover-pour{font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.45em;text-transform:uppercase;color:rgba(237,230,210,.45);margin-bottom:.9rem;}
@@ -2519,10 +2535,10 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 /* Final */
 .final-wrap{text-align:center;padding-top:2rem;padding-bottom:3rem;}
 .final-prose{max-width:620px;margin:0 auto;text-align:left;}
-.final-seed{width:92px;height:92px;margin:3.5rem auto 1.2rem;opacity:.85;}
+.final-seed{width:min(168px,34vw);height:min(168px,34vw);margin:3.8rem auto 1.6rem;opacity:.95;}
 .final-seed .seed-svg{width:100%;height:100%;animation:spin 60s linear infinite;filter:drop-shadow(0 0 18px var(--glow));}
 @keyframes spin{to{transform:rotate(360deg)}}
-.final-origin{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.55em;color:var(--cuivre);}
+.final-origin{font-family:'Cinzel',serif;font-size:1.02rem;letter-spacing:.42em;color:#E8C97A;}
 footer{margin-top:5rem;border-top:1px solid var(--hair);padding:2.5rem 1.5rem 3rem;text-align:center;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);}
 
 .to-top{position:fixed;right:1.3rem;bottom:1.3rem;z-index:120;opacity:0;pointer-events:none;transition:opacity .4s;background:var(--bar-bg);backdrop-filter:blur(10px);}
@@ -2564,6 +2580,7 @@ html:not([data-theme="light"]) .o-fig img{filter:brightness(.9) saturate(.95);}
   .ch-num{top:-2.6rem;right:0;}
   .tb-chap{display:none;}
   .cover-eyebrow{letter-spacing:.2em;font-size:.7rem;}
+  .cover-offre{letter-spacing:.14em;}
   .cover{padding-top:3.5rem;}
   .mantra{padding:2.2rem 1.2rem;}
   .o-q{padding:1rem;gap:.9rem;}
@@ -3185,6 +3202,14 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     if est_naissance:
         offre_label = 'Lecture de naissance'
 
+    # Couverture web : le nom de l'offre en grand (v145)
+    offre_titre = {
+        'solo': 'SOLO', 'couple': 'COUPLE', 'famille': 'FAMILLE',
+        'prestige': 'LIGNÉE', 'vocation': 'VOCATION & RECONVERSION',
+    }.get(offre, 'LECTURE PERSONNALISÉE')
+    if est_naissance:
+        offre_titre = 'NAISSANCE'
+
     sections_list = _sections_client_normalisees(narratif, offre)
     illus = _illustrations_livret(offre, type_analyse, sections_list, clients)
     _garde_uri = _page_garde_uri(offre, type_analyse)
@@ -3328,6 +3353,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
 <div class="progress" id="progress"></div>
 <div class="cosmos" aria-hidden="true"></div>
 <div class="cosmos-veil" id="veilCosmos" aria-hidden="true"></div>
+<div class="sky" id="sky" aria-hidden="true"></div>
 <div class="ambient"></div>
 
 <header class="topbar" id="topbar">
@@ -3359,7 +3385,8 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
   <div class="cover-geo">{_fleur_vie_web_html()}</div>
   <div class="particles" id="particles"></div>
   <div class="cover-content">
-    <p class="cover-eyebrow">{offre_label} · {annee}</p>
+    <p class="cover-offre">{offre_titre}</p>
+    <p class="cover-eyebrow">{annee}</p>
     <p class="cover-pour">Livret personnel de</p>
     <p class="cover-names">{noms}</p>
     <p class="cover-tagline">{tagline}</p>
@@ -3392,6 +3419,41 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
   document.body.classList.add('js-loaded');
   var root = document.documentElement;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Ciel : constellations + etoiles filantes (toute la page)
+  var sky = document.getElementById('sky');
+  if (sky && !reduce) {{
+    var NS = 'http://www.w3.org/2000/svg';
+    for (var c = 0; c < 7; c++) {{
+      var nb = 4 + Math.floor(Math.random()*3), w = 120 + Math.random()*150, h = 80 + Math.random()*110;
+      var pts = [];
+      for (var k = 0; k < nb; k++) pts.push([10 + Math.random()*(w-20), 10 + Math.random()*(h-20)]);
+      pts.sort(function(a, b){{ return a[0] - b[0]; }});
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('class', 'cst');
+      svg.setAttribute('width', w); svg.setAttribute('height', h);
+      svg.style.cssText = 'left:' + (Math.random()*82) + '%;top:' + (Math.random()*84) + '%;--dur:' + (16+Math.random()*14) + 's;--delay:' + (Math.random()*18) + 's;';
+      for (var k = 1; k < pts.length; k++) {{
+        var ln = document.createElementNS(NS, 'line');
+        ln.setAttribute('x1', pts[k-1][0].toFixed(1)); ln.setAttribute('y1', pts[k-1][1].toFixed(1));
+        ln.setAttribute('x2', pts[k][0].toFixed(1));   ln.setAttribute('y2', pts[k][1].toFixed(1));
+        svg.appendChild(ln);
+      }}
+      for (var k = 0; k < pts.length; k++) {{
+        var ci = document.createElementNS(NS, 'circle');
+        ci.setAttribute('cx', pts[k][0].toFixed(1)); ci.setAttribute('cy', pts[k][1].toFixed(1));
+        ci.setAttribute('r', (0.9 + Math.random()*1.3).toFixed(1));
+        svg.appendChild(ci);
+      }}
+      sky.appendChild(svg);
+    }}
+    for (var s = 0; s < 3; s++) {{
+      var sh = document.createElement('div');
+      sh.className = 'shoot';
+      sh.style.cssText = 'left:' + (-10 + Math.random()*40) + '%;top:' + (Math.random()*45) + '%;--dur:' + (13+Math.random()*10) + 's;--delay:' + (s*6 + Math.random()*9) + 's;';
+      sky.appendChild(sh);
+    }}
+  }}
 
   // Particules de couverture
   var pc = document.getElementById('particles');
@@ -3436,7 +3498,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     bar.style.width = (h > 0 ? (y / h * 100) : 0) + '%';
     var past = y > cover.offsetHeight * 0.7;
     // le cosmos s'assombrit doucement quand on entre dans la lecture
-    vc.style.opacity = Math.min(1, 0.15 + (y / cover.offsetHeight) * 0.85);
+    vc.style.opacity = Math.min(0.58, 0.15 + (y / cover.offsetHeight) * 0.43);
     top.classList.toggle('show', past);
     toTop.classList.toggle('show', past);
   }}
