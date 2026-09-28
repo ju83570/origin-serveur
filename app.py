@@ -3670,6 +3670,13 @@ def _fleur_vie_web_html():
 # False = les chapitres s'enchaînent (aucune demi-page vide).
 PDF_CHAPITRE_NOUVELLE_PAGE = False
 
+# Images illustrees dans le corps du PDF (bandeau pleine page avant chaque chapitre,
+# avant la lettre, et en tete des mantras).
+# Desactive depuis la v130 : les fichiers de static/offres/<offre>/ sont trop petits
+# et ressortent flous en pleine page A4. Repasser a True quand les images sources
+# font au moins ~2000 x 2800 px. La page de garde (garde.jpg) n'est pas concernee.
+PDF_IMAGES_CHAPITRES = False
+
 CSS_PRINT = """@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap');
 
 :root {
@@ -3818,11 +3825,17 @@ body {
 .lettre-sign { text-align: right; font-family: 'Cinzel', serif; font-size: 8pt; letter-spacing: .35em; color: #A5612A; margin-top: 6mm; }
 
 /* ── Chapitres ───────────────────────────────────────────── */
-.ch { margin-top: 19mm; }
-.ch.first, .ch.newpage { break-before: page; margin-top: 0; padding-top: 6mm; }
-.ch-head { break-inside: avoid; break-after: avoid; page-break-after: avoid; margin-bottom: 1mm; }
-.ch-num { font-family: 'Cinzel', serif; font-size: 36pt; font-weight: 400; line-height: 1; color: #D6B466; letter-spacing: .04em; margin-bottom: 4mm; }
-.ch-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 22pt; line-height: 1.3; letter-spacing: .04em; color: #231C11; string-set: chap content(text); }
+.ch { break-before: page; margin-top: 0; padding-top: 34mm; }
+.ch.first, .ch.newpage { break-before: page; margin-top: 0; padding-top: 34mm; }
+.ch-head { break-inside: avoid; break-after: avoid; page-break-after: avoid; margin-bottom: 11mm; text-align: center; }
+.ch-num { font-family: 'Cinzel', serif; font-size: 15pt; font-weight: 400; line-height: 1; color: #B08A3A;
+  letter-spacing: .5em; margin: 0 0 7mm; }
+.ch-num::before, .ch-num::after { content: ''; display: inline-block; width: 13mm; height: .5pt;
+  background: rgba(176,138,58,.55); vertical-align: middle; margin: 0 5mm .8mm; }
+.ch-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 25pt; line-height: 1.34;
+  letter-spacing: .03em; color: #231C11; string-set: chap content(text); max-width: 128mm; margin: 0 auto; }
+.ch-head .rule { width: 26mm; height: .7pt; background: #B08A3A; opacity: .6; margin: 9mm auto 0; }
+.ch-head .eyebrow { display: none; }
 .ch-end { position: relative; height: 0; margin: 0; clear: both; }
 /* Illustrations par offre (v122) */
 .pfig { float: right; width: 35mm; margin: 1mm 0 4mm 8mm; }
@@ -3843,15 +3856,15 @@ body {
 .ch-open, .ch-close { break-inside: avoid; page-break-inside: avoid; }
 .ch-close .prose, .ch-close .prose p:last-child { break-after: avoid; page-break-after: avoid; }
 
-.prose p { margin: 0 0 3.2mm; text-align: justify; orphans: 3; widows: 3; }
+.prose p { margin: 0 0 3.2mm; text-align: justify; orphans: 2; widows: 2; }
 .ch-close .prose p:last-child, .final .prose p:last-child, .lettre .prose p:last-child { margin-bottom: 0; }
 .prose em { font-style: italic; color: #A5612A; }
 .prose strong, .prose b { font-weight: 600; color: #231C11; }
 .prose * { color: inherit; }
 .prose em, .prose em * { color: #A5612A; }
 .dc {
-  float: left; font-family: 'Cinzel', serif; font-size: 44pt; line-height: 1; color: #B08A3A;
-  padding: 1.4mm 2.6mm 0 0; font-style: normal;
+  float: left; font-family: 'Cinzel', serif; font-size: 46pt; line-height: .92; color: #B08A3A;
+  padding: 1.2mm 3mm 0 0; font-style: normal;
 }
 
 /* Profil de contribution / questions */
@@ -3907,6 +3920,8 @@ body {
 .cp-kick { color: #A5612A; }
 .cp-brand { text-align: right; font-family: 'Cinzel', serif; color: #B08A3A; letter-spacing: .38em; }
 .cp-q { position: relative; background: rgba(176,138,58,.08); border-left: 1.8pt solid #B08A3A; padding: 6mm 8mm; font-style: italic; font-size: 17.5pt; line-height: 1.45; color: #231C11; margin-bottom: 6mm; }
+.cp-libre { font-family: 'Cinzel', serif; font-size: 8pt; letter-spacing: .34em; text-transform: uppercase;
+  color: rgba(165,97,42,.75); text-align: center; padding: 2mm 0 5mm; }
 .cp-line { position: relative; height: 9.4mm; border-bottom: .5pt solid rgba(176,138,58,.38); }
 
 /* ── Page finale ─────────────────────────────────────────── */
@@ -4033,9 +4048,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             classes += ' first'
         eyebrow = sec.get('eyebrow') or f'Chapitre {i+1:02d}'
         contenu = _enrichir_contenu(sec.get('contenu', ''))
-        _p1 = re.match(r'\s*<p[^>]*>(.*?)</p>', contenu, flags=re.DOTALL)
-        if _p1 and len(re.sub(r'<[^>]+>', '', _p1.group(1))) > 220:
-            contenu = _lettrine(contenu)
+        contenu = _lettrine(contenu)
         # Titre + 1er paragraphe insécables (jamais de titre orphelin en bas de page),
         # dernier paragraphe + ornement insécables (jamais d'ornement seul sur une page).
         parts = re.findall(r'<p[^>]*>.*?</p>|<ol class="o-questions">.*?</ol>|<div class="o-traits">.*?<!--/o-traits-->', contenu, flags=re.DOTALL)
@@ -4044,8 +4057,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             first, middle, last = ''.join(parts[:k]), ''.join(parts[k:-1]), (parts[-1] if len(parts) > k else '')
         else:
             first, middle, last = '', contenu, ''
-        # v130 : plus d'illustration dans le corps du PDF (seule la page de garde en garde une).
-        _ch_img = None
+        _ch_img = illus['sections'].get(i) if PDF_IMAGES_CHAPITRES else None
         ch_banner_page = ''
         if _ch_img:
             # Bandeau illustré : sa propre page pleine, le texte du chapitre commence juste après.
@@ -4090,7 +4102,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     n_m = len(_mantras_pdf)
     pad_mantras = 52 if n_m <= 1 else (30 if n_m <= 2 else (12 if n_m <= 3 else 0))
     compact = ' compact' if n_m >= 4 else ''
-    _fig_m = ''  # v130 : plus d'illustration dans le corps du PDF
+    _fig_m = (illus.get('mantras') if n_m <= 2 else '') if PDF_IMAGES_CHAPITRES else ''
     if _fig_m:
         pad_mantras = 16 if n_m <= 1 else 6
         _tete_mantras = _fig_pdf(_fig_m, 'nfig' + (' nfig-s' if n_m == 2 else ''))
@@ -4110,7 +4122,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     # ── Carnet ──────────────────────────────────────────────────────────────
     prenom_enfant = clients[0]['prenom'] if clients else ''
 
-    def _carnet_page(kicker, question, n_lignes=21, anchor=''):
+    def _carnet_page(kicker, question, n_lignes=21, anchor='', libre=False):
         lignes_html = '<div class="cp-line"></div>' * n_lignes
         if FILIGRANE_OR_B64:
             fili = f'<img class="cp-fili" src="data:image/png;base64,{FILIGRANE_OR_B64}" alt="" />'
@@ -4122,7 +4134,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 <div class="cp"{f' id="{anchor}"' if anchor else ''}>
   {fili}
   <div class="cp-head"><span class="cp-kick">{kicker}</span><span class="cp-brand">ORIGIN</span></div>
-  <p class="cp-q">{question}</p>
+  <p class="{"cp-libre" if libre else "cp-q"}">{question}</p>
   {lignes_html}
 </div>"""
 
@@ -4141,12 +4153,18 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     else:
         if offre == 'famille':
             questions_list = [
-                "Qu'est-ce qui vous a le plus touchés dans cette lecture ?",
-                "Quelle force de votre foyer avez-vous envie de nourrir davantage ?",
-                "Quel besoin de chacun avez-vous envie de mieux respecter ?",
-                "Quelle manière de communiquer aimeriez-vous ajuster dans votre quotidien ?",
-                "Quelle dynamique familiale avez-vous envie de laisser derrière vous ?",
-                "Quel petit rituel concret pouvez-vous mettre en place dès cette semaine ?"
+                "Chacun recopie ici la phrase qui l'a le plus touché, puis explique à l'autre pourquoi celle-là.",
+                "Racontez une situation récente où vous avez vu cette dynamique à l'œuvre entre vous.",
+                "Qu'est-ce qui, dans cette lecture, vous semble faux ou incomplet ? Répondez chacun de votre côté.",
+                "Qu'est-ce que l'autre fait pour vous et que vous ne lui avez jamais dit à voix haute ?",
+                "Quelle différence entre vous vous a le plus fait grandir ? Donnez un exemple précis.",
+                "Quel sujet évitez-vous depuis des mois ? Qu'est-ce qui rendrait la conversation possible ?",
+                "Quand l'un de vous traverse une période difficile, de quoi a-t-il besoin exactement ? Chacun répond pour soi.",
+                "Quelle habitude du quotidien vous éloigne sans que vous l'ayez jamais décidé ?",
+                "Sur quoi n'êtes-vous pas d'accord, et pouvez-vous vivre avec ce désaccord tel quel ?",
+                "Choisissez UN changement concret. Écrivez-le en une phrase, tous les deux d'accord.",
+                "Quand, où, comment ? Fixez maintenant la date de votre prochain vrai temps à deux.",
+                "À quoi verrez-vous, dans trois mois, que quelque chose a bougé ? Notez un signe observable."
             ]
         elif offre == 'couple':
             questions_list = [
@@ -4155,30 +4173,54 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 "Qu'avez-vous envie de changer à partir d'aujourd'hui ?",
                 "Comment ce que vous avez lu éclaire votre relation ?",
                 "Quelle ancienne histoire êtes-vous prêts à lâcher ensemble ?",
-                "Quel premier pas concret pouvez-vous faire dès demain ?"
+                "Quel premier pas concret pouvez-vous faire dès demain ?",
+                "Qu'est-ce que l'autre fait pour vous et que vous n'avez jamais formulé à voix haute ?",
+                "Quelle différence entre vous est en réalité une force du couple ?",
+                "Quel sujet évitez-vous d'aborder, et qu'est-ce qui rendrait la conversation possible ?",
+                "De quoi chacun a-t-il besoin quand il traverse une période difficile ?",
+                "Quel projet commun aimeriez-vous faire exister dans les mois qui viennent ?",
+                "Comment aimeriez-vous vous sentir ensemble dans cinq ans ?"
             ]
         elif offre == 'prestige':
             questions_list = [
-                "Qu'est-ce qui vous a le plus touchés dans cette lecture de votre lignée ?",
-                "Quelle force familiale avez-vous envie de transmettre consciemment ?",
-                "Quelle dynamique ancienne mérite peut-être d'être regardée autrement ?",
-                "Qu'avez-vous compris de la place singulière de chacun ?",
-                "Qu'avez-vous envie de préserver, et qu'avez-vous envie de faire évoluer ?",
-                "Quel geste concret peut incarner cette transmission dès maintenant ?"
+                "Qu'avez-vous appris dans cette lecture que vous ignoriez ? Notez-le ici avant de l'oublier.",
+                "Quelle histoire familiale mériterait d'être écrite avant de disparaître ? Racontez-la en entier.",
+                "Quel ancêtre vous intrigue le plus ? Que lui demanderiez-vous si vous pouviez lui parler une heure ?",
+                "Quel silence ou non-dit traverse encore votre lignée aujourd'hui ?",
+                "Quel talent, métier ou savoir-faire se transmet chez vous sans que personne ne le nomme ?",
+                "Quelle épreuve traversée avant vous continue de vous façonner, même sans l'avoir vécue ?",
+                "Quelle loyauté familiale vous a coûté quelque chose ? Qu'avez-vous mis de côté pour elle ?",
+                "Qu'est-ce que votre génération fait autrement ? Rupture assumée, ou continuité déguisée ?",
+                "Qu'avez-vous envie de préserver absolument, et qu'avez-vous envie d'arrêter avec vous ?",
+                "Choisissez UNE chose à transmettre concrètement cette année. Une seule.",
+                "À qui, quand, et sous quelle forme ? (un repas, une lettre, un enregistrement, un album)",
+                "Écrivez ici la phrase que vous aimeriez qu'on retienne de vous dans deux générations."
             ]
         else:
-            _genre_carnet = str((clients[0] if clients else {}).get('genre') or '').strip().casefold()
-            _pret = "prête" if _genre_carnet == "femme" else "prêt"
             questions_list = [
-                "Qu'est-ce qui t'a le plus touché dans ta lecture ?",
-                "Quelle phrase résonne encore en toi ?",
-                "Qu'as-tu envie de changer à partir d'aujourd'hui ?",
-                "Comment ce que tu as lu éclaire ta relation à toi-même ?",
-                f"Quelle ancienne histoire es-tu {_pret} à lâcher ?",
-                "Quel premier pas concret peux-tu faire dès demain ?"
+                "Quelle phrase de ta lecture as-tu relue deux fois ? Recopie-la ici, puis écris ce qu'elle a remué.",
+                "Raconte une situation précise, ces six derniers mois, où tu t'es reconnu dans ce que tu viens de lire.",
+                "Qu'est-ce qui, dans cette lecture, te met mal à l'aise ou te semble faux ? Écris-le sans te censurer.",
+                "Dans quelles conditions exactes (lieu, moment, entourage) fonctionnes-tu le mieux ? Trois exemples réels.",
+                "Qu'est-ce qui t'épuise le plus dans une semaine ordinaire ? Sépare ce qui vient de toi de ce qui vient du contexte.",
+                "Quelle décision repousses-tu depuis des mois ? Qu'est-ce qui te retient vraiment, une fois les excuses écartées ?",
+                "Qu'est-ce que tu continues de faire par habitude ou par loyauté, alors que ça ne te correspond plus ?",
+                "Si rien ne changeait d'ici un an, qu'est-ce que tu regretterais le plus ?",
+                "De quoi as-tu besoin que tu n'oses pas demander — et à qui, précisément ?",
+                "Choisis UNE chose à changer. Une seule. Écris-la en une phrase, au présent.",
+                "Quand commences-tu, et quel est le tout premier geste ? Sois précis : le jour, l'heure, l'action.",
+                "À quoi verras-tu, dans trois mois, que c'est en train de marcher ? Note un signe que tu pourras observer."
             ]
         pages = [(f"Réflexion {i+1:02d} / {len(questions_list):02d}", q) for i, q in enumerate(questions_list)]
     carnet_pages_html = "".join(_carnet_page(k, q) for k, q in pages)
+
+    # Pages d'écriture libre : lignées, sans question, pour revenir au carnet plus tard
+    _libre_intro = ("Cette page est à vous." if (offre in ('couple', 'famille', 'prestige') or est_naissance)
+                    else "Cette page est à toi.")
+    carnet_pages_html += "".join(
+        _carnet_page(f"Écriture libre {i+1:02d} / 05", _libre_intro, n_lignes=23, libre=True)
+        for i in range(5)
+    )
 
     # ── Démarche ────────────────────────────────────────────────────────────
     cover_meta = "Numérologie · Astrologie · Transgénérationnel" if offre in ('famille', 'prestige') else "Numérologie · Astrologie · Lectures croisées"
@@ -4227,7 +4269,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     lettre_page_html = ""
     if _lettre_pdf:
-        _lettre_img = None  # v130 : plus d'illustration dans le corps du PDF
+        _lettre_img = illus.get('lettre') if PDF_IMAGES_CHAPITRES else None
         _lettre_banner_page = ''
         if _lettre_img:
             # Bandeau illustré sur sa propre page pleine ; la lettre commence sur la page suivante.
