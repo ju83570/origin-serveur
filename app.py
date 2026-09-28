@@ -3914,7 +3914,7 @@ body {
 .cc-note { position: absolute; bottom: 28mm; left: 0; right: 0; font-family: 'Jost', sans-serif; font-size: 6.8pt; letter-spacing: .4em; text-transform: uppercase; color: rgba(242,236,216,.45); }
 
 .cp { page: carnet; break-before: page; position: relative; height: 245mm; overflow: hidden; }
-.cp-fili { position: absolute; top: 44mm; left: 14mm; width: 138mm; opacity: .24; }
+.cp-fili { position: absolute; top: 44mm; left: 14mm; width: 138mm; opacity: .12; }
 .cp-head { display: table; width: 100%; border-bottom: .6pt solid rgba(176,138,58,.30); padding-bottom: 3mm; margin-bottom: 8mm; position: relative; }
 .cp-kick, .cp-brand { display: table-cell; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt; letter-spacing: .32em; text-transform: uppercase; }
 .cp-kick { color: #A5612A; }
