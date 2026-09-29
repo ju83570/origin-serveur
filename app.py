@@ -3023,6 +3023,51 @@ def _image_offre_uri(cle, fichier):
     return uri
 
 
+_BANDEAUX_CACHE = {}
+
+
+def _bandeau_uri(fichier):
+    """data-URI de static/bandeaux/<fichier>, ou '' si absent/illisible."""
+    if not fichier:
+        return ''
+    if fichier in _BANDEAUX_CACHE:
+        return _BANDEAUX_CACHE[fichier]
+    uri = ''
+    bases = [os.path.dirname(os.path.abspath(__file__)), os.getcwd(), '/opt/render/project/src', '.']
+    for base in bases:
+        chemin = os.path.join(base, 'static', 'bandeaux', fichier)
+        if not os.path.isfile(chemin):
+            continue
+        try:
+            with open(chemin, 'rb') as f:
+                raw = f.read()
+            if raw[:3] == b'\xff\xd8\xff':
+                mime = 'image/jpeg'
+            elif raw[:8] == b'\x89PNG\r\n\x1a\n':
+                mime = 'image/png'
+            else:
+                print(f"[bandeaux] format non reconnu : {chemin}")
+                break
+            uri = f"data:{mime};base64,{base64.b64encode(raw).decode('ascii')}"
+        except Exception as e:
+            print(f"[bandeaux] lecture impossible {chemin} : {e}")
+        break
+    if not uri:
+        print(f"[bandeaux] absent : static/bandeaux/{fichier}")
+        return ''                       # on ne memorise pas l'absence : un fichier ajoute plus tard sera pris
+    _BANDEAUX_CACHE[fichier] = uri
+    return uri
+
+
+def _bandeaux_pdf(offre, type_analyse):
+    """(bandeau du 1er chapitre, du chapitre du milieu, du dernier chapitre) pour cette offre."""
+    if not PDF_BANDEAUX:
+        return '', '', ''
+    cle = 'naissance' if type_analyse == 'naissance' else offre
+    debut, milieu, fin = BANDEAUX_PDF.get(cle, ('', '', ''))
+    return _bandeau_uri(debut), _bandeau_uri(milieu), _bandeau_uri(fin)
+
+
 def _norm_titre(s):
     s = re.sub(r'<[^>]+>', ' ', str(s or ''))
     s = unicodedata.normalize('NFKD', s)
@@ -3296,7 +3341,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
 
     mantras_html = ""
     for m in narratif_mantras:
-        prenom = _esc(str(m.get('prenom', '') or '').upper())
+        prenom = _esc(str(m.get('prenom', '') or '').replace(' -- ', ' — ').upper())
         mantras_html += f"""
 <div class="mantra reveal">
   {f'<p class="mantra-prenom">{prenom}</p>' if prenom else ''}
@@ -3594,6 +3639,45 @@ def _get_fleur_vie_b64():
     return ''
 
 
+def _filigrane_aplati(fond=(251, 247, 238), opacite=0.12):
+    """Filigrane de la main deja fondu sur le papier (#FBF7EE), en JPEG opaque.
+
+    Un PNG transparent affiche en opacity:.12 devient un masque de transparence
+    dans le PDF ; plusieurs lecteurs mobiles l'escamotent a certains niveaux de
+    zoom (la main disparait puis reapparait). En aplatissant en amont, l'image
+    n'a plus ni canal alpha ni opacite CSS : elle s'affiche partout.
+    Renvoie une data-URI, ou '' si le calcul echoue (page alors sans filigrane).
+    """
+    global _FILIGRANE_APLATI
+    if _FILIGRANE_APLATI is not None:
+        return _FILIGRANE_APLATI
+    uri = ''
+    try:
+        import io
+        from PIL import Image
+        if FILIGRANE_OR_B64:
+            im = Image.open(io.BytesIO(base64.b64decode(FILIGRANE_OR_B64))).convert('RGBA')
+        elif MAIN_FILIGRANE_B64:
+            im = Image.open(io.BytesIO(base64.b64decode(MAIN_FILIGRANE_B64))).convert('RGBA')
+        else:
+            im = None
+        if im is not None:
+            a = im.getchannel('A').point(lambda v: int(v * opacite))
+            im.putalpha(a)
+            plat = Image.new('RGBA', im.size, tuple(fond) + (255,))
+            plat.alpha_composite(im)
+            buf = io.BytesIO()
+            plat.convert('RGB').save(buf, 'JPEG', quality=92, optimize=True, subsampling=0)
+            uri = 'data:image/jpeg;base64,' + base64.b64encode(buf.getvalue()).decode('ascii')
+    except Exception as e:
+        print(f"[filigrane] aplatissement impossible : {e}")
+    _FILIGRANE_APLATI = uri
+    return uri
+
+
+_FILIGRANE_APLATI = None
+
+
 def _fleur_variants():
     """Derive deux versions legeres du visuel embarque (calcule une seule fois) :
        - 'web' : WebP transparent 560 px (fond de couverture, faible opacite)
@@ -3676,6 +3760,22 @@ PDF_CHAPITRE_NOUVELLE_PAGE = False
 # et ressortent flous en pleine page A4. Repasser a True quand les images sources
 # font au moins ~2000 x 2800 px. La page de garde (garde.jpg) n'est pas concernee.
 PDF_IMAGES_CHAPITRES = False
+
+# Bandeaux illustres du PDF : 3 par livret (v154) = debut / milieu / fin.
+#   en haut du PREMIER chapitre, du chapitre du MILIEU (si le livret a au moins 5 chapitres),
+#   et du DERNIER chapitre. Un milieu vide ('') = pas de bandeau au milieu.
+# Solo et Vocation (vendus en bundle) n'ont aucune image en commun.
+# Fichiers : static/bandeaux/<nom>.jpg  (1400 px de large, ratio 2,1:1, ~170 Ko).
+# Une offre sans entree, ou un fichier absent -> pas de bandeau, la page reste normale.
+PDF_BANDEAUX = True
+BANDEAUX_PDF = {
+    'solo':      ('randonneur.jpg',        'jeune-olivier.jpg',     'carnet-boussole.jpg'),
+    'vocation':  ('boussole-carte.jpg',    'mains-generations.jpg', 'arche-chemin.jpg'),
+    'couple':    ('couple-chemin.jpg',     'arche-chemin.jpg',      'couple-mains.jpg'),
+    'famille':   ('famille-olivier.jpg',   'mains-generations.jpg', 'jeune-olivier.jpg'),
+    'prestige':  ('mains-generations.jpg', 'famille-olivier.jpg',   'arche-chemin.jpg'),
+    'naissance': ('naissance-bebe.jpg',    'famille-olivier.jpg',   'jeune-olivier.jpg'),
+}
 
 CSS_PRINT = """@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap');
 
@@ -3836,6 +3936,10 @@ body {
   letter-spacing: .03em; color: #231C11; string-set: chap content(text); max-width: 128mm; margin: 0 auto; }
 .ch-head .rule { width: 26mm; height: .7pt; background: #B08A3A; opacity: .6; margin: 9mm auto 0; }
 .ch-head .eyebrow { display: none; }
+.ch-bandeau { width: 100%; margin: 0 0 12mm; border-radius: 1.6mm; overflow: hidden; break-after: avoid; page-break-after: avoid; }
+.ch-bandeau img { display: block; width: 100%; height: auto; }
+.ch.has-bandeau { padding-top: 4mm; }
+.ch.has-bandeau .ch-open { break-inside: auto; page-break-inside: auto; }
 .ch-end { position: relative; height: 0; margin: 0; clear: both; }
 /* Illustrations par offre (v122) */
 .pfig { float: right; width: 35mm; margin: 1mm 0 4mm 8mm; }
@@ -3853,7 +3957,11 @@ body {
 .nfig img { height: 84mm; width: auto; border: .5pt solid rgba(201,168,76,.5); border-radius: 1.6mm; }
 .nfig-s img { height: 62mm; }
 .ch-end svg { position: absolute; left: 50%; margin-left: -11mm; top: 4mm; width: 22mm; height: 3mm; }
-.ch-open, .ch-close { break-inside: avoid; page-break-inside: avoid; }
+.ch-open { break-inside: avoid; page-break-inside: avoid; }
+/* v153 : le dernier paragraphe peut se couper (l'ornement de fin est hors flux). Avant, il etait
+   insecable : s'il ne tenait pas dans la fin de page, il sautait en entier a la page suivante
+   et laissait jusqu'a 80 % de blanc. */
+.ch-close { break-inside: auto; page-break-inside: auto; }
 .ch-close .prose, .ch-close .prose p:last-child { break-after: avoid; page-break-after: avoid; }
 
 .prose p { margin: 0 0 3.2mm; text-align: justify; orphans: 2; widows: 2; }
@@ -3914,7 +4022,7 @@ body {
 .cc-note { position: absolute; bottom: 28mm; left: 0; right: 0; font-family: 'Jost', sans-serif; font-size: 6.8pt; letter-spacing: .4em; text-transform: uppercase; color: rgba(242,236,216,.45); }
 
 .cp { page: carnet; break-before: page; position: relative; height: 245mm; overflow: hidden; }
-.cp-fili { position: absolute; top: 44mm; left: 14mm; width: 138mm; opacity: .12; }
+.cp-fili { position: absolute; top: 44mm; left: 14mm; width: 138mm; }
 .cp-head { display: table; width: 100%; border-bottom: .6pt solid rgba(176,138,58,.30); padding-bottom: 3mm; margin-bottom: 8mm; position: relative; }
 .cp-kick, .cp-brand { display: table-cell; font-family: 'Jost', sans-serif; font-weight: 500; font-size: 6.8pt; letter-spacing: .32em; text-transform: uppercase; }
 .cp-kick { color: #A5612A; }
@@ -3995,6 +4103,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     sections = _sections_client_normalisees(narratif, offre)
     illus = _illustrations_livret(offre, type_analyse, sections, clients)
+    _bandeau_debut, _bandeau_milieu, _bandeau_fin = _bandeaux_pdf(offre, type_analyse)
     fleur_vie_page2 = _fleur_vie_html()
     _garde_uri_pdf = _page_garde_uri(offre, type_analyse)
     _garde_logo_pdf = (f'<img class="garde-logo" src="data:image/png;base64,{logo_t_b64}" alt="ORIGIN" />'
@@ -4059,6 +4168,19 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
             first, middle, last = '', contenu, ''
         _ch_img = illus['sections'].get(i) if PDF_IMAGES_CHAPITRES else None
         ch_banner_page = ''
+        # Bandeau en tete du 1er et du dernier chapitre (2 images par livret)
+        _bd = ''
+        _n_sec = len(sections)
+        if _n_sec >= 2:
+            if i == 0:
+                _bd = _bandeau_debut
+            elif i == _n_sec - 1:
+                _bd = _bandeau_fin
+            elif _n_sec >= 5 and i == _n_sec // 2:
+                _bd = _bandeau_milieu
+        bandeau_html = f'<div class="ch-bandeau"><img src="{_bd}" alt="" /></div>' if _bd else ''
+        if _bd:
+            classes += ' has-bandeau'
         if _ch_img:
             # Bandeau illustré : sa propre page pleine, le texte du chapitre commence juste après.
             classes += ' first'
@@ -4081,6 +4203,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 {ch_banner_page}
 <section class="{classes}" id="ch-{i+1}">
   <div class="ch-open">
+    {bandeau_html}
     {ch_head_block}
     <div class="prose">{first}</div>
   </div>
@@ -4089,47 +4212,63 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </section>"""
 
     # ── Mantras ─────────────────────────────────────────────────────────────
-    mantras_html = ""
-    for i, m in enumerate(_mantras_pdf):
-        sep = '<div class="mantra-sep">✦</div>' if i > 0 else ''
-        prenom = _esc(str(m.get('prenom', '') or '').upper())
-        mantras_html += f"""{sep}
-<div class="mantra">
+    mantras_blocs = []
+    for m in _mantras_pdf:
+        prenom = _esc(str(m.get('prenom', '') or '').replace(' -- ', ' — ').upper())
+        mantras_blocs.append(f"""<div class="mantra">
   {f'<p class="mantra-prenom">{prenom}</p>' if prenom else ''}
   <p class="mantra-txt">{m.get('texte','')}</p>
   {f'<p class="mantra-note">{m.get("note","")}</p>' if m.get('note') else ''}
-</div>"""
-    n_m = len(_mantras_pdf)
-    pad_mantras = 52 if n_m <= 1 else (30 if n_m <= 2 else (12 if n_m <= 3 else 0))
-    compact = ' compact' if n_m >= 4 else ''
+</div>""")
+    n_m = len(mantras_blocs)
     _fig_m = (illus.get('mantras') if n_m <= 2 else '') if PDF_IMAGES_CHAPITRES else ''
-    if _fig_m:
-        pad_mantras = 16 if n_m <= 1 else 6
-        _tete_mantras = _fig_pdf(_fig_m, 'nfig' + (' nfig-s' if n_m == 2 else ''))
-    else:
-        _tete_mantras = "" if compact else f'<div class="nuit-seed">{seed_svg}</div>'
+
+    # Pagination (v153) : 3 mantras maximum par page, repartis a parts egales.
+    # Avant, le 5e mantra (couple : 2 par personne + « ensemble ») partait seul sur une page presque vide.
+    nb_pages_m = max(1, -(-n_m // 3))
+    base_m, reste_m = divmod(n_m, nb_pages_m)
+    tailles_m = [base_m + (1 if k < reste_m else 0) for k in range(nb_pages_m)]
+    _sep_m = '<div class="mantra-sep">✦</div>'
     mantras_page_html = ""
-    if _mantras_pdf:
-        mantras_page_html = f"""
+    debut_m = 0
+    # meme taille sur toutes les pages ; « compact » des 3 mantras par page (des notes de 3 lignes
+    # font deja deborder 3 mantras en grande taille)
+    compact = ' compact' if max(tailles_m) >= 3 else ''
+    for k, t in enumerate(tailles_m):
+        morceau = _sep_m.join(mantras_blocs[debut_m:debut_m + t])
+        debut_m += t
+        if k == 0:
+            pad_mantras = 52 if t <= 1 else (22 if t <= 2 else 8)
+            if _fig_m:
+                pad_mantras = 16 if t <= 1 else 6
+                _tete_mantras = _fig_pdf(_fig_m, 'nfig' + (' nfig-s' if t == 2 else ''))
+            else:
+                _tete_mantras = "" if compact else f'<div class="nuit-seed">{seed_svg}</div>'
+            mantras_page_html += f"""
 <section class="nuit{compact}" id="mantras" style="padding-top:{pad_mantras}mm">
   {_tete_mantras}
   <span class="eyebrow">Mots pour avancer</span>
   <h2 class="nuit-title">{'Vos mantras' if not tutoie else 'Ton mantra'}</h2>
   <div class="rule rule-c"></div>
-  {mantras_html}
+  {morceau}
+</section>"""
+        else:
+            pad_suite = 30 if t <= 2 else 14
+            mantras_page_html += f"""
+<section class="nuit{compact}" style="break-before: page; padding-top:{pad_suite}mm">
+  <span class="eyebrow">Mots pour avancer</span>
+  <div class="rule rule-c"></div>
+  {morceau}
 </section>"""
 
     # ── Carnet ──────────────────────────────────────────────────────────────
     prenom_enfant = clients[0]['prenom'] if clients else ''
 
+    _fili_src = _filigrane_aplati()
+
     def _carnet_page(kicker, question, n_lignes=21, anchor='', libre=False):
         lignes_html = '<div class="cp-line"></div>' * n_lignes
-        if FILIGRANE_OR_B64:
-            fili = f'<img class="cp-fili" src="data:image/png;base64,{FILIGRANE_OR_B64}" alt="" />'
-        elif MAIN_FILIGRANE_B64:
-            fili = f'<img class="cp-fili" src="data:image/jpeg;base64,{MAIN_FILIGRANE_B64}" alt="" />'
-        else:
-            fili = ''
+        fili = f'<img class="cp-fili" src="{_fili_src}" alt="" />' if _fili_src else ''
         return f"""
 <div class="cp"{f' id="{anchor}"' if anchor else ''}>
   {fili}
@@ -4142,7 +4281,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         pages = [("Pour les parents",
                   f"Cette page vous appartient. Écrivez à {prenom_enfant} ce que vous ressentez "
                   f"aujourd'hui, ce que vous espérez pour son chemin, ce que vous voulez transmettre à "
-                  f"{prenom_enfant} -- un jour, {prenom_enfant} vous lira ici.")]
+                  f"{prenom_enfant} — un jour, {prenom_enfant} vous lira ici.")]
         pages += [
             ("Enfance · vers 7-10 ans", "Raconte une journée qui t'a donné beaucoup de joie cette année."),
             ("Adolescence · vers 13-17 ans", "Qui es-tu en train de devenir ? Qu'est-ce qui compte vraiment pour toi aujourd'hui ?"),
@@ -4152,6 +4291,21 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         ]
     else:
         if offre == 'famille':
+            questions_list = [
+                "Chacun recopie ici la phrase de la lecture qui l'a le plus touché, puis explique pourquoi aux autres.",
+                "Racontez un moment récent où votre famille a vraiment bien fonctionné. Qu'est-ce qui l'a permis ?",
+                "Qu'est-ce qui, dans cette lecture, vous semble faux ou incomplet ? Dites-le sans vous censurer.",
+                "Qu'est-ce que chacun apporte au foyer que les autres ne remarquent pas ? Répondez pour quelqu'un d'autre que vous.",
+                "Quelle tension revient régulièrement ? Décrivez-la sans chercher de coupable, juste ce qui se passe.",
+                "De quoi chacun aurait-il besoin pour se sentir pleinement à sa place ? Chacun répond pour soi.",
+                "Quel sujet n'est jamais abordé entre vous ? Qu'est-ce qui rendrait la conversation possible ?",
+                "Qu'avez-vous reçu de vos propres parents que vous voulez transmettre ? Et que vous ne voulez pas transmettre ?",
+                "Qui porte le plus dans cette famille en ce moment, et qu'est-ce qui l'allégerait concrètement ?",
+                "Choisissez UNE chose à changer. Écrivez-la en une phrase, sur laquelle tout le monde est d'accord.",
+                "Quand commencez-vous, et qui s'en occupe ? Notez le jour et la personne.",
+                "À quoi verrez-vous, dans trois mois, que ça a vraiment changé ? Notez un signe observable."
+            ]
+        elif offre == 'couple':
             questions_list = [
                 "Chacun recopie ici la phrase qui l'a le plus touché, puis explique à l'autre pourquoi celle-là.",
                 "Racontez une situation récente où vous avez vu cette dynamique à l'œuvre entre vous.",
@@ -4165,21 +4319,6 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 "Choisissez UN changement concret. Écrivez-le en une phrase, tous les deux d'accord.",
                 "Quand, où, comment ? Fixez maintenant la date de votre prochain vrai temps à deux.",
                 "À quoi verrez-vous, dans trois mois, que quelque chose a bougé ? Notez un signe observable."
-            ]
-        elif offre == 'couple':
-            questions_list = [
-                "Qu'est-ce qui vous a le plus touchés dans cette lecture ?",
-                "Quelle phrase résonne encore en vous ?",
-                "Qu'avez-vous envie de changer à partir d'aujourd'hui ?",
-                "Comment ce que vous avez lu éclaire votre relation ?",
-                "Quelle ancienne histoire êtes-vous prêts à lâcher ensemble ?",
-                "Quel premier pas concret pouvez-vous faire dès demain ?",
-                "Qu'est-ce que l'autre fait pour vous et que vous n'avez jamais formulé à voix haute ?",
-                "Quelle différence entre vous est en réalité une force du couple ?",
-                "Quel sujet évitez-vous d'aborder, et qu'est-ce qui rendrait la conversation possible ?",
-                "De quoi chacun a-t-il besoin quand il traverse une période difficile ?",
-                "Quel projet commun aimeriez-vous faire exister dans les mois qui viennent ?",
-                "Comment aimeriez-vous vous sentir ensemble dans cinq ans ?"
             ]
         elif offre == 'prestige':
             questions_list = [
@@ -4225,17 +4364,17 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     # ── Démarche ────────────────────────────────────────────────────────────
     cover_meta = "Numérologie · Astrologie · Transgénérationnel" if offre in ('famille', 'prestige') else "Numérologie · Astrologie · Lectures croisées"
     if offre == 'famille':
-        demarche_p2 = "Ce que vous tenez entre les mains n'est ni un diagnostic ni une prédiction. C'est une lecture symbolique et personnalisée -- une carte possible de votre foyer. Elle propose des pistes, des reliefs et des lignes de force ; ce que vous en faites vous appartient entièrement."
-        demarche_p3 = "Pour en tirer le meilleur : lisez lentement. Gardez ce qui résonne, laissez le reste. Revenez-y dans quelques semaines -- certaines choses prennent du temps à se déposer."
+        demarche_p2 = "Ce que vous tenez entre les mains n'est ni un diagnostic ni une prédiction. C'est une lecture symbolique et personnalisée — une carte possible de votre foyer. Elle propose des pistes, des reliefs et des lignes de force ; ce que vous en faites vous appartient entièrement."
+        demarche_p3 = "Pour en tirer le meilleur : lisez lentement. Gardez ce qui résonne, laissez le reste. Revenez-y dans quelques semaines — certaines choses prennent du temps à se déposer."
     elif offre == 'couple':
         demarche_p2 = "Ce que vous tenez entre les mains n'est ni un diagnostic ni une prédiction. C'est une lecture symbolique de votre lien, de vos différences et de vos points d'appui. Ce que vous en faites vous appartient entièrement."
         demarche_p3 = "Pour en tirer le meilleur : lisez lentement, chacun à votre rythme. Gardez ce qui résonne, laissez le reste, puis revenez-y ensemble si cela vous est utile."
     elif offre == 'prestige':
         demarche_p2 = "Ce que vous tenez entre les mains n'est ni un diagnostic ni une prédiction. C'est une lecture symbolique de votre lignée et des dynamiques possibles entre ses membres. Ce que vous en faites vous appartient entièrement."
-        demarche_p3 = "Pour en tirer le meilleur : lisez lentement. Gardez ce qui résonne, laissez le reste et revenez-y avec le temps -- certaines transmissions se comprennent par étapes."
+        demarche_p3 = "Pour en tirer le meilleur : lisez lentement. Gardez ce qui résonne, laissez le reste et revenez-y avec le temps — certaines transmissions se comprennent par étapes."
     else:
-        demarche_p2 = "Ce que tu tiens entre les mains n'est pas un horoscope, ni un portrait psychologique, ni une prédiction. C'est une carte -- la tienne. Elle montre le terrain, les reliefs, les zones d'ombre et les lignes de force. Ce que tu en fais t'appartient entièrement."
-        demarche_p3 = "Pour en tirer le meilleur : lis lentement. Laisse résonner ce qui résonne. Note ce qui te surprend. Reviens dans quelques semaines -- certaines choses prennent du temps à se déposer."
+        demarche_p2 = "Ce que tu tiens entre les mains n'est pas un horoscope, ni un portrait psychologique, ni une prédiction. C'est une carte — la tienne. Elle montre le terrain, les reliefs, les zones d'ombre et les lignes de force. Ce que tu en fais t'appartient entièrement."
+        demarche_p3 = "Pour en tirer le meilleur : lis lentement. Laisse résonner ce qui résonne. Note ce qui te surprend. Reviens dans quelques semaines — certaines choses prennent du temps à se déposer."
 
     if est_naissance:
         fn_dedicace = "Un livret à garder précieusement, à rouvrir à chaque nouvelle saison de sa vie."
@@ -4358,7 +4497,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <span class="eyebrow">La démarche ORIGIN</span>
   <h2 class="front-title">Avant de commencer</h2>
   <div class="rule"></div>
-  <p class="lede">Ce livret est le fruit d'une lecture croisée : numérologie, astrologie, et lecture des cycles de vie. Ces trois approches ne se substituent pas l'une à l'autre -- elles se répondent, se complètent, révèlent ensemble ce qu'aucune ne pourrait montrer seule.</p>
+  <p class="lede">Ce livret est le fruit d'une lecture croisée : numérologie, astrologie, et lecture des cycles de vie. Ces trois approches ne se substituent pas l'une à l'autre — elles se répondent, se complètent, révèlent ensemble ce qu'aucune ne pourrait montrer seule.</p>
   <div class="prose">
     <p>{demarche_p2}</p>
     <p>{demarche_p3}</p>
