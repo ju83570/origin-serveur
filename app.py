@@ -1549,6 +1549,9 @@ CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USA
 
 STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), aucune liste, aucun terme technique visible. Titres libres et poétiques, adaptés à CE profil.
 POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Préfère « tu peux », « il est possible que », « une tendance à observer » aux formulations définitives. Aucun diagnostic ni quasi-diagnostic. N'invente JAMAIS une scène d'enfance ou une réaction d'autrui. Interdits sans contexte explicite : culpabilité, possessivité, rumination, hyper-responsabilisation, trahison vécue, peur secrète, « les gens sentent que », « mettait les adultes mal à l'aise ».
+TICS À ÉVITER : la construction « non pas X, mais Y » (2 fois maximum dans tout le livret), les images « miroir », « boussole », « route » ou « chemin » employées comme métaphore (1 fois chacune au maximum). Varie les tournures d'un paragraphe à l'autre ; ne termine pas chaque paragraphe par une formule sentencieuse.
+RÉPÉTITIONS : un événement ou un fait de vie donné par le client (maladie, séparation, déménagement, rupture, etc.) n'est évoqué qu'UNE fois dans ce bloc, en une phrase ou deux, et jamais reformulé ensuite sous d'autres images (corps, immobilité, traversée...). Le reste du texte parle de ce que la personne fait et porte aujourd'hui, pas de ce qu'elle a subi.
+FORMULATIONS INTERDITES (affirmations déguisées en faits) : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », « tu n'as pas besoin de », « tu n'as jamais besoin de ». Écris plutôt « tu peux », « il est possible que », « tu as peut-être ».
 SOBRIÉTÉ TEMPORELLE ET SYMBOLIQUE : la section sur le présent peut évoquer des thèmes à observer, mais n'affiche jamais de durée de cycle, de « cycle de neuf années », de compte à rebours, d'année personnelle ou de calendrier. N'écris jamais qu'un « soutien invisible » s'installe, que « l'univers facilite » une situation, ni qu'une énergie cosmique provoque concrètement des rencontres ou émotions. Les repères astrologiques/numérologiques restent une grille symbolique, pas une causalité factuelle.
 COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
 - Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
@@ -1599,7 +1602,7 @@ CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 Mouvement 3 -- TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes longs) :
 RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les données (Homme/Femme).
 - §1 : les forces naturelles -- ce qui vient facilement, ce qui distingue vraiment cette personne. Célébrer avec précision, pas avec des généralités.
-- §2 : les zones de croissance possibles -- ce qui pourrait demander plus de pratique, de confiance ou de cadre. Ne dis jamais que la personne évite quelque chose « sans le savoir » et veille à ne pas contredire une force identifiée ailleurs.
+- §2 : les zones de croissance possibles -- ce qui pourrait demander plus de pratique, de confiance ou de cadre. Ne dis jamais que la personne évite quelque chose « sans le savoir » et veille à ne pas contredire une force identifiée ailleurs. Dans ce paragraphe, nomme aussi avec douceur une difficulté possible à dire ses besoins, à se montrer vulnérable ou à demander, formulée comme une invitation et jamais comme un constat. Termine ce paragraphe par UNE phrase courte à se dire à voix haute, à la première personne, sobre et propre à CE profil, présentée comme une pratique à essayer (ex. de forme : « Je peux avancer sans tout comprendre. » -- ne recopie jamais cet exemple).
 - §3 : la transformation à portée -- ce qui est déjà en train de changer, ce qui cherche à émerger, le prochain seuil.
 
 Mouvement 4 -- LES GRANDES PÉRIODES CHARNIÈRES (titre poétique libre, 3 paragraphes longs) :
@@ -1614,7 +1617,7 @@ Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphe
 - §2 : une note finale qui donne confiance à cette personne dans sa propre trajectoire. Chaleureux, ancré, jamais vague ni prédictif.
 
 Mantra : une phrase poétique courte (max 15 mots) impossible à donner à quelqu'un d'autre + note de 3 lignes qui explique pourquoi CE mantra peut servir de repère à CE profil. Ne parle jamais de vérité absolue ni de destin.
-Message final : 2 paragraphes qui donnent envie de refermer le livret avec le sentiment d'avoir été profondément vu."""
+Message final : 2 paragraphes qui donnent envie de refermer le livret avec le sentiment d'avoir été profondément vu. Le second paragraphe contient une phrase de permission claire et chaleureuse (ex. de forme : il n'est pas trop tard, tu n'as rien manqué, tu as le droit de changer encore -- adapte-la à CE profil, sans recopier l'exemple et sans rien promettre)."""
 
     a = _appel_claude_chunk(prompt_a, max_tokens=9000)
     b = _appel_claude_chunk(prompt_b, max_tokens=8000)
@@ -3148,10 +3151,22 @@ def _fig_pdf(uri, cls='pfig'):
     return f'<div class="{cls}"><img src="{uri}" alt="" /></div>'
 
 
-def _page_garde_uri(offre, type_analyse):
+def _genre_principal(clients):
+    """'Femme' ou 'Homme' pour le premier client (offres individuelles), sinon ''."""
+    try:
+        return str((clients or [{}])[0].get('genre') or '').strip()
+    except Exception:
+        return ''
+
+
+def _page_garde_uri(offre, type_analyse, genre=''):
     """Image de la page de garde (pleine page, avant la couverture personnalisée).
     Fichier : static/offres/<offre>/garde.jpg -- absent = pas de page de garde."""
     cle = 'naissance' if type_analyse == 'naissance' else offre
+    if genre == 'Femme' and offre in ('solo', 'vocation'):
+        uri_f = _image_offre_uri(cle, 'garde-femme.jpg')
+        if uri_f:
+            return uri_f
     return _image_offre_uri(cle, 'garde.jpg')
 
 
@@ -3257,7 +3272,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
 
     sections_list = _sections_client_normalisees(narratif, offre)
     illus = _illustrations_livret(offre, type_analyse, sections_list, clients)
-    _garde_uri = _page_garde_uri(offre, type_analyse)
+    _garde_uri = _page_garde_uri(offre, type_analyse, _genre_principal(clients))
     _garde_logo_html = (f'<img class="garde-logo" src="data:image/webp;base64,{LOGO_GARDE_B64}" alt="ORIGIN">'
                         if LOGO_GARDE_B64 else '<p class="garde-names" style="letter-spacing:.3em">ORIGIN</p>')
     _garde_bg_html = ''  # v139 : plus de photo en fond de garde (titre parfois gravé dedans -> fantome)
@@ -4105,7 +4120,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     illus = _illustrations_livret(offre, type_analyse, sections, clients)
     _bandeau_debut, _bandeau_milieu, _bandeau_fin = _bandeaux_pdf(offre, type_analyse)
     fleur_vie_page2 = _fleur_vie_html()
-    _garde_uri_pdf = _page_garde_uri(offre, type_analyse)
+    _garde_uri_pdf = _page_garde_uri(offre, type_analyse, _genre_principal(clients))
     _garde_logo_pdf = (f'<img class="garde-logo" src="data:image/png;base64,{logo_t_b64}" alt="ORIGIN" />'
                        if logo_t_b64 else '<p class="garde-names" style="letter-spacing:.3em">ORIGIN</p>')
     _garde_bg_pdf = ''  # v138 : plus de photo en fond de garde
@@ -4350,6 +4365,10 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
                 "Quand commences-tu, et quel est le tout premier geste ? Sois précis : le jour, l'heure, l'action.",
                 "À quoi verras-tu, dans trois mois, que c'est en train de marcher ? Note un signe que tu pourras observer."
             ]
+        if _genre_principal(clients) == 'Femme' and tutoie:
+            questions_list = [q.replace("tu t'es reconnu ", "tu t'es reconnue ")
+                               .replace("Sois précis :", "Sois précise :")
+                              for q in questions_list]
         pages = [(f"Réflexion {i+1:02d} / {len(questions_list):02d}", q) for i, q in enumerate(questions_list)]
     carnet_pages_html = "".join(_carnet_page(k, q) for k, q in pages)
 
