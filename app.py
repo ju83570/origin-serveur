@@ -3248,7 +3248,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     elif offre == 'solo':
         noms_plain = f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip()
         noms = _esc(noms_plain)
-        tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
+        tagline = "Ce que ta date de naissance révèle de toi."
     elif offre == 'couple':
         noms_plain = f"{_prenom_affiche(clients[0]['prenom'])} & {_prenom_affiche(clients[1]['prenom'])}"
         noms = f"{_esc(_prenom_affiche(clients[0]['prenom']))}<span class='cover-amp'>&amp;</span>{_esc(_prenom_affiche(clients[1]['prenom']))}"
@@ -4085,7 +4085,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         tagline = "Une boussole de naissance à relire à chaque étape de la vie."
     elif offre == 'solo':
         noms_display = _esc(f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip())
-        tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
+        tagline = "Ce que ta date de naissance révèle de toi."
     elif offre == 'couple':
         noms_display = f"{_esc(_prenom_affiche(clients[0]['prenom']))}<span class='cv-amp'>&amp;</span>{_esc(_prenom_affiche(clients[1]['prenom']))}"
         tagline = "Ce que vos différences révèlent de votre lien, et ce que vous pouvez en construire."
