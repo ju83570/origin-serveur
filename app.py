@@ -3062,13 +3062,16 @@ def _bandeau_uri(fichier):
     return uri
 
 
-def _bandeaux_pdf(offre, type_analyse):
+def _bandeaux_pdf(offre, type_analyse, genre=''):
     """(bandeau du 1er chapitre, du chapitre du milieu, du dernier chapitre) pour cette offre."""
     if not PDF_BANDEAUX:
         return '', '', ''
     cle = 'naissance' if type_analyse == 'naissance' else offre
     debut, milieu, fin = BANDEAUX_PDF.get(cle, ('', '', ''))
-    return _bandeau_uri(debut), _bandeau_uri(milieu), _bandeau_uri(fin)
+    uri_debut = ''
+    if genre == 'Femme' and debut == 'randonneur.jpg':
+        uri_debut = _bandeau_uri('randonneuse.jpg')
+    return (uri_debut or _bandeau_uri(debut)), _bandeau_uri(milieu), _bandeau_uri(fin)
 
 
 def _norm_titre(s):
@@ -3170,11 +3173,15 @@ def _page_garde_uri(offre, type_analyse, genre=''):
     return _image_offre_uri(cle, 'garde.jpg')
 
 
-def _cover_bg_uri(offre, type_analyse):
+def _cover_bg_uri(offre, type_analyse, genre=''):
     """Fond (très assombri) de la couverture personnalisée : reprend la scène de la
     page de garde, sans le bandeau logo/titre déjà présent sur cette page-là.
     Fichier : static/offres/<offre>/fond-couverture.jpg -- absent = fond uni actuel."""
     cle = 'naissance' if type_analyse == 'naissance' else offre
+    if genre == 'Femme' and offre in ('solo', 'vocation'):
+        uri_f = _image_offre_uri(cle, 'fond-couverture-femme.jpg')
+        if uri_f:
+            return uri_f
     return _image_offre_uri(cle, 'fond-couverture.jpg')
 
 
@@ -3288,7 +3295,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     <div class="garde-orn"><span></span>&#10022;<span></span></div>
   </div>
 </section>"""
-    _cover_bg_img = _cover_bg_uri(offre, type_analyse)
+    _cover_bg_img = _cover_bg_uri(offre, type_analyse, _genre_principal(clients))
     cover_bg_attr = f" data-photo style=\"background-image:url('{_cover_bg_img}')\"" if _cover_bg_img else ''
     lettre = narratif.get('lettre', '')
     if offre == 'solo':
@@ -4118,7 +4125,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 
     sections = _sections_client_normalisees(narratif, offre)
     illus = _illustrations_livret(offre, type_analyse, sections, clients)
-    _bandeau_debut, _bandeau_milieu, _bandeau_fin = _bandeaux_pdf(offre, type_analyse)
+    _bandeau_debut, _bandeau_milieu, _bandeau_fin = _bandeaux_pdf(offre, type_analyse, _genre_principal(clients))
     fleur_vie_page2 = _fleur_vie_html()
     _garde_uri_pdf = _page_garde_uri(offre, type_analyse, _genre_principal(clients))
     _garde_logo_pdf = (f'<img class="garde-logo" src="data:image/png;base64,{logo_t_b64}" alt="ORIGIN" />'
