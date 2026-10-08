@@ -738,6 +738,8 @@ def fmt_profil(p, avec_transits=False):
 
 PROMPT_NAISSANCE = """Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
 
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
+
 Tu reçois les données numériques et astrologiques d'un enfant qui vient de naître ou qui est sur le point de naître.
 Ton rôle : rédiger un carnet d'empreinte de naissance -- un document profond, poétique et concret que les parents liront comme une boussole pour accompagner cet enfant tout au long de sa vie.
 
@@ -789,6 +791,8 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 
 
 PROMPT_VOCATION = """Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
+
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 
 Tu reçois le profil numérologique et astrologique complet d'une personne.
 Ton rôle : rédiger un livret de vocation -- profond, chirurgical, actionnable --
@@ -1095,6 +1099,8 @@ def appeler_claude_naissance(profils_txt):
     # Les charnières temporelles sont déjà injectées dans profils_txt par fmt_profil().
 
     base = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
+
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 Tu reçois les données numériques et astrologiques d'un enfant qui vient de naître ou qui est sur le point de naître.
 Ton rôle : rédiger un carnet d'empreinte de naissance -- un document profond, poétique et concret, écrit comme une lettre à cet
 enfant, que ses parents liront et lui transmettront comme une boussole tout au long de sa vie.
@@ -1366,6 +1372,8 @@ Terminer par un paragraphe de synthèse et cette phrase obligatoire reformulée 
     max_tokens_appel = 16000 if offre == 'famille' else (16000 if offre == 'couple' else 14000)
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
+
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
@@ -1664,6 +1672,8 @@ def appeler_claude_couple(profils_txt):
 
     prompt_a = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
+
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
@@ -1726,6 +1736,8 @@ Mouvement 3 -- Portrait de Personne 2 (5 paragraphes, titre poétique libre avec
 - Même structure : §1-§3 portrait, §4 lumière, §5 ombre."""
 
     prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
+
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 
 ANNÉE EN COURS : {annee_courante}
 
@@ -1870,6 +1882,8 @@ def _appel_claude_chunk(prompt, max_tokens=8000):
 def _preambule_prompt(annee_courante, style_mots, profils_txt):
     return f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
+
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
@@ -1948,6 +1962,8 @@ def appeler_claude_famille(profils_txt):
     enfants_txt = ', '.join(enfants) if enfants else 'aucun membre supplémentaire'
 
     base = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée pour une famille.
+
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 
 ANNÉE EN COURS : {annee_courante}
 MEMBRES EXACTEMENT PRÉSENTS : {composition}
@@ -2853,6 +2869,8 @@ def _prompt_section_prenoms(produit, clients, data):
                       "Utilise-la telle quelle, sans rien ajouter ni extrapoler ; si elle ne dit pas clairement de quel prénom il s'agit, ne l'attribue à personne.")
 
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
+
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 Tu rédiges UNE section complémentaire d'un livret : « {titre} ». Elle enrichit la lecture de la date de naissance, elle ne la remplace pas.
 
 ANNÉE EN COURS : {date.today().year}
@@ -2911,6 +2929,8 @@ def _prompt_section_lignee(membres, clients):
         lignes.append(d)
     titre = "Ce que ta lignée t'a transmis"
     prompt = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée.
+
+ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 Tu rédiges UNE section complémentaire d'un carnet de naissance : « {titre} ». Elle s'adresse directement à l'enfant, {pr} ({enfant.get('genre', '')}), en tutoiement, voix douce, comme le reste du carnet que ses parents lui transmettront.
 
 ANNÉE EN COURS : {date.today().year}
