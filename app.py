@@ -1551,6 +1551,8 @@ STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), a
 POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Préfère « tu peux », « il est possible que », « une tendance à observer » aux formulations définitives. Aucun diagnostic ni quasi-diagnostic. N'invente JAMAIS une scène d'enfance ou une réaction d'autrui. Interdits sans contexte explicite : culpabilité, possessivité, rumination, hyper-responsabilisation, trahison vécue, peur secrète, « les gens sentent que », « mettait les adultes mal à l'aise ».
 TICS À ÉVITER : la construction « non pas X, mais Y » (2 fois maximum dans tout le livret), les images « miroir », « boussole », « route » ou « chemin » employées comme métaphore (1 fois chacune au maximum). Varie les tournures d'un paragraphe à l'autre ; ne termine pas chaque paragraphe par une formule sentencieuse.
 RÉPÉTITIONS : un événement ou un fait de vie donné par le client (maladie, séparation, déménagement, rupture, etc.) n'est évoqué qu'UNE fois dans ce bloc, en une phrase ou deux, et jamais reformulé ensuite sous d'autres images (corps, immobilité, traversée...). Le reste du texte parle de ce que la personne fait et porte aujourd'hui, pas de ce qu'elle a subi.
+RÉPÉTITIONS DES MOTS DU CLIENT : un fait, un chiffre ou une expression que le client a lui-même écrit (nombre d'enfants, métier, situation, formule de son formulaire) ne revient pas plus de 2 fois dans tout le livret. Quand tu dois y revenir, dis-le autrement : un synonyme, une périphrase, ou une allusion (« ta tribu », « ceux qui comptent sur toi ») au lieu de redire le même chiffre ou la même formule. Pas de tic de langage répété d'un chapitre à l'autre.
+RIEN D'INVENTÉ SUR LES PROCHES -- RÈGLE ABSOLUE : tu ne connais de l'entourage du client (enfants, conjoint, parents, collègues) que ce que contiennent les DONNÉES. N'attribue JAMAIS à un proche un métier, un caractère, une hésitation, une réussite, une étape de vie (« un fils qui n'ose pas... », « une fille qui devient mère... ») ni une qualité de relation (« une forme de sécheresse en retour », une distance, une fatigue des autres) si ce n'est pas écrit dans les données. Si les données ne disent rien sur un proche, parle seulement de ce que le client PEUT porter ou ressentir, sans mettre en scène les autres.
 FORMULATIONS INTERDITES (affirmations déguisées en faits) : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », « tu n'as pas besoin de », « tu n'as jamais besoin de ». Écris plutôt « tu peux », « il est possible que », « tu as peut-être ».
 SOBRIÉTÉ TEMPORELLE ET SYMBOLIQUE : la section sur le présent peut évoquer des thèmes à observer, mais n'affiche jamais de durée de cycle, de « cycle de neuf années », de compte à rebours, d'année personnelle ou de calendrier. N'écris jamais qu'un « soutien invisible » s'installe, que « l'univers facilite » une situation, ni qu'une énergie cosmique provoque concrètement des rencontres ou émotions. Les repères astrologiques/numérologiques restent une grille symbolique, pas une causalité factuelle.
 COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
@@ -1567,10 +1569,12 @@ LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chun
 CHUNK A -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
-    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"},
-    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
+    {"titre": "...", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"}
   ]
 }
+
+PETIT TITRE (eyebrow) OBLIGATOIRE : chaque section porte un "eyebrow" de 2 à 4 mots, jamais vide, qui annonce le chapitre en une touche concrète et propre à CE profil (ex. de forme : « Vibration intime », « Ce que tu portes » -- ne recopie jamais ces exemples). Un chapitre sans eyebrow est un livret raté.
 
 Mouvement 1 -- QUI TU ES (titre poétique libre, 5 paragraphes longs) :
 IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence tout au long du texte.
@@ -1591,13 +1595,15 @@ LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chun
 CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
   "sections": [
-    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
-    {"titre": "...", "contenu": "<p>...</p><p>...</p>"}
+    {"titre": "...", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "eyebrow": "...", "contenu": "<p>...</p><p>...</p><p>...</p>"},
+    {"titre": "...", "eyebrow": "...", "contenu": "<p>...</p><p>...</p>"}
   ],
   "mantra": {"texte": "...", "note": "..."},
   "message_final": "<p>...</p><p>...</p>"
 }
+
+PETIT TITRE (eyebrow) OBLIGATOIRE : chaque section porte un "eyebrow" de 2 à 4 mots, jamais vide, qui annonce le chapitre en une touche concrète et propre à CE profil (ne recopie pas d'exemple). Un chapitre sans eyebrow est un livret raté.
 
 Mouvement 3 -- TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes longs) :
 RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les données (Homme/Femme).
@@ -1619,8 +1625,28 @@ Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphe
 Mantra : une phrase poétique courte (max 15 mots) impossible à donner à quelqu'un d'autre + note de 3 lignes qui explique pourquoi CE mantra peut servir de repère à CE profil. Ne parle jamais de vérité absolue ni de destin.
 Message final : 2 paragraphes qui donnent envie de refermer le livret avec le sentiment d'avoir été profondément vu. Le second paragraphe contient une phrase de permission claire et chaleureuse (ex. de forme : il n'est pas trop tard, tu n'as rien manqué, tu as le droit de changer encore -- adapte-la à CE profil, sans recopier l'exemple et sans rien promettre)."""
 
+    def _eyebrows_ok(r):
+        secs = r.get("sections") or []
+        return bool(secs) and all(str(x.get("eyebrow") or "").strip() for x in secs)
+
     a = _appel_claude_chunk(prompt_a, max_tokens=9000)
+    if not _eyebrows_ok(a):
+        print("[solo] chunk A : petit titre manquant, nouvel essai", flush=True)
+        a2 = _appel_claude_chunk(prompt_a, max_tokens=9000)
+        if _eyebrows_ok(a2):
+            a = a2
     b = _appel_claude_chunk(prompt_b, max_tokens=8000)
+    if not _eyebrows_ok(b):
+        print("[solo] chunk B : petit titre manquant, nouvel essai", flush=True)
+        b2 = _appel_claude_chunk(prompt_b, max_tokens=8000)
+        if _eyebrows_ok(b2):
+            b = b2
+
+    # Filet de sécurité : jamais de chapitre sans petit titre
+    for r in (a, b):
+        for x in (r.get("sections") or []):
+            if not str(x.get("eyebrow") or "").strip():
+                x["eyebrow"] = str(x.get("titre") or "").strip()[:40]
 
     return {
         "sections": (a.get("sections") or []) + (b.get("sections") or []),
