@@ -5307,6 +5307,14 @@ def _rapport_qualite(narratif):
         print(f"[rapport_qualite] ignoré : {ex}", flush=True)
         return ''
 
+def _ascii_nom(txt):
+    """Nom de fichier ASCII sûr (sans accents ni espaces) : évite les pièces jointes cassées
+    (« .pd f », téléchargement impossible) quand le prénom contient un accent."""
+    t = unicodedata.normalize('NFKD', str(txt or '')).encode('ascii', 'ignore').decode('ascii')
+    t = re.sub(r'_+', '_', re.sub(r'[^A-Za-z0-9_-]+', '_', t)).strip('_')
+    return t or 'client'
+
+
 def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, form_data=None, rapport_qualite=''):
     """Envoie les 2 livrets Bundle (Solo + Vocation) dans un seul email."""
     prenoms = " & ".join(c['prenom'] for c in clients)
@@ -5314,13 +5322,13 @@ def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clien
 
     attachments = [
         {"content": base64.b64encode(html_solo.encode('utf-8')).decode('utf-8'),
-         "name": f"ORIGIN_Solo_{prenoms.replace(' ','_')}_{date_str}.html"},
+         "name": f"ORIGIN_Solo_{_ascii_nom(prenoms)}_{date_str}.html"},
         {"content": base64.b64encode(pdf_solo).decode('utf-8'),
-         "name": f"ORIGIN_Solo_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"},
+         "name": f"ORIGIN_Solo_{_ascii_nom(prenoms)}_{date_str}_imprimable.pdf"},
         {"content": base64.b64encode(html_vocation.encode('utf-8')).decode('utf-8'),
-         "name": f"ORIGIN_Vocation_{prenoms.replace(' ','_')}_{date_str}.html"},
+         "name": f"ORIGIN_Vocation_{_ascii_nom(prenoms)}_{date_str}.html"},
         {"content": base64.b64encode(pdf_vocation).decode('utf-8'),
-         "name": f"ORIGIN_Vocation_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"},
+         "name": f"ORIGIN_Vocation_{_ascii_nom(prenoms)}_{date_str}_imprimable.pdf"},
     ]
 
     body_txt = f"""{rapport_qualite}Nouveau Bundle ORIGIN généré automatiquement.
@@ -5364,8 +5372,8 @@ Valide le contenu puis transfère les 2 livrets au client.
 def envoyer_email(html_content, pdf_bytes, clients, offre, email_client, form_data=None, rapport_qualite=''):
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
-    filename_html = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}.html"
-    filename_pdf  = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"
+    filename_html = f"ORIGIN_{offre}_{_ascii_nom(prenoms)}_{date_str}.html"
+    filename_pdf  = f"ORIGIN_{offre}_{_ascii_nom(prenoms)}_{date_str}_imprimable.pdf"
 
     body_txt = f"""{rapport_qualite}Nouveau livret ORIGIN généré automatiquement.
 
