@@ -1560,7 +1560,7 @@ def _polir_section(sec, ctx):
     futur = len(re.findall(r"\b20[2-4]\d\b", texte)) + len(re.findall(r"autour de \d+ ans|entre \d+ et \d+ ans", texte)) >= 2
     consignes = [
         "1. TON : affirmé, chaleureux. Le portrait (forces, façon de fonctionner, présence) est au PRÉSENT DE L'INDICATIF, sans enrobage. Retire « il est possible que », « il se peut que », « peut-être », « probablement », « sans doute », « pourrait/pourraient » quand ils décrivent la personne. Maximum 1 nuance par paragraphe.",
-        "2. FAITS DE VIE : la seule source de faits est le bloc DONNÉES ci-dessous. Tout détail concret de sa vie absent des DONNÉES (objet, activité, lieu, métier, tâche domestique, atelier, conversation évitée, relation, scène) est remplacé par une formulation symbolique générale ou supprimé. Toute émotion nommée absente des DONNÉES (peur, culpabilité, loyauté, honte) et tout comportement vécu précis (« tu te retires », « tu t'isoles ») est remplacé par une mécanique symbolique (« la sensibilité sans filtre sature »). Les conseils d'action restent des invitations génériques à l'impératif.",
+        "2. FAITS DE VIE : la seule source de faits est le bloc DONNÉES ci-dessous. Tout détail concret de sa vie absent des DONNÉES (objet, activité, lieu, métier, tâche domestique, atelier, conversation évitée, relation, scène) est remplacé par une formulation symbolique générale ou supprimé. Toute affirmation sur ce que la personne vit EN CE MOMENT (situation, ressenti actuel, relations, travail, doutes : « tu traverses », « tu observes », « ralentissement que tu n'as pas choisi ») absente des DONNÉES est reformulée en description de la PÉRIODE (« cette période invite à… », « ce moment demande… »). Toute émotion nommée absente des DONNÉES (peur, culpabilité, loyauté, honte) et tout comportement vécu précis (« tu te retires », « tu t'isoles ») est remplacé par une mécanique symbolique (« la sensibilité sans filtre sature »). Les conseils d'action restent des invitations génériques à l'impératif.",
         "3. TICS : supprime TOUTE construction « non pas X, mais Y » (reformule directement) et toute tournure « tu n'as pas besoin de / n'a pas besoin de » (reformule en positif). Remplace les mots marquants répétés (« bâtisseuse », « double nature », « signature », « occuper tout l'espace ») par un équivalent quand ils reviennent dans le chapitre.",
     ]
     if ctx.get("tutoie"):
@@ -1569,7 +1569,7 @@ def _polir_section(sec, ctx):
         consignes.append("5. FUTUR : tout événement, changement ou période à venir est au CONDITIONNEL (« pourrait », « inviterait »), jamais au présent de l'indicatif ; plus aucune date exacte (« automne 2027 ») : « autour de », « entre … et … ». Le portrait de la personne reste au présent.")
     prompt = (
         "Tu es relecteur éditorial d'ORIGIN. Réécris ce chapitre en gardant : même longueur (±10 %), mêmes idées et images fortes, même nombre de balises <p>, mêmes accords de genre, même style littéraire. "
-        "Applique UNIQUEMENT ces corrections ; si un point est déjà conforme, ne touche pas au passage concerné. N'ajoute aucun fait, chiffre ou date ; ne supprime pas la phrase à dire à voix haute entre guillemets ; garde les âges en chiffres.\n"
+        "Applique UNIQUEMENT ces corrections ; si un point est déjà conforme, ne touche pas au passage concerné. CONSERVE INTÉGRALEMENT tout fait issu des DONNÉES (qui a choisi le prénom, pour qui, proche évoqué, mots du client) : ne le supprime ni ne le généralise jamais. N'ajoute aucun fait, chiffre ou date ; ne supprime pas la phrase à dire à voix haute entre guillemets ; garde les âges en chiffres.\n"
         + "\n".join(consignes) + "\n" +
         'Retourne UNIQUEMENT ce JSON valide, sans markdown : {"contenu": "<p>...</p><p>...</p>"}\n\n'
         "DONNÉES (seule source de faits) :\n" + str(ctx.get("donnees") or "")[:6000] + "\n\nCHAPITRE :\n" + contenu
@@ -1587,6 +1587,23 @@ def _polir_section(sec, ctx):
         print(f"[polish] chapitre poli : cond {nb}->{nb2}, non pas {nonpas}->{np2}, tierce {tierce}, futur {futur}", flush=True)
     else:
         print("[polish] réécriture refusée (garde-fous), chapitre original conservé", flush=True)
+
+
+def _donnees_pour_polish(profils_txt, data):
+    """Toutes les sources de faits : profils + résumé complet du formulaire (origine du prénom, etc.)."""
+    parts = [str(profils_txt or '')]
+    try:
+        parts.append(_resume_donnees_formulaire(data))
+    except Exception:
+        pass
+    try:
+        if isinstance(data, dict):
+            extra = [f"{k} = {data.get(k)}" for k in ('prenom_choix', 'prenom_heritage', 'prenoms_infos') if data.get(k)]
+            if extra:
+                parts.append("ORIGINE DU PRÉNOM (donnée client) : " + " ; ".join(extra))
+    except Exception:
+        pass
+    return "\n\n".join(x for x in parts if x)
 
 
 def resserrer_narratif(narratif, type_analyse='adulte', offre='solo', clients=None, donnees=''):
@@ -1669,7 +1686,7 @@ IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme)
 Mouvement 2 -- CE QUE TU PEUX OBSERVER DANS TA PÉRIODE ACTUELLE (titre poétique libre, 3 paragraphes longs) :
 - §1 : des thèmes symboliques possibles de la période actuelle, formulés comme des pistes à vérifier dans le réel. Aucun cycle chiffré, aucune durée technique.
 - §2 : des tensions et ouvertures typiques de ce moment, dites avec netteté ; une seule nuance au plus pour signaler que c'est à vérifier dans son vécu. Ne prétends jamais savoir qu'une transformation intérieure précise est déjà en cours.
-ANGLE UNIQUE : ce mouvement parle du QUOTIDIEN présent (rythmes, relations, énergie, petites expériences). Il ne parle ni des années à venir ni des grandes fenêtres de vie, réservées au mouvement 4. N'écris « 2027 » ou une année précise que dans le mouvement 4.
+GESTES : les conseils d'action concrets (marcher, écrire, créer, attendre avant de trancher) ne figurent QUE dans ce mouvement ; les mouvements 3 et 5 n'en répètent AUCUN. ANGLE UNIQUE : ce mouvement décrit la TEXTURE de la période actuelle (ce qu'elle invite à écouter, trier, expérimenter), jamais la vie de la personne : aucun constat sur ses relations, son travail, son état ou ses doutes (tu ne les connais pas), tournures « cette période invite à… », « ce moment demande… ». Il ne parle ni des années à venir ni des grandes fenêtres de vie, réservées au mouvement 4. N'écris « 2027 » ou une année précise que dans le mouvement 4.
 - §3 : comment utiliser cette période comme terrain d'observation et d'expérimentation concrète. Aucun « l'univers facilite », aucun « soutien invisible », aucune promesse implicite."""
 
     prompt_b = base + """
@@ -1691,7 +1708,7 @@ PETIT TITRE (eyebrow) OBLIGATOIRE : chaque section porte un "eyebrow" de 2 à 4 
 Mouvement 3 -- TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 paragraphes longs) :
 RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les données (Homme/Femme).
 - §1 : les forces naturelles -- ce qui vient facilement, ce qui distingue vraiment cette personne. Célébrer avec précision, pas avec des généralités.
-- §2 : les zones de croissance possibles -- ce qui pourrait demander plus de pratique, de confiance ou de cadre. Ne dis jamais que la personne évite quelque chose « sans le savoir » et veille à ne pas contredire une force identifiée ailleurs. Dans ce paragraphe, nomme aussi avec douceur une difficulté possible à dire ses besoins, à se montrer vulnérable ou à demander, formulée comme une invitation et jamais comme un constat. Termine ce paragraphe par UNE phrase courte à se dire à voix haute, à la première personne, sobre et propre à CE profil, présentée comme une pratique à essayer (ex. de forme : « Je peux avancer sans tout comprendre. » -- ne recopie jamais cet exemple).
+- §2 : les zones de croissance possibles -- ce qui pourrait demander plus de pratique, de confiance ou de cadre. Ne dis jamais que la personne évite quelque chose « sans le savoir » et veille à ne pas contredire une force identifiée ailleurs. N'y répète AUCUN geste concret déjà donné au mouvement 2 (marche, écriture, création). Dans ce paragraphe, nomme aussi avec douceur une difficulté possible à dire ses besoins, à se montrer vulnérable ou à demander, formulée comme une invitation et jamais comme un constat. Termine ce paragraphe par UNE phrase courte à se dire à voix haute, à la première personne, sobre et propre à CE profil, présentée comme une pratique à essayer (ex. de forme : « Je peux avancer sans tout comprendre. » -- ne recopie jamais cet exemple).
 - §3 : la transformation à portée -- ce qui cherche à émerger, le prochain seuil. ANGLE UNIQUE : ne reprends pas le tri des rôles, les cadres devenus étroits ni le fait de ne plus se justifier, déjà dits au mouvement 2 ; parle de ce que la personne peut OFFRIR et donner à voir.
 
 Mouvement 4 -- LES GRANDES PÉRIODES CHARNIÈRES (titre poétique libre, 3 paragraphes longs) :
@@ -1699,7 +1716,7 @@ INSTRUCTION ABSOLUE : si les données contiennent un bloc "CHARNIÈRES TEMPORELL
 - §1 : la prochaine grande fenêtre de bascule réellement structurante -- idéalement une période de 1 à 3 ans, avec sa texture et ce qu'elle peut inviter à reconsidérer.
 - §2 : une ou deux grandes fenêtres plus lointaines sur les 10 à 20 prochaines années, uniquement si elles représentent un changement de cycle, une clôture, un redémarrage, une maturation ou une transformation profonde. Mieux vaut 2 périodes fortes que 6 années faibles.
 - §3 : la logique d'ensemble de ces passages et les ressources de CE profil pour les traverser -- ce qui reste stable en lui/elle lorsque le décor change.
-RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. TOUT ce qui concerne l'avenir est au conditionnel, SANS EXCEPTION, y compris dans le premier paragraphe (« cette période demanderait », « une lucidité pourrait s'installer »), et ne s'écrit JAMAIS au présent de l'indicatif ; seul le portrait de la personne reste au présent. Pas de date précise (« automne 2027 ») : utilise « autour de », « entre … et … ». Ce mouvement ne redit PAS le moment présent déjà traité au mouvement 2 : il parle uniquement des fenêtres à venir et de la logique d'ensemble. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
+RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. TOUT ce qui concerne l'avenir est au conditionnel, SANS EXCEPTION, y compris dans le premier paragraphe (« cette période demanderait », « une lucidité pourrait s'installer »), et ne s'écrit JAMAIS au présent de l'indicatif ; seul le portrait de la personne reste au présent. Pas de date précise (« automne 2027 ») : utilise « autour de », « entre … et … ». Décris la TEXTURE intérieure de chaque période (ce qu'elle invite à regarder, trier, oser), JAMAIS des événements extérieurs : aucune « opportunité qui se présente », aucune « porte qui s'ouvre », aucune rencontre, aucun gain annoncé ; évite le mot « cycle » et n'écris pas tout le chapitre en « serait/viendrait » : varie (« invite à », « demande de », « cette période peut »). Ce mouvement ne redit PAS le moment présent déjà traité au mouvement 2 : il parle uniquement des fenêtres à venir et de la logique d'ensemble. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- la direction que montre ce profil. ANGLE UNIQUE : pas de « justifier qui tu es », pas de « validation », pas de « heures perdues » (déjà dits) ; ouvre sur une image neuve et concrète liée à ce profil.
@@ -1929,6 +1946,7 @@ Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de prédic
 
 _REGLE_TON_AFFIRME = """RÈGLE DE TON -- PRIORITAIRE SUR TOUTE AUTRE CONSIGNE DE CE PROMPT : le livret est écrit sur un ton affirmé, chaleureux et direct, jamais hésitant. Le portrait (qui est la personne, ses forces, sa façon de fonctionner, sa présence, ses dynamiques de couple ou de famille) s'écrit au PRÉSENT DE L'INDICATIF, avec assurance. Le conditionnel est réservé aux dates et aux événements à venir. Interdits : « il est possible que », « il se peut que », « il est envisageable que », « peut-être », « probablement », « sans doute », « possiblement » ; « pourrait/pourraient » pour décrire une personne. Maximum 1 nuance par paragraphe, jamais 2 dans la même phrase, moins de 4 formes de conditionnel pour 1000 mots. Si une consigne plus bas demande « hypothèse », « au conditionnel » ou « possible », applique-la seulement aux FAITS DE VIE, aux dates et à l'avenir, jamais au portrait symbolique. Les interdits d'invention restent absolus : rien d'inventé sur le vécu, les souvenirs ou les proches. Dans une offre enfant/naissance, les traits et scènes de l'enfant restent présentés comme des tendances, sans scène vécue inventée.
 FAITS DE VIE -- RÈGLE ABSOLUE : la seule source de faits sur la personne et son entourage est le bloc DONNÉES. N'écris AUCUN détail concret de sa vie qui n'y figure pas (objet, activité, lieu, métier, tâche domestique, atelier, conversation évitée, relation, scène). N'attribue aucune émotion nommée (peur, culpabilité, loyauté, honte, jalousie) ni aucun comportement vécu précis (« tu te retires », « tu t'isoles », « tu fuis »). Les zones de vigilance décrivent une MÉCANIQUE symbolique (« une sensibilité sans filtre finit par saturer »), jamais un vécu. Les conseils d'action sont des invitations génériques à l'impératif (« marche dehors », « écris dix minutes »), jamais des descriptions de sa vie.
+SITUATION ACTUELLE -- RÈGLE ABSOLUE : tu ne sais RIEN de ce que la personne vit en ce moment (ralentissement, doutes, clarté, relations, travail, fatigue) sauf si les DONNÉES le disent. N'écris donc jamais « tu traverses… », « tu vis un temps où… », « tu observes… », « tu sens en ce moment… », « un ralentissement que tu n'as pas choisi ». Parle de la PÉRIODE, pas de sa vie : « cette période invite à… », « ce moment demande… », « ce qui s'ouvre ressemble à… », « tu peux y reconnaître… » (invitation à vérifier, jamais constat).
 TUTOIEMENT : quand le livret tutoie, tu parles toujours à « tu ». Ne passe JAMAIS à la troisième personne pour parler du client (« Amélie… elle », « une femme qui… », « ce n'est pas une femme qui… »).
 TICS INTERDITS : la construction « non pas X, mais Y » (2 fois maximum dans tout le livret), « tu n'as pas besoin de », « n'a pas besoin de », « ne demande la permission de personne ». Aucune image, expression ou mot marquant (« bâtisseuse », « double nature », « signature », « occuper tout l'espace », « heures perdues », « texture », « fenêtre ») plus de 2 fois dans tout le livret : cherche un autre mot. Chaque idée n'est dite qu'UNE fois dans le livret. N'ouvre jamais un chapitre sur « souffle », « fenêtre ouverte » ou « sonne comme ».
 FUTUR : tout événement ou changement à venir est au conditionnel ; ne l'écris jamais au présent (« une lucidité s'installe », « des intuitions surgissent »). Les chapitres sur le présent ne citent aucune année.
@@ -5280,6 +5298,9 @@ def _rapport_qualite(narratif):
         n_3 = len(re.findall(r"\b(?:une|cette) femme qui\b|\bce n'est pas une femme\b|\bun homme qui\b", texte, re.I))
         if n_3:
             alertes.append(f"- Passage à la 3e personne ({n_3} fois) : « une femme/un homme qui… ». À remettre en « tu ».")
+        n_s = len(re.findall(r"que tu n'as pas choisi|tu traverses|tu vis un temps|ce que tu observes au quotidien", texte, re.I))
+        if n_s:
+            alertes.append(f"- Affirmation sur sa situation actuelle ({n_s} fois : « tu traverses… »). Vérifier qu'elle vient du formulaire.")
         n_e = len(re.findall(r"\bpeur\b|culpabilit|loyauté", texte, re.I))
         if n_e:
             alertes.append(f"- Émotion nommée (peur/culpabilité/loyauté) : {n_e} fois. Vérifier qu'elle vient du formulaire.")
@@ -5627,9 +5648,9 @@ def webhook():
                     # Bundle : générer Solo + Vocation et envoyer ensemble
                     narratif_solo     = _generer_et_valider('solo')
                     narratif_solo     = ajouter_sections_enrichies(narratif_solo, 'solo', clients, 'adulte', data)
-                    narratif_solo     = resserrer_narratif(narratif_solo, 'adulte', 'solo', clients, profils_txt)
+                    narratif_solo     = resserrer_narratif(narratif_solo, 'adulte', 'solo', clients, _donnees_pour_polish(profils_txt, data))
                     narratif_vocation = _generer_et_valider('vocation')
-                    narratif_vocation = resserrer_narratif(narratif_vocation, 'adulte', 'vocation', clients, profils_txt)
+                    narratif_vocation = resserrer_narratif(narratif_vocation, 'adulte', 'vocation', clients, _donnees_pour_polish(profils_txt, data))
                     narratif_solo     = _chiffrer_nombres(narratif_solo)
                     narratif_vocation = _chiffrer_nombres(narratif_vocation)
                     rapport_q = _rapport_qualite(narratif_solo) + _rapport_qualite(narratif_vocation)
@@ -5644,7 +5665,7 @@ def webhook():
                 else:
                     narratif = _generer_et_valider(offre)
                     narratif = ajouter_sections_enrichies(narratif, offre, clients, type_analyse, data)
-                    narratif = resserrer_narratif(narratif, type_analyse, offre, clients, profils_txt)
+                    narratif = resserrer_narratif(narratif, type_analyse, offre, clients, _donnees_pour_polish(profils_txt, data))
                     narratif = _chiffrer_nombres(narratif)
                     rapport_q = _rapport_qualite(narratif)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
