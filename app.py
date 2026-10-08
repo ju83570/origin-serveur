@@ -3670,7 +3670,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     elif offre == 'solo':
         noms_plain = f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip()
         noms = _esc(noms_plain)
-        tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
+        tagline = "Ce que ta date de naissance révèle de toi."
     elif offre == 'couple':
         noms_plain = f"{_prenom_affiche(clients[0]['prenom'])} & {_prenom_affiche(clients[1]['prenom'])}"
         noms = f"{_esc(_prenom_affiche(clients[0]['prenom']))}<span class='cover-amp'>&amp;</span>{_esc(_prenom_affiche(clients[1]['prenom']))}"
@@ -4507,7 +4507,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         tagline = "Une boussole de naissance à relire à chaque étape de la vie."
     elif offre == 'solo':
         noms_display = _esc(f"{_prenom_affiche(clients[0]['prenom'])} {clients[0].get('nom','')}".strip())
-        tagline = "Ce que ta date de naissance révèle de qui tu es vraiment."
+        tagline = "Ce que ta date de naissance révèle de toi."
     elif offre == 'couple':
         noms_display = f"{_esc(_prenom_affiche(clients[0]['prenom']))}<span class='cv-amp'>&amp;</span>{_esc(_prenom_affiche(clients[1]['prenom']))}"
         tagline = "Ce que vos différences révèlent de votre lien, et ce que vous pouvez en construire."
@@ -5097,7 +5097,118 @@ def _extraire_contexte_client(data):
     return "\n\n".join(uniques)
 
 
-def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, form_data=None):
+# ─────────────────────────────────────────────────────────────
+# Post-traitement qualité (8 oct. 2026)
+#  1) _chiffrer_nombres : âges, années, durées en chiffres, quoi que fasse le modèle
+#  2) _rapport_qualite  : signale les livrets à relire (conditionnel, répétitions)
+# ─────────────────────────────────────────────────────────────
+_UNITES_FR = {2:'deux',3:'trois',4:'quatre',5:'cinq',6:'six',7:'sept',8:'huit',9:'neuf',
+              10:'dix',11:'onze',12:'douze',13:'treize',14:'quatorze',15:'quinze',16:'seize',
+              17:'dix-sept',18:'dix-huit',19:'dix-neuf'}
+_DIZAINES_FR = {20:'vingt',30:'trente',40:'quarante',50:'cinquante',60:'soixante'}
+
+def _nombre_en_lettres(n):
+    """Formes françaises usuelles de 2 à 99 (variantes avec/sans traits d'union gérées à part)."""
+    if n in _UNITES_FR:
+        return _UNITES_FR[n]
+    if n == 1:
+        return 'un'
+    if n < 70:
+        d, u = (n // 10) * 10, n % 10
+        base = _DIZAINES_FR[d]
+        if u == 0:
+            return base
+        return f"{base}-et-un" if u == 1 else f"{base}-{_UNITES_FR[u]}"
+    if n < 80:   # soixante-dix...
+        r = n - 60
+        return "soixante-et-onze" if r == 11 else f"soixante-{_UNITES_FR[r]}"
+    if n == 80:
+        return "quatre-vingts"
+    r = n - 80   # quatre-vingt-un...
+    return f"quatre-vingt-{'un' if r == 1 else _UNITES_FR[r]}"
+
+_NB_LETTRES = {}
+for _n in range(2, 100):
+    _f = _nombre_en_lettres(_n)
+    _NB_LETTRES[_f] = _n
+    _NB_LETTRES[_f.replace('-', ' ')] = _n
+    if _n == 80:
+        _NB_LETTRES['quatre-vingt'] = 80
+        _NB_LETTRES['quatre vingt'] = 80
+    if '-et-un' in _f:
+        _NB_LETTRES[_f.replace('-et-', ' et ')] = _n
+_NB_ALT = '|'.join(re.escape(k) for k in sorted(_NB_LETTRES, key=len, reverse=True))
+_UNITES_DUREE = r"(?:ans|années|mois|semaines|jours|heures|minutes|décennies|enfants)"
+_RE_DUREE = re.compile(
+    rf"(?<![\w-])({_NB_ALT})(?:(\s+(?:à|ou)\s+)({_NB_ALT}))?(\s+{_UNITES_DUREE})(?![\w-])",
+    re.IGNORECASE)
+_RE_ANNEE = re.compile(
+    rf"(?<![\w-])deux[ -]mille(?:[ -](?:et[ -])?({_NB_ALT}))?(?![\w-])", re.IGNORECASE)
+
+def _chiffrer_texte(txt):
+    if not isinstance(txt, str) or not txt:
+        return txt
+    def _d(m):
+        a = _NB_LETTRES[m.group(1).lower()]
+        if m.group(3):
+            b = _NB_LETTRES[m.group(3).lower()]
+            return f"{a}{m.group(2)}{b}{m.group(4)}"
+        return f"{a}{m.group(4)}"
+    txt = _RE_DUREE.sub(_d, txt)
+    txt = _RE_ANNEE.sub(lambda m: str(2000 + (_NB_LETTRES[m.group(1).lower()] if m.group(1) else 0)), txt)
+    return txt
+
+def _chiffrer_nombres(obj):
+    """Applique _chiffrer_texte à tous les textes d'un narratif (dict/list/str), sans modifier l'original."""
+    if isinstance(obj, str):
+        return _chiffrer_texte(obj)
+    if isinstance(obj, list):
+        return [_chiffrer_nombres(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: _chiffrer_nombres(v) for k, v in obj.items()}
+    return obj
+
+_RE_CONDITIONNEL = re.compile(
+    r"peut-être|pourrait|pourraient|possiblement|probablement|sans doute|il est possible|il est envisageable|il se peut",
+    re.IGNORECASE)
+
+def _rapport_qualite(narratif):
+    """Retourne '' si RAS, sinon un court texte à joindre au mail de validation."""
+    try:
+        texte = re.sub(r'<[^>]+>', ' ', _narratif_texte(narratif))
+        mots = len(texte.split())
+        if mots < 300:
+            return ''
+        alertes = []
+        nb = len(_RE_CONDITIONNEL.findall(texte))
+        taux = nb * 1000.0 / mots
+        if taux > 12:
+            alertes.append(f"- Ton très conditionnel : {nb} « peut-être / pourrait / probablement… » pour {mots} mots ({taux:.0f} pour 1000). À resserrer à la relecture.")
+        # Répétitions entre chapitres : suites de 7 mots identiques présentes dans 2 sections différentes
+        blocs = []
+        for sec in (narratif.get('sections') or []) if isinstance(narratif, dict) else []:
+            if isinstance(sec, dict):
+                blocs.append(re.sub(r'<[^>]+>', ' ', str(sec.get('contenu') or '')))
+        vus, doublons = {}, []
+        for i, b in enumerate(blocs):
+            mots_b = re.findall(r"[\wàâäçéèêëîïôöùûüœ'’-]+", b.lower())
+            for k in range(0, max(0, len(mots_b) - 6)):
+                g = ' '.join(mots_b[k:k + 7])
+                if g in vus and vus[g] != i:
+                    if len(doublons) < 3 and (vus[g] + 1, i + 1) not in [(d[1], d[2]) for d in doublons]:
+                        doublons.append((g, vus[g] + 1, i + 1))
+                else:
+                    vus.setdefault(g, i)
+        for g, a, b in doublons:
+            alertes.append(f"- Répétition entre chapitres {a} et {b} : « {g}… »")
+        if not alertes:
+            return ''
+        return "⚠ À RELIRE AVANT ENVOI AU CLIENT\n" + "\n".join(alertes) + "\n"
+    except Exception as ex:
+        print(f"[rapport_qualite] ignoré : {ex}", flush=True)
+        return ''
+
+def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, form_data=None, rapport_qualite=''):
     """Envoie les 2 livrets Bundle (Solo + Vocation) dans un seul email."""
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
@@ -5113,7 +5224,7 @@ def envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clien
          "name": f"ORIGIN_Vocation_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"},
     ]
 
-    body_txt = f"""Nouveau Bundle ORIGIN généré automatiquement.
+    body_txt = f"""{rapport_qualite}Nouveau Bundle ORIGIN généré automatiquement.
 
 Client(s) : {prenoms}
 Offre : BUNDLE (Solo + Vocation)
@@ -5135,7 +5246,7 @@ Valide le contenu puis transfère les 2 livrets au client.
     payload = {
         "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
         "to": [{"email": EMAIL_DEST}],
-        "subject": f"✦ ORIGIN -- Bundle Solo+Vocation -- {prenoms}",
+        "subject": f"{'⚠ À RELIRE -- ' if rapport_qualite else ''}✦ ORIGIN -- Bundle Solo+Vocation -- {prenoms}",
         "textContent": body_txt,
         "attachment": attachments
     }
@@ -5151,13 +5262,13 @@ Valide le contenu puis transfère les 2 livrets au client.
     print(f"✅ Email Bundle envoyé à {EMAIL_DEST}")
 
 
-def envoyer_email(html_content, pdf_bytes, clients, offre, email_client, form_data=None):
+def envoyer_email(html_content, pdf_bytes, clients, offre, email_client, form_data=None, rapport_qualite=''):
     prenoms = " & ".join(c['prenom'] for c in clients)
     date_str = date.today().strftime('%Y%m%d')
     filename_html = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}.html"
     filename_pdf  = f"ORIGIN_{offre}_{prenoms.replace(' ','_')}_{date_str}_imprimable.pdf"
 
-    body_txt = f"""Nouveau livret ORIGIN généré automatiquement.
+    body_txt = f"""{rapport_qualite}Nouveau livret ORIGIN généré automatiquement.
 
 Client(s) : {prenoms}
 Offre : {offre.upper()}
@@ -5194,7 +5305,7 @@ Valide le contenu puis transfère au client.
     payload = {
         "sender": {"name": "ORIGIN", "email": "contact@origin-famille.fr"},
         "to": [{"email": EMAIL_DEST}],
-        "subject": f"✦ ORIGIN -- Nouveau livret {offre} -- {prenoms}",
+        "subject": f"{'⚠ À RELIRE -- ' if rapport_qualite else ''}✦ ORIGIN -- Nouveau livret {offre} -- {prenoms}",
         "textContent": body_txt,
         "attachment": attachments
     }
@@ -5410,20 +5521,25 @@ def webhook():
                     narratif_solo     = _generer_et_valider('solo')
                     narratif_solo     = ajouter_sections_enrichies(narratif_solo, 'solo', clients, 'adulte', data)
                     narratif_vocation = _generer_et_valider('vocation')
+                    narratif_solo     = _chiffrer_nombres(narratif_solo)
+                    narratif_vocation = _chiffrer_nombres(narratif_vocation)
+                    rapport_q = _rapport_qualite(narratif_solo) + _rapport_qualite(narratif_vocation)
                     html_solo     = generer_html('solo',     clients, narratif_solo,     astros_clients, type_analyse)
                     pdf_solo      = generer_pdf_imprimable('solo',     clients, narratif_solo,     astros_clients, type_analyse)
                     html_vocation = generer_html('vocation', clients, narratif_vocation, astros_clients, type_analyse)
                     pdf_vocation  = generer_pdf_imprimable('vocation', clients, narratif_vocation, astros_clients, type_analyse)
-                    envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, data)
+                    envoyer_email_bundle(html_solo, pdf_solo, html_vocation, pdf_vocation, clients, email_client, data, rapport_qualite=rapport_q)
                     print(f'✅ Bundle envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}')
                     prenoms_log = ' & '.join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, 'bundle', date.today().strftime('%d/%m/%Y'))
                 else:
                     narratif = _generer_et_valider(offre)
                     narratif = ajouter_sections_enrichies(narratif, offre, clients, type_analyse, data)
+                    narratif = _chiffrer_nombres(narratif)
+                    rapport_q = _rapport_qualite(narratif)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
                     pdf = generer_pdf_imprimable(offre, clients, narratif, astros_clients, type_analyse)
-                    envoyer_email(html, pdf, clients, offre_label, email_client, data)
+                    envoyer_email(html, pdf, clients, offre_label, email_client, data, rapport_qualite=rapport_q)
                     print(f"✅ Livret {offre_label} envoyé à {EMAIL_DEST} pour validation — client cible: {email_client}")
                     prenoms_log = " & ".join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
