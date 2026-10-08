@@ -1440,7 +1440,7 @@ Les titres sont libres et poétiques -- adaptés à CE foyer. Pas de "Portrait",
             r = requests.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-opus-4-6", "max_tokens": max_tokens_appel, "messages": [{"role": "user", "content": prompt}]},
+                json={"model": "claude-opus-4-6", "max_tokens": max_tokens_appel, "messages": [{"role": "user", "content": _ton_affirme(prompt)}]},
                 timeout=600
             )
             r.raise_for_status()
@@ -1542,6 +1542,55 @@ def _securiser_note_mantra_couple(mantras, chemins):
     return mantras
 
 
+def _resserrer_une_section(sec, seuil):
+    contenu = str(sec.get("contenu") or "")
+    texte = re.sub(r'<[^>]+>', ' ', contenu)
+    mots = len(texte.split())
+    if mots < 150:
+        return
+    nb = len(_RE_CONDITIONNEL.findall(texte))
+    if nb * 1000.0 / mots <= seuil:
+        return
+    prompt = (
+        "Tu es relecteur éditorial d'ORIGIN. Réécris ce chapitre en français, même longueur (±10 %), "
+        "mêmes idées, mêmes images, mêmes balises <p>, même tutoiement/vouvoiement et mêmes accords de genre.\n"
+        "OBJECTIF : ton affirmé et chaleureux. Le portrait (forces, façon de fonctionner, présence, dynamiques) passe au PRÉSENT DE L'INDICATIF, sans enrobage. "
+        "Supprime les « il est possible que », « il se peut que », « peut-être », « probablement », « sans doute », « possiblement », « pourrait/pourraient » quand ils décrivent des personnes. "
+        "Garde le conditionnel UNIQUEMENT pour les dates et événements à venir. Maximum 1 nuance par paragraphe, 4 pour tout le chapitre.\n"
+        "INTERDIT : ajouter un fait, un souvenir, un proche, un chiffre ou une date absents du texte ; supprimer une phrase à dire à voix haute entre guillemets ; changer les chiffres.\n"
+        'Retourne UNIQUEMENT ce JSON valide, sans markdown : {"contenu": "<p>...</p><p>...</p>"}\n\n'
+        "CHAPITRE :\n" + contenu
+    )
+    r = _appel_claude_chunk(prompt, max_tokens=6000)
+    new = str((r or {}).get("contenu") or "")
+    nt = re.sub(r'<[^>]+>', ' ', new)
+    nm = len(nt.split())
+    nb2 = len(_RE_CONDITIONNEL.findall(nt))
+    if new.count("<p>") == contenu.count("<p>") and 0.8 * mots <= nm <= 1.2 * mots and nb2 < nb:
+        sec["contenu"] = new
+        print(f"[ton] chapitre resserré : {nb} -> {nb2} conditionnels", flush=True)
+
+
+def resserrer_narratif(narratif, type_analyse='adulte', seuil=5.0):
+    """Passe finale pour TOUTES les offres : réécrit les chapitres trop hésitants.
+    Garde l'original en cas d'échec. Les livrets Naissance (enfant) sont laissés tels quels."""
+    if type_analyse == 'naissance' or not isinstance(narratif, dict):
+        return narratif
+    secs = [x for x in (narratif.get("sections") or []) if isinstance(x, dict)]
+    def _go(sec):
+        try:
+            _resserrer_une_section(sec, seuil)
+        except Exception as ex:
+            print(f"[ton] resserrage ignoré : {ex}", flush=True)
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            list(ex.map(_go, secs))
+    except Exception as ex:
+        print(f"[ton] passe de ton ignorée : {ex}", flush=True)
+    return narratif
+
+
 def appeler_claude_solo(profils_txt):
     """Solo en 2 chunks pour éviter la troncature JSON."""
     import datetime
@@ -1556,13 +1605,14 @@ LE PRINCIPE ABSOLU : les outils de calcul restent invisibles, SAUF le chemin de 
 CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USAGE INTERNE UNIQUEMENT" est présent dans les données ci-dessous, utilise-le pour affiner l'analyse des sections "ce que tu traverses en ce moment" et "ce que tu portes vers demain". Ces éléments colorent la texture de la période, les tensions intérieures, les ouvertures disponibles. JAMAIS exposés dans le texte : aucun terme planétaire, aucun mot "transit".
 
 STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), aucune liste, aucun terme technique visible. Titres libres et poétiques, adaptés à CE profil.
-POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Préfère « tu peux », « il est possible que », « une tendance à observer » aux formulations définitives. Aucun diagnostic ni quasi-diagnostic. N'invente JAMAIS une scène d'enfance ou une réaction d'autrui. Interdits sans contexte explicite : culpabilité, possessivité, rumination, hyper-responsabilisation, trahison vécue, peur secrète, « les gens sentent que », « mettait les adultes mal à l'aise ».
+POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Cette règle vise les FAITS DE VIE (événements, blessures, état psychologique, entourage), pas le portrait symbolique : le portrait tiré du chemin de vie, du prénom et des indicateurs s'écrit au PRÉSENT DE L'INDICATIF, avec assurance (« tu sens avant de comprendre », « tu construis dans la durée »). Aucun diagnostic ni quasi-diagnostic. N'invente JAMAIS une scène d'enfance ou une réaction d'autrui. Interdits sans contexte explicite : culpabilité, possessivité, rumination, hyper-responsabilisation, trahison vécue, peur secrète, « les gens sentent que », « mettait les adultes mal à l'aise ».
+RÈGLE DU CONDITIONNEL -- ABSOLUE : le ton est affirmé, chaleureux, direct. Le portrait (qui tu es, tes forces, ta façon de fonctionner) est au présent de l'indicatif. Le conditionnel est réservé aux DATES et aux événements à venir. Interdits en début de phrase ou de proposition : « il est possible que », « il se peut que », « il est envisageable que », « peut-être », « probablement », « sans doute », « possiblement ». Maximum 1 nuance (« peut-être », « pourrait », « tu peux ») par paragraphe, jamais 2 dans la même phrase, et jamais pour décrire ses forces. Objectif chiffré : moins de 4 formes de conditionnel pour 1000 mots dans tout le livret. Un livret hésitant est un livret raté ; la nuance se place seulement là où une affirmation serait un fait non connu (événement précis, avenir).
 TICS À ÉVITER : la construction « non pas X, mais Y » (2 fois maximum dans tout le livret), les images « miroir », « boussole », « route » ou « chemin » employées comme métaphore (1 fois chacune au maximum). Varie les tournures d'un paragraphe à l'autre ; ne termine pas chaque paragraphe par une formule sentencieuse.
 RÉPÉTITIONS : un événement ou un fait de vie donné par le client (maladie, séparation, déménagement, rupture, etc.) n'est évoqué qu'UNE fois dans ce bloc, en une phrase ou deux, et jamais reformulé ensuite sous d'autres images (corps, immobilité, traversée...). Le reste du texte parle de ce que la personne fait et porte aujourd'hui, pas de ce qu'elle a subi.
 RÉPÉTITIONS DES MOTS DU CLIENT : un fait, un chiffre ou une expression que le client a lui-même écrit (nombre d'enfants, métier, situation, formule de son formulaire) ne revient pas plus de 2 fois dans tout le livret. Quand tu dois y revenir, dis-le autrement : un synonyme, une périphrase, ou une allusion (« ta tribu », « ceux qui comptent sur toi ») au lieu de redire le même chiffre ou la même formule. Pas de tic de langage répété d'un chapitre à l'autre.
 ÂGES ET NOMBRES : écris toujours les âges et les durées en chiffres (59 ans, 62 ans, 6 enfants), jamais en lettres (« cinquante-neuf »), c'est plus lisible. Évite aussi les repères relatifs qui vieillissent mal (« jusqu'à la fin de l'année prochaine ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 RIEN D'INVENTÉ SUR LES PROCHES -- RÈGLE ABSOLUE : tu ne connais de l'entourage du client (enfants, conjoint, parents, collègues) que ce que contiennent les DONNÉES. N'attribue JAMAIS à un proche un métier, un caractère, une hésitation, une réussite, une étape de vie (« un fils qui n'ose pas... », « une fille qui devient mère... ») ni une qualité de relation (« une forme de sécheresse en retour », une distance, une fatigue des autres) si ce n'est pas écrit dans les données. Si les données ne disent rien sur un proche, parle seulement de ce que le client PEUT porter ou ressentir, sans mettre en scène les autres.
-FORMULATIONS INTERDITES (affirmations déguisées en faits) : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », « tu n'as pas besoin de », « tu n'as jamais besoin de ». Écris plutôt « tu peux », « il est possible que », « tu as peut-être ».
+FORMULATIONS INTERDITES (affirmations déguisées en faits) : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », « tu n'as pas besoin de », « tu n'as jamais besoin de ». Écris directement la qualité ou le geste (« tu tiens », « tu sens avant de comprendre », « tu poses un cadre »), sans enrober.
 SOBRIÉTÉ TEMPORELLE ET SYMBOLIQUE : la section sur le présent peut évoquer des thèmes à observer, mais n'affiche jamais de durée de cycle, de « cycle de neuf années », de compte à rebours, d'année personnelle ou de calendrier. N'écris jamais qu'un « soutien invisible » s'installe, que « l'univers facilite » une situation, ni qu'une énergie cosmique provoque concrètement des rencontres ou émotions. Les repères astrologiques/numérologiques restent une grille symbolique, pas une causalité factuelle.
 COHÉRENCE ENTRE INDICATEURS -- RÈGLE ABSOLUE :
 - Le chemin de vie décrit une direction générale ; Expression/Réalisation décrivent des capacités possibles ; Intime éclaire des motivations ; dominants suggèrent des facilités ; manquants indiquent seulement des zones à exercer.
@@ -1588,14 +1638,15 @@ PETIT TITRE (eyebrow) OBLIGATOIRE : chaque section porte un "eyebrow" de 2 à 4 
 Mouvement 1 -- QUI TU ES (titre poétique libre, 5 paragraphes longs) :
 IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme). Accorde TOUS les adjectifs, pronoms et participes en conséquence tout au long du texte.
 - §1 : ouvre naturellement en nommant UNE FOIS le numéro exact de son chemin de vie (ex. « Ton chemin de vie 22... »), puis traduis immédiatement ce que cela raconte humainement. Ensuite développe ce qui caractérise fondamentalement cette personne -- son rapport au monde, à l'existence, aux autres. Très concret, très ancré, impossible à généraliser.
-- §2 : sa façon POSSIBLE de traiter l'information et le réel, formulée comme une hypothèse symbolique à vérifier. Ne prétends jamais savoir ce qui se passe dans sa tête.
-- §3 : l'impression que cette personne POURRAIT donner lorsqu'elle se sent à l'aise, sans jamais affirmer ce que les autres ressentent ni inventer une atmosphère observée.
+- §2 : sa façon de traiter l'information et le réel, écrite au présent, avec assurance et images concrètes. Ne décris pas ce qui se passe dans sa tête comme un fait précis non fourni, mais dis nettement sa manière de fonctionner.
+- §3 : la présence qu'elle a quand elle se sent à l'aise (humour, écoute, rythme), au présent, sans jamais affirmer ce que les autres ressentent ni inventer une atmosphère observée.
 - §4 (LUMIÈRE) : les forces naturelles, les élans profonds, ce qui se déploie avec évidence quand cette personne est alignée. Célébrer avec précision -- pas de généralités.
-- §5 (OMBRE) : des points de vigilance POSSIBLES qui peuvent apparaître quand une force est poussée trop loin. Ne parle jamais de « face cachée », de pattern déjà vécu ni de ce qui se répète malgré elle. Formule comme des hypothèses à observer, jamais comme un verdict.
+- §5 (OMBRE) : les points de vigilance qui apparaissent quand une force est poussée trop loin, dits simplement (« poussée trop loin, ta sensibilité te sature »). Ne parle jamais de « face cachée », de pattern déjà vécu ni de ce qui se répète malgré elle. Un point de vigilance n'est pas un verdict : reste bienveillante, sans multiplier les « peut-être ».
 
 Mouvement 2 -- CE QUE TU PEUX OBSERVER DANS TA PÉRIODE ACTUELLE (titre poétique libre, 3 paragraphes longs) :
 - §1 : des thèmes symboliques possibles de la période actuelle, formulés comme des pistes à vérifier dans le réel. Aucun cycle chiffré, aucune durée technique.
-- §2 : des tensions ou ouvertures possibles, toujours au conditionnel ; ne prétends jamais savoir qu'une transformation intérieure est déjà en cours.
+- §2 : des tensions et ouvertures typiques de ce moment, dites avec netteté ; une seule nuance au plus pour signaler que c'est à vérifier dans son vécu. Ne prétends jamais savoir qu'une transformation intérieure précise est déjà en cours.
+ANGLE UNIQUE : ce mouvement parle du QUOTIDIEN présent (rythmes, relations, énergie, petites expériences). Il ne parle ni des années à venir ni des grandes fenêtres de vie, réservées au mouvement 4. N'écris « 2027 » ou une année précise que dans le mouvement 4.
 - §3 : comment utiliser cette période comme terrain d'observation et d'expérimentation concrète. Aucun « l'univers facilite », aucun « soutien invisible », aucune promesse implicite."""
 
     prompt_b = base + """
@@ -1625,7 +1676,7 @@ INSTRUCTION ABSOLUE : si les données contiennent un bloc "CHARNIÈRES TEMPORELL
 - §1 : la prochaine grande fenêtre de bascule réellement structurante -- idéalement une période de 1 à 3 ans, avec sa texture et ce qu'elle peut inviter à reconsidérer.
 - §2 : une ou deux grandes fenêtres plus lointaines sur les 10 à 20 prochaines années, uniquement si elles représentent un changement de cycle, une clôture, un redémarrage, une maturation ou une transformation profonde. Mieux vaut 2 périodes fortes que 6 années faibles.
 - §3 : la logique d'ensemble de ces passages et les ressources de CE profil pour les traverser -- ce qui reste stable en lui/elle lorsque le décor change.
-RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. TOUT le futur est au conditionnel. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
+RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. Les dates et événements à venir restent au conditionnel (seul endroit où il est de rigueur), le reste du portrait au présent. Ce mouvement ne redit PAS le moment présent déjà traité au mouvement 2 : il parle uniquement des fenêtres à venir et de la logique d'ensemble. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
@@ -1853,6 +1904,15 @@ Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de prédic
     }
 
 
+_REGLE_TON_AFFIRME = """RÈGLE DE TON -- PRIORITAIRE SUR TOUTE AUTRE CONSIGNE DE CE PROMPT : le livret est écrit sur un ton affirmé, chaleureux et direct, jamais hésitant. Le portrait (qui est la personne, ses forces, sa façon de fonctionner, sa présence, ses dynamiques de couple ou de famille) s'écrit au PRÉSENT DE L'INDICATIF, avec assurance. Le conditionnel est réservé aux dates et aux événements à venir. Interdits : « il est possible que », « il se peut que », « il est envisageable que », « peut-être », « probablement », « sans doute », « possiblement » ; « pourrait/pourraient » pour décrire une personne. Maximum 1 nuance par paragraphe, jamais 2 dans la même phrase, moins de 4 formes de conditionnel pour 1000 mots. Si une consigne plus bas demande « hypothèse », « au conditionnel » ou « possible », applique-la seulement aux FAITS DE VIE, aux dates et à l'avenir, jamais au portrait symbolique. Les interdits d'invention restent absolus : rien d'inventé sur le vécu, les souvenirs ou les proches. Dans une offre enfant/naissance, les traits et scènes de l'enfant restent présentés comme des tendances, sans scène vécue inventée.
+
+"""
+
+def _ton_affirme(prompt):
+    """Place la règle de ton en tête ET en rappel final du prompt (priorité sur les consignes de conditionnel)."""
+    return _REGLE_TON_AFFIRME + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que »."
+
+
 def _appel_claude_chunk(prompt, max_tokens=8000):
     import time
     last_exception = None
@@ -1861,7 +1921,7 @@ def _appel_claude_chunk(prompt, max_tokens=8000):
             r = requests.post(
                 "https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-opus-4-6", "max_tokens": max_tokens, "messages": [{"role": "user", "content": prompt}]},
+                json={"model": "claude-opus-4-6", "max_tokens": max_tokens, "messages": [{"role": "user", "content": _ton_affirme(prompt)}]},
                 timeout=600
             )
             r.raise_for_status()
@@ -2030,7 +2090,7 @@ DONNÉES COMPLÈTES DE LA FAMILLE :
                     json={
                         'model': 'claude-opus-4-6',
                         'max_tokens': max_tokens,
-                        'messages': [{'role': 'user', 'content': prompt}]
+                        'messages': [{'role': 'user', 'content': _ton_affirme(prompt)}]
                     },
                     timeout=600
                 )
@@ -5520,7 +5580,9 @@ def webhook():
                     # Bundle : générer Solo + Vocation et envoyer ensemble
                     narratif_solo     = _generer_et_valider('solo')
                     narratif_solo     = ajouter_sections_enrichies(narratif_solo, 'solo', clients, 'adulte', data)
+                    narratif_solo     = resserrer_narratif(narratif_solo, 'adulte')
                     narratif_vocation = _generer_et_valider('vocation')
+                    narratif_vocation = resserrer_narratif(narratif_vocation, 'adulte')
                     narratif_solo     = _chiffrer_nombres(narratif_solo)
                     narratif_vocation = _chiffrer_nombres(narratif_vocation)
                     rapport_q = _rapport_qualite(narratif_solo) + _rapport_qualite(narratif_vocation)
@@ -5535,6 +5597,7 @@ def webhook():
                 else:
                     narratif = _generer_et_valider(offre)
                     narratif = ajouter_sections_enrichies(narratif, offre, clients, type_analyse, data)
+                    narratif = resserrer_narratif(narratif, type_analyse)
                     narratif = _chiffrer_nombres(narratif)
                     rapport_q = _rapport_qualite(narratif)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
