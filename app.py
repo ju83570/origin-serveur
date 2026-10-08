@@ -1542,52 +1542,75 @@ def _securiser_note_mantra_couple(mantras, chemins):
     return mantras
 
 
-def _resserrer_une_section(sec, seuil):
+def _polir_section(sec, ctx):
     contenu = str(sec.get("contenu") or "")
     texte = re.sub(r'<[^>]+>', ' ', contenu)
     mots = len(texte.split())
-    if mots < 150:
+    if mots < 120:
         return
     nb = len(_RE_CONDITIONNEL.findall(texte))
-    if nb * 1000.0 / mots <= seuil:
-        return
+    nonpas = len(re.findall(r"non pas", texte, re.I))
+    pasbesoin = len(re.findall(r"pas besoin de", texte, re.I))
+    prenoms = [p for p in ctx.get("prenoms", []) if p]
+    tierce = 0
+    if ctx.get("tutoie"):
+        tierce += len(re.findall(r"\b(?:une|cette|la) femme qui\b|\bun homme qui\b|\bce n'est pas une femme\b", texte, re.I))
+        for p in prenoms:
+            tierce += len(re.findall(re.escape(p) + r"\b(?! sonne)", texte)) if re.search(re.escape(p) + r"\s+(?:est|a|ne|n'|porte|se|sait|reste|garde)\b", texte) else 0
+    futur = len(re.findall(r"\b20[2-4]\d\b", texte)) + len(re.findall(r"autour de \d+ ans|entre \d+ et \d+ ans", texte)) >= 2
+    consignes = [
+        "1. TON : affirmé, chaleureux. Le portrait (forces, façon de fonctionner, présence) est au PRÉSENT DE L'INDICATIF, sans enrobage. Retire « il est possible que », « il se peut que », « peut-être », « probablement », « sans doute », « pourrait/pourraient » quand ils décrivent la personne. Maximum 1 nuance par paragraphe.",
+        "2. FAITS DE VIE : la seule source de faits est le bloc DONNÉES ci-dessous. Tout détail concret de sa vie absent des DONNÉES (objet, activité, lieu, métier, tâche domestique, atelier, conversation évitée, relation, scène) est remplacé par une formulation symbolique générale ou supprimé. Toute émotion nommée absente des DONNÉES (peur, culpabilité, loyauté, honte) et tout comportement vécu précis (« tu te retires », « tu t'isoles ») est remplacé par une mécanique symbolique (« la sensibilité sans filtre sature »). Les conseils d'action restent des invitations génériques à l'impératif.",
+        "3. TICS : supprime TOUTE construction « non pas X, mais Y » (reformule directement) et toute tournure « tu n'as pas besoin de / n'a pas besoin de » (reformule en positif). Remplace les mots marquants répétés (« bâtisseuse », « double nature », « signature », « occuper tout l'espace ») par un équivalent quand ils reviennent dans le chapitre.",
+    ]
+    if ctx.get("tutoie"):
+        consignes.append("4. PERSONNE : tout le chapitre est à « tu ». Convertis chaque passage à la troisième personne (« Amélie… elle », « une femme qui », « son père ») en « tu / ton » ; seule exception : citer le prénom du client dans une phrase adressée à lui.")
+    if futur:
+        consignes.append("5. FUTUR : tout événement, changement ou période à venir est au CONDITIONNEL (« pourrait », « inviterait »), jamais au présent de l'indicatif ; plus aucune date exacte (« automne 2027 ») : « autour de », « entre … et … ». Le portrait de la personne reste au présent.")
     prompt = (
-        "Tu es relecteur éditorial d'ORIGIN. Réécris ce chapitre en français, même longueur (±10 %), "
-        "mêmes idées, mêmes images, mêmes balises <p>, même tutoiement/vouvoiement et mêmes accords de genre.\n"
-        "OBJECTIF : ton affirmé et chaleureux. Le portrait (forces, façon de fonctionner, présence, dynamiques) passe au PRÉSENT DE L'INDICATIF, sans enrobage. "
-        "Supprime les « il est possible que », « il se peut que », « peut-être », « probablement », « sans doute », « possiblement », « pourrait/pourraient » quand ils décrivent des personnes. "
-        "Garde le conditionnel UNIQUEMENT pour les dates et événements à venir. Maximum 1 nuance par paragraphe, 4 pour tout le chapitre.\n"
-        "INTERDIT : ajouter un fait, un souvenir, un proche, un chiffre ou une date absents du texte ; supprimer une phrase à dire à voix haute entre guillemets ; changer les chiffres.\n"
+        "Tu es relecteur éditorial d'ORIGIN. Réécris ce chapitre en gardant : même longueur (±10 %), mêmes idées et images fortes, même nombre de balises <p>, mêmes accords de genre, même style littéraire. "
+        "Applique UNIQUEMENT ces corrections ; si un point est déjà conforme, ne touche pas au passage concerné. N'ajoute aucun fait, chiffre ou date ; ne supprime pas la phrase à dire à voix haute entre guillemets ; garde les âges en chiffres.\n"
+        + "\n".join(consignes) + "\n" +
         'Retourne UNIQUEMENT ce JSON valide, sans markdown : {"contenu": "<p>...</p><p>...</p>"}\n\n'
-        "CHAPITRE :\n" + contenu
+        "DONNÉES (seule source de faits) :\n" + str(ctx.get("donnees") or "")[:6000] + "\n\nCHAPITRE :\n" + contenu
     )
-    r = _appel_claude_chunk(prompt, max_tokens=6000)
+    r = _appel_claude_chunk(prompt, max_tokens=7000)
     new = str((r or {}).get("contenu") or "")
     nt = re.sub(r'<[^>]+>', ' ', new)
     nm = len(nt.split())
     nb2 = len(_RE_CONDITIONNEL.findall(nt))
-    if new.count("<p>") == contenu.count("<p>") and 0.8 * mots <= nm <= 1.2 * mots and nb2 < nb:
+    np2 = len(re.findall(r"non pas", nt, re.I))
+    pb2 = len(re.findall(r"pas besoin de", nt, re.I))
+    if new.count("<p>") == contenu.count("<p>") and 0.8 * mots <= nm <= 1.2 * mots \
+       and (nb2 <= max(nb, 4)) and np2 <= nonpas and pb2 <= pasbesoin:
         sec["contenu"] = new
-        print(f"[ton] chapitre resserré : {nb} -> {nb2} conditionnels", flush=True)
+        print(f"[polish] chapitre poli : cond {nb}->{nb2}, non pas {nonpas}->{np2}, tierce {tierce}, futur {futur}", flush=True)
+    else:
+        print("[polish] réécriture refusée (garde-fous), chapitre original conservé", flush=True)
 
 
-def resserrer_narratif(narratif, type_analyse='adulte', seuil=5.0):
-    """Passe finale pour TOUTES les offres : réécrit les chapitres trop hésitants.
-    Garde l'original en cas d'échec. Les livrets Naissance (enfant) sont laissés tels quels."""
+def resserrer_narratif(narratif, type_analyse='adulte', offre='solo', clients=None, donnees=''):
+    """Passe finale (toutes offres sauf Naissance) : ton affirmé, zéro fait de vie inventé,
+    tutoiement strict, tics supprimés, futur au conditionnel. Original conservé en cas d'échec."""
     if type_analyse == 'naissance' or not isinstance(narratif, dict):
         return narratif
+    ctx = {
+        "donnees": donnees,
+        "prenoms": [str((c or {}).get('prenom') or '') for c in (clients or [])],
+        "tutoie": offre in ('solo', 'vocation'),
+    }
     secs = [x for x in (narratif.get("sections") or []) if isinstance(x, dict)]
     def _go(sec):
         try:
-            _resserrer_une_section(sec, seuil)
+            _polir_section(sec, ctx)
         except Exception as ex:
-            print(f"[ton] resserrage ignoré : {ex}", flush=True)
+            print(f"[polish] ignoré : {ex}", flush=True)
     try:
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=4) as ex:
             list(ex.map(_go, secs))
     except Exception as ex:
-        print(f"[ton] passe de ton ignorée : {ex}", flush=True)
+        print(f"[polish] passe ignorée : {ex}", flush=True)
     return narratif
 
 
@@ -1623,7 +1646,7 @@ DONNÉES :
 """
 
     prompt_a = base + """
-LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2800-3500 mots. Si tu as dit l'essentiel, creuse encore -- ajoute une image concrète, une situation de vie, une nuance que seul ce profil peut porter.
+LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 3200-3800 mots. Si tu as dit l'essentiel, creuse encore -- ajoute une image concrète, une situation de vie, une nuance que seul ce profil peut porter.
 
 CHUNK A -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
@@ -1650,7 +1673,7 @@ ANGLE UNIQUE : ce mouvement parle du QUOTIDIEN présent (rythmes, relations, én
 - §3 : comment utiliser cette période comme terrain d'observation et d'expérimentation concrète. Aucun « l'univers facilite », aucun « soutien invisible », aucune promesse implicite."""
 
     prompt_b = base + """
-LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2500-3000 mots hors mantra et message final.
+LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2800-3300 mots hors mantra et message final.
 
 CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
@@ -1669,17 +1692,17 @@ Mouvement 3 -- TES ZONES DE FORCE ET DE CROISSANCE (titre poétique libre, 3 par
 RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les données (Homme/Femme).
 - §1 : les forces naturelles -- ce qui vient facilement, ce qui distingue vraiment cette personne. Célébrer avec précision, pas avec des généralités.
 - §2 : les zones de croissance possibles -- ce qui pourrait demander plus de pratique, de confiance ou de cadre. Ne dis jamais que la personne évite quelque chose « sans le savoir » et veille à ne pas contredire une force identifiée ailleurs. Dans ce paragraphe, nomme aussi avec douceur une difficulté possible à dire ses besoins, à se montrer vulnérable ou à demander, formulée comme une invitation et jamais comme un constat. Termine ce paragraphe par UNE phrase courte à se dire à voix haute, à la première personne, sobre et propre à CE profil, présentée comme une pratique à essayer (ex. de forme : « Je peux avancer sans tout comprendre. » -- ne recopie jamais cet exemple).
-- §3 : la transformation à portée -- ce qui est déjà en train de changer, ce qui cherche à émerger, le prochain seuil.
+- §3 : la transformation à portée -- ce qui cherche à émerger, le prochain seuil. ANGLE UNIQUE : ne reprends pas le tri des rôles, les cadres devenus étroits ni le fait de ne plus se justifier, déjà dits au mouvement 2 ; parle de ce que la personne peut OFFRIR et donner à voir.
 
 Mouvement 4 -- LES GRANDES PÉRIODES CHARNIÈRES (titre poétique libre, 3 paragraphes longs) :
 INSTRUCTION ABSOLUE : si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le comme matériau interne pour identifier seulement les grandes bascules. NE FAIS JAMAIS une revue année par année et ne restitue jamais tous les repères calculés. Regroupe les années proches en grandes fenêtres cohérentes.
 - §1 : la prochaine grande fenêtre de bascule réellement structurante -- idéalement une période de 1 à 3 ans, avec sa texture et ce qu'elle peut inviter à reconsidérer.
 - §2 : une ou deux grandes fenêtres plus lointaines sur les 10 à 20 prochaines années, uniquement si elles représentent un changement de cycle, une clôture, un redémarrage, une maturation ou une transformation profonde. Mieux vaut 2 périodes fortes que 6 années faibles.
 - §3 : la logique d'ensemble de ces passages et les ressources de CE profil pour les traverser -- ce qui reste stable en lui/elle lorsque le décor change.
-RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. Les dates et événements à venir restent au conditionnel (seul endroit où il est de rigueur), le reste du portrait au présent. Ce mouvement ne redit PAS le moment présent déjà traité au mouvement 2 : il parle uniquement des fenêtres à venir et de la logique d'ensemble. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
+RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. TOUT ce qui concerne l'avenir est au conditionnel, SANS EXCEPTION, y compris dans le premier paragraphe (« cette période demanderait », « une lucidité pourrait s'installer »), et ne s'écrit JAMAIS au présent de l'indicatif ; seul le portrait de la personne reste au présent. Pas de date précise (« automne 2027 ») : utilise « autour de », « entre … et … ». Ce mouvement ne redit PAS le moment présent déjà traité au mouvement 2 : il parle uniquement des fenêtres à venir et de la logique d'ensemble. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
-- §1 : un élan vers la suite -- ce qui s'ouvre, ce qui se construit, la direction que montre ce profil à ce moment précis.
+- §1 : un élan vers la suite -- la direction que montre ce profil. ANGLE UNIQUE : pas de « justifier qui tu es », pas de « validation », pas de « heures perdues » (déjà dits) ; ouvre sur une image neuve et concrète liée à ce profil.
 - §2 : une note finale qui donne confiance à cette personne dans sa propre trajectoire. Chaleureux, ancré, jamais vague ni prédictif.
 
 Mantra : une phrase poétique courte (max 15 mots) impossible à donner à quelqu'un d'autre + note de 3 lignes qui explique pourquoi CE mantra peut servir de repère à CE profil. Ne parle jamais de vérité absolue ni de destin.
@@ -1905,6 +1928,10 @@ Message final : 2 paragraphes chaleureux et porteurs d'espoir. JAMAIS de prédic
 
 
 _REGLE_TON_AFFIRME = """RÈGLE DE TON -- PRIORITAIRE SUR TOUTE AUTRE CONSIGNE DE CE PROMPT : le livret est écrit sur un ton affirmé, chaleureux et direct, jamais hésitant. Le portrait (qui est la personne, ses forces, sa façon de fonctionner, sa présence, ses dynamiques de couple ou de famille) s'écrit au PRÉSENT DE L'INDICATIF, avec assurance. Le conditionnel est réservé aux dates et aux événements à venir. Interdits : « il est possible que », « il se peut que », « il est envisageable que », « peut-être », « probablement », « sans doute », « possiblement » ; « pourrait/pourraient » pour décrire une personne. Maximum 1 nuance par paragraphe, jamais 2 dans la même phrase, moins de 4 formes de conditionnel pour 1000 mots. Si une consigne plus bas demande « hypothèse », « au conditionnel » ou « possible », applique-la seulement aux FAITS DE VIE, aux dates et à l'avenir, jamais au portrait symbolique. Les interdits d'invention restent absolus : rien d'inventé sur le vécu, les souvenirs ou les proches. Dans une offre enfant/naissance, les traits et scènes de l'enfant restent présentés comme des tendances, sans scène vécue inventée.
+FAITS DE VIE -- RÈGLE ABSOLUE : la seule source de faits sur la personne et son entourage est le bloc DONNÉES. N'écris AUCUN détail concret de sa vie qui n'y figure pas (objet, activité, lieu, métier, tâche domestique, atelier, conversation évitée, relation, scène). N'attribue aucune émotion nommée (peur, culpabilité, loyauté, honte, jalousie) ni aucun comportement vécu précis (« tu te retires », « tu t'isoles », « tu fuis »). Les zones de vigilance décrivent une MÉCANIQUE symbolique (« une sensibilité sans filtre finit par saturer »), jamais un vécu. Les conseils d'action sont des invitations génériques à l'impératif (« marche dehors », « écris dix minutes »), jamais des descriptions de sa vie.
+TUTOIEMENT : quand le livret tutoie, tu parles toujours à « tu ». Ne passe JAMAIS à la troisième personne pour parler du client (« Amélie… elle », « une femme qui… », « ce n'est pas une femme qui… »).
+TICS INTERDITS : la construction « non pas X, mais Y » (2 fois maximum dans tout le livret), « tu n'as pas besoin de », « n'a pas besoin de », « ne demande la permission de personne ». Aucune image, expression ou mot marquant (« bâtisseuse », « double nature », « signature », « occuper tout l'espace », « heures perdues », « texture », « fenêtre ») plus de 2 fois dans tout le livret : cherche un autre mot. Chaque idée n'est dite qu'UNE fois dans le livret. N'ouvre jamais un chapitre sur « souffle », « fenêtre ouverte » ou « sonne comme ».
+FUTUR : tout événement ou changement à venir est au conditionnel ; ne l'écris jamais au présent (« une lucidité s'installe », « des intuitions surgissent »). Les chapitres sur le présent ne citent aucune année.
 
 """
 
@@ -5242,8 +5269,20 @@ def _rapport_qualite(narratif):
         alertes = []
         nb = len(_RE_CONDITIONNEL.findall(texte))
         taux = nb * 1000.0 / mots
-        if taux > 12:
+        if taux > 8:
             alertes.append(f"- Ton très conditionnel : {nb} « peut-être / pourrait / probablement… » pour {mots} mots ({taux:.0f} pour 1000). À resserrer à la relecture.")
+        n_np = len(re.findall(r"non pas", texte, re.I))
+        if n_np > 2:
+            alertes.append(f"- Tic « non pas X, mais Y » : {n_np} fois (maximum 2).")
+        n_pb = len(re.findall(r"pas besoin de", texte, re.I))
+        if n_pb:
+            alertes.append(f"- Formule interdite « (n')a pas besoin de » : {n_pb} fois.")
+        n_3 = len(re.findall(r"\b(?:une|cette) femme qui\b|\bce n'est pas une femme\b|\bun homme qui\b", texte, re.I))
+        if n_3:
+            alertes.append(f"- Passage à la 3e personne ({n_3} fois) : « une femme/un homme qui… ». À remettre en « tu ».")
+        n_e = len(re.findall(r"\bpeur\b|culpabilit|loyauté", texte, re.I))
+        if n_e:
+            alertes.append(f"- Émotion nommée (peur/culpabilité/loyauté) : {n_e} fois. Vérifier qu'elle vient du formulaire.")
         # Répétitions entre chapitres : suites de 7 mots identiques présentes dans 2 sections différentes
         blocs = []
         for sec in (narratif.get('sections') or []) if isinstance(narratif, dict) else []:
@@ -5580,9 +5619,9 @@ def webhook():
                     # Bundle : générer Solo + Vocation et envoyer ensemble
                     narratif_solo     = _generer_et_valider('solo')
                     narratif_solo     = ajouter_sections_enrichies(narratif_solo, 'solo', clients, 'adulte', data)
-                    narratif_solo     = resserrer_narratif(narratif_solo, 'adulte')
+                    narratif_solo     = resserrer_narratif(narratif_solo, 'adulte', 'solo', clients, profils_txt)
                     narratif_vocation = _generer_et_valider('vocation')
-                    narratif_vocation = resserrer_narratif(narratif_vocation, 'adulte')
+                    narratif_vocation = resserrer_narratif(narratif_vocation, 'adulte', 'vocation', clients, profils_txt)
                     narratif_solo     = _chiffrer_nombres(narratif_solo)
                     narratif_vocation = _chiffrer_nombres(narratif_vocation)
                     rapport_q = _rapport_qualite(narratif_solo) + _rapport_qualite(narratif_vocation)
@@ -5597,7 +5636,7 @@ def webhook():
                 else:
                     narratif = _generer_et_valider(offre)
                     narratif = ajouter_sections_enrichies(narratif, offre, clients, type_analyse, data)
-                    narratif = resserrer_narratif(narratif, type_analyse)
+                    narratif = resserrer_narratif(narratif, type_analyse, offre, clients, profils_txt)
                     narratif = _chiffrer_nombres(narratif)
                     rapport_q = _rapport_qualite(narratif)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
