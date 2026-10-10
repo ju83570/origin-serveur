@@ -1647,13 +1647,16 @@ CONTEXTE INTERNE — TRANSITS : Si un bloc "CONTEXTE ASTROLOGIQUE ACTUEL — USA
 STYLE : tutoiement, prose immersive, chaque paragraphe dense (5-6 lignes min), aucune liste, aucun terme technique visible. Titres libres et poétiques, adaptés à CE profil.
 POSTURE DE FIABILITÉ : cette lecture est symbolique. N'affirme jamais un comportement, une blessure, un état psychologique ou une histoire vécue comme un fait si le contexte client ne le dit pas. Cette règle vise les FAITS DE VIE (événements, blessures, état psychologique, entourage), pas le portrait symbolique : le portrait tiré du chemin de vie, du prénom et des indicateurs s'écrit au PRÉSENT DE L'INDICATIF, avec assurance (« tu sens avant de comprendre », « tu construis dans la durée »). Aucun diagnostic ni quasi-diagnostic. N'invente JAMAIS une scène d'enfance ou une réaction d'autrui. Interdits sans contexte explicite : culpabilité, possessivité, rumination, hyper-responsabilisation, trahison vécue, peur secrète, « les gens sentent que », « mettait les adultes mal à l'aise ».
 RÈGLE DU CONDITIONNEL -- ABSOLUE : le ton est affirmé, chaleureux, direct. Le portrait (qui tu es, tes forces, ta façon de fonctionner) est au présent de l'indicatif. Le conditionnel est réservé aux DATES et aux événements à venir. Interdits en début de phrase ou de proposition : « il est possible que », « il se peut que », « il est envisageable que », « peut-être », « probablement », « sans doute », « possiblement ». Maximum 1 nuance (« peut-être », « pourrait », « tu peux ») par paragraphe, jamais 2 dans la même phrase, et jamais pour décrire ses forces. Objectif chiffré : moins de 4 formes de conditionnel pour 1000 mots dans tout le livret. Un livret hésitant est un livret raté ; la nuance se place seulement là où une affirmation serait un fait non connu (événement précis, avenir).
-TICS À ÉVITER : la construction « non pas X, mais Y » (2 fois maximum dans tout le livret), les images « miroir », « boussole », « route » ou « chemin » employées comme métaphore (1 fois chacune au maximum). Varie les tournures d'un paragraphe à l'autre ; ne termine pas chaque paragraphe par une formule sentencieuse. Les mots « ancré », « ancrage », « ancre », « aligné » et « alignement » sont du jargon bien-être usé : 2 occurrences au maximum pour « ancr- » et 1 pour « align- » dans tout le livret ; préfère des images concrètes (« tenir », « poser », « avoir les pieds sur terre »).
+TICS À ÉVITER : la construction « non pas X, mais Y » et ses variantes (« ce n'est pas X, c'est Y », « n'est pas X — c'est Y », « pas X mais Y ») : 3 fois maximum en tout dans le livret, les images « miroir », « boussole », « route » ou « chemin » employées comme métaphore (1 fois chacune au maximum). Varie les tournures d'un paragraphe à l'autre ; ne termine pas chaque paragraphe par une formule sentencieuse. Les mots « ancré », « ancrage », « ancre », « aligné » et « alignement » sont du jargon bien-être usé : 2 occurrences au maximum pour « ancr- » et 1 pour « align- » dans tout le livret ; préfère des images concrètes (« tenir », « poser », « avoir les pieds sur terre »).
 SITUATION DU CLIENT INCONNUE : tu ne sais pas si la personne traverse une crise, une transition ou une période stable. Ne présuppose JAMAIS une remise en question, un bilan, un tri, une rupture, un « recommencer », un « repartir de zéro » ni un âge qui rendrait un nouveau départ « tardif », sauf si le texte libre du client le dit. Si son texte montre une vie stable et posée, le livret s'adresse à quelqu'un de stable : il éclaire et approfondit, il ne secoue pas.
 RÉPÉTITIONS : un événement ou un fait de vie donné par le client (maladie, séparation, déménagement, rupture, etc.) n'est évoqué qu'UNE fois dans ce bloc, en une phrase ou deux, et jamais reformulé ensuite sous d'autres images (corps, immobilité, traversée...). Le reste du texte parle de ce que la personne fait et porte aujourd'hui, pas de ce qu'elle a subi.
 RÉPÉTITIONS DES MOTS DU CLIENT : un fait, un chiffre ou une expression que le client a lui-même écrit (nombre d'enfants, métier, situation, formule de son formulaire) ne revient pas plus de 2 fois dans tout le livret. Quand tu dois y revenir, dis-le autrement : un synonyme, une périphrase, ou une allusion (« ta tribu », « ceux qui comptent sur toi ») au lieu de redire le même chiffre ou la même formule. Pas de tic de langage répété d'un chapitre à l'autre.
 CŒUR ET CONCRET -- PRIORITÉ : cette lecture doit toucher la personne au cœur, pas ressembler à un horoscope. Chaque paragraphe contient au moins une image précise et reconnaissable (un geste, une matière, un lieu, un moment de journée, une sensation du corps) plutôt qu'une idée abstraite. Bannis les formules vagues qui pourraient s'adresser à n'importe qui : « ce type de moment », « cette période », « ce genre de situation », « une forme de », « une certaine ». Chaque chapitre contient au moins UNE phrase que cette personne-là pourrait recopier dans son carnet parce qu'elle se reconnaît dedans. Si les DONNÉES contiennent un texte libre du client (histoire, situation, contexte, message), il devient la matière centrale : reprends ses mots au moins 2 fois dans le livret (reformulés au plus près, sans dire « tu as écrit ») et réponds-y précisément, sans jamais rien ajouter qui n'y figure pas. La précision vient des DONNÉES (chemin de vie, prénom, indicateurs, âge exact, texte libre du client) et du langage sensoriel, jamais de faits de vie inventés.
-MOTS TICS : « autorité », « armure » (et « armature »), « endurance », « magnétique », « socle », « ampleur », « tri », « inventaire », « radar », « étoffe », « feu », « flamme » : chacun apparaît AU PLUS 1 fois dans tout le livret (2 pour « autorité »), mantra compris. Mots à plafonner : « intensité » 3 fois au plus, « poids », « profondeur », « exigence », « solidité » 2 fois au plus chacun. Cherche un autre mot ou une autre image.
-TITRES ET PETITS TITRES : aucun détail physique ou biographique (une main, un corps, un lieu, un âge, un métier) qui ne vienne pas des DONNÉES ; jamais le même mot-clé dans plus de 2 titres du livret (ex. « feu »).
+MOTS TICS : « autorité », « armure » (et « armature »), « endurance », « magnétique », « socle », « ampleur », « tri », « inventaire », « radar », « étoffe », « feu », « flamme » : chacun apparaît AU PLUS 1 fois dans tout le livret (2 pour « autorité »), mantra compris. Mots à plafonner : « intensité » 3 fois au plus, « poids », « profondeur », « exigence », « solidité » 2 fois au plus chacun ; les verbes « porter » et « tenir » (toutes formes) : 10 fois au plus chacun dans tout le livret (varie : « soutenir », « garder », « poser », « maintenir », « assumer », « mener »). Cherche un autre mot ou une autre image.
+TITRES ET PETITS TITRES : aucun détail physique ou biographique (une main, un corps, un lieu, un âge, un métier) qui ne vienne pas des DONNÉES ; jamais le même mot-clé dans plus de 2 titres du livret (ex. « feu »), et jamais deux titres qui commencent par les mêmes mots (ex. « L'homme qui… » / « L'homme à qui… »).
+IMAGES : un même champ d'images (la main, le bois et l'artisanat, l'arbre, la pierre, l'eau, le feu) ne revient pas plus de 3 fois dans tout le livret ; varie les registres d'un chapitre à l'autre. N'invente pas de métier : n'écris « artisan », « menuisier », « compagnon » ou « apprenti » que si les DONNÉES le disent.
+AVENIR SANS PROJET INVENTÉ : ne décris jamais un projet concret absent des DONNÉES (ouvrir un lieu, enseigner, accueillir des apprentis, changer de métier, fonder quelque chose) : parle d'une direction intérieure, pas d'un plan de vie.
+LECTEUR : ne suppose jamais ce que la personne a ressenti ou fait en lisant (« si tu as senti un creux dans la poitrine », « si une phrase t'a arrêté ») : parle du livret, pas de sa réaction.
 SOURCE DES CALCULS : ne dis jamais d'où viennent les repères, sauf éventuellement « ta date de naissance » et « ton prénom ». Interdits dans le texte : « l'heure exacte », « l'heure de ta naissance », « tes coordonnées », « le ciel au moment de ta naissance », « ton thème ».
 ÂGES ET NOMBRES : écris toujours les âges et les durées en chiffres (59 ans, 62 ans, 6 enfants), jamais en lettres (« cinquante-neuf »), c'est plus lisible. Évite aussi les repères relatifs qui vieillissent mal (« jusqu'à la fin de l'année prochaine ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 RIEN D'INVENTÉ SUR LES PROCHES -- RÈGLE ABSOLUE : tu ne connais de l'entourage du client (enfants, conjoint, parents, collègues) que ce que contiennent les DONNÉES. N'attribue JAMAIS à un proche un métier, un caractère, une hésitation, une réussite, une étape de vie (« un fils qui n'ose pas... », « une fille qui devient mère... ») ni une qualité de relation (« une forme de sécheresse en retour », une distance, une fatigue des autres) si ce n'est pas écrit dans les données. Si les données ne disent rien sur un proche, parle seulement de ce que le client PEUT porter ou ressentir, sans mettre en scène les autres.
@@ -2899,7 +2902,7 @@ _REGLES_VIBRATION = """RÈGLES ABSOLUES (ORIGIN) :
 - Les chiffres de calcul restent INTERNES. N'écris AUCUN chiffre, ni les mots « pyramide », « sommet », « base », « voyelles », « consonnes », « expression », « nombre », ni « chemin de vie ». Traduis tout en images et en qualités humaines : ce que le prénom murmure à l'intérieur, ce qu'il montre à l'extérieur, la direction qu'il dessine.
 - La donnée « chemin de vie (interne) » sert seulement à faire dialoguer le prénom et la date de naissance (écho ou contraste) : jamais de numéro écrit.
 - Lecture symbolique : conditionnel, « peut », « il est possible que ». Aucune certitude, aucun diagnostic, aucune prédiction, aucune scène vécue inventée.
-- INTERDIT : étymologie, origine ou signification historique d'un prénom ou d'un nom, saints, fêtes, personnalités célèbres, histoire de famille, métier ancestral, anciens porteurs. Rien qui ne vienne des données ci-dessous.
+- INTERDIT : étymologie, origine ou signification historique d'un prénom ou d'un nom, saints, fêtes, personnalités célèbres, histoire de famille, métier ancestral, anciens porteurs. Jamais de formule du type « X est un prénom de passeur / de bâtisseur / de guide » : la vibration du prénom se décrit par ses lettres et ses chiffres, jamais par ce que le prénom « signifie ». Rien qui ne vienne des données ci-dessous.
 - INTERDIT : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », et les formules creuses (quête, éveil, cheminement de l'âme, énergie cosmique) sans image concrète derrière.
 - Si deux indicateurs tirent dans des directions différentes (ce que le prénom murmure et ce qu'il montre, par exemple), synthétise-les en « potentiel réel qui peut demander confiance, pratique ou cadre » : jamais deux affirmations opposées.
 - Tics à éviter : « non pas X, mais Y » (1 fois au maximum). Ne termine pas chaque paragraphe par une formule sentencieuse.
@@ -4626,17 +4629,22 @@ CH_END_SVG = ('<div class="ch-end"><svg viewBox="0 0 88 12" xmlns="http://www.w3
 _SEUIL_PAGE_ORPHELINE = 380  # caractères
 
 def _pages_orphelines(doc):
+    """Retourne [(numéro de page, id du chapitre)] pour les pages de fin de chapitre quasi vides."""
     res = []
     for idx, page in enumerate(doc.pages):
         chars, only_ch, has_head = 0, True, False
-        stack = [(page._page_box, False)]
+        chap_ids = set()
+        stack = [(page._page_box, False, None)]
         while stack:
-            b, inch = stack.pop()
+            b, inch, chid = stack.pop()
             if type(b).__name__ == 'MarginBox':
                 continue
             el = getattr(b, 'element', None)
             cls = (el.get('class') or '').split() if el is not None and hasattr(el, 'get') else []
-            now = inch or (el is not None and getattr(el, 'tag', '') == 'section' and ('ch' in cls or 'final' in cls))
+            is_sec = el is not None and getattr(el, 'tag', '') == 'section' and ('ch' in cls or 'final' in cls)
+            now = inch or is_sec
+            if is_sec:
+                chid = el.get('id')
             if 'ch-head' in cls or 'ch-banner' in cls or 'final-head' in cls:
                 has_head = True
             t = getattr(b, 'text', None)
@@ -4644,40 +4652,50 @@ def _pages_orphelines(doc):
                 chars += len(t.strip())
                 if not now:
                     only_ch = False
+                elif chid:
+                    chap_ids.add(chid)
             for c in (getattr(b, 'children', None) or []):
-                stack.append((c, now))
-        if only_ch and not has_head and 0 < chars < _SEUIL_PAGE_ORPHELINE:
-            res.append(idx + 1)
+                stack.append((c, now, chid))
+        if only_ch and not has_head and 0 < chars < _SEUIL_PAGE_ORPHELINE and len(chap_ids) == 1:
+            res.append((idx + 1, next(iter(chap_ids))))
     return res
 
 
 def _rendre_pdf_sans_pages_orphelines(html_print):
+    """Chaque chapitre démarre sur une nouvelle page : on peut donc régler l'interligne
+    chapitre par chapitre, sans toucher aux chapitres déjà bien remplis. Essais successifs
+    (resserrer, puis desserrer) uniquement sur les chapitres dont la dernière page est quasi vide.
+    Tout échec => PDF d'origine."""
     import time
     t0 = time.time()
     base = "https://origin-famille.fr"
     doc = WeasyprintHTML(string=html_print, base_url=base).render(presentational_hints=True)
-    meilleur, meilleur_nb = doc, None
+    meilleur = doc
     try:
         orph = _pages_orphelines(doc)
-        meilleur_nb = len(orph)
         if orph and (time.time() - t0) < 150:
-            print(f"[pdf] pages quasi vides : {orph}, ajustement de l'interligne", flush=True)
-            niveaux = [
-                ".ch .prose, .final .prose { line-height: 1.53; } .prose p { margin-bottom: 2.9mm; }",
-                ".ch .prose, .final .prose { line-height: 1.64; } .prose p { margin-bottom: 3.6mm; }",
-                ".ch .prose, .final .prose { line-height: 1.47; } .prose p { margin-bottom: 2.5mm; }",
-            ]
-            for css in niveaux:
-                if time.time() - t0 > 240 or meilleur_nb == 0:
+            print(f"[pdf] pages quasi vides : {orph}", flush=True)
+            niveaux = [(1.54, 3.0), (1.50, 2.8), (1.46, 2.5), (1.68, 3.8)]
+            restants = {cid for _, cid in orph}
+            regles = {}
+            for lh, mb in niveaux:
+                if not restants or time.time() - t0 > 240:
                     break
-                h2 = html_print.replace("</head>", "<style>" + css + "</style></head>", 1)
+                for cid in restants:
+                    regles[cid] = f"#{cid} .prose {{ line-height: {lh}; }} #{cid} .prose p {{ margin-bottom: {mb}mm; }}"
+                h2 = html_print.replace("</head>", "<style>" + "".join(regles.values()) + "</style></head>", 1)
                 d2 = WeasyprintHTML(string=h2, base_url=base).render(presentational_hints=True)
-                n2 = len(_pages_orphelines(d2))
-                print(f"[pdf] essai interligne : {n2} page(s) quasi vide(s)", flush=True)
-                if n2 < meilleur_nb:
-                    meilleur, meilleur_nb = d2, n2
+                encore = {cid for _, cid in _pages_orphelines(d2)}
+                print(f"[pdf] interligne {lh} : chapitres encore quasi vides {sorted(encore)}", flush=True)
+                # les chapitres réglés gardent leur niveau ; les autres passent au niveau suivant
+                restants = encore & restants
+                meilleur = d2
+            # sécurité : si le dernier rendu a plus de pages quasi vides que l'original, on revient à l'original
+            if len(_pages_orphelines(meilleur)) > len(orph):
+                meilleur = doc
     except Exception as ex:
         print(f"[pdf] contrôle des pages ignoré : {ex}", flush=True)
+        meilleur = doc
     return meilleur.write_pdf()
 
 
