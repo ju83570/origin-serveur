@@ -1560,13 +1560,13 @@ def _polir_section(sec, ctx):
     futur = len(re.findall(r"\b20[2-4]\d\b", texte)) + len(re.findall(r"autour de \d+ ans|entre \d+ et \d+ ans", texte)) >= 2
     consignes = [
         "1. TON : affirmé, chaleureux. Le portrait (forces, façon de fonctionner, présence) est au PRÉSENT DE L'INDICATIF, sans enrobage. Retire « il est possible que », « il se peut que », « peut-être », « probablement », « sans doute », « pourrait/pourraient » quand ils décrivent la personne. Maximum 1 nuance par paragraphe.",
-        "2. FAITS DE VIE : la seule source de faits est le bloc DONNÉES ci-dessous. Tout détail concret de sa vie absent des DONNÉES (objet, activité, lieu, métier, tâche domestique, atelier, conversation évitée, relation, scène) est remplacé par une formulation symbolique générale ou supprimé. Toute affirmation sur ce que la personne vit EN CE MOMENT (situation, ressenti actuel, relations, travail, doutes : « tu traverses », « tu observes », « ralentissement que tu n'as pas choisi ») absente des DONNÉES est reformulée en description de la PÉRIODE (« cette période invite à… », « ce moment demande… »). Toute émotion nommée absente des DONNÉES (peur, culpabilité, loyauté, honte) et tout comportement vécu précis (« tu te retires », « tu t'isoles ») est remplacé par une mécanique symbolique (« la sensibilité sans filtre sature »). Les conseils d'action restent des invitations génériques à l'impératif.",
+        "2. FAITS DE VIE : la seule source de faits est le bloc DONNÉES ci-dessous. Tout détail concret de sa vie absent des DONNÉES (objet, activité, lieu, métier, tâche domestique, atelier, conversation évitée, relation, scène) est remplacé par une formulation symbolique générale ou supprimé. Toute affirmation sur ce que la personne vit EN CE MOMENT (situation, ressenti actuel, relations, travail, doutes : « tu traverses », « tu observes », « ralentissement que tu n'as pas choisi ») absente des DONNÉES est reformulée en image CONCRÈTE et sensorielle de la PÉRIODE (ce qu'elle ralentit, éclaircit, alourdit ou allège dans le quotidien), sans constat sur sa vie ; ne commence jamais deux phrases de suite par « cette période » ou « ce moment », et ne remplace jamais une image précise par une formule abstraite. Toute émotion nommée absente des DONNÉES (peur, culpabilité, loyauté, honte) et tout comportement vécu précis (« tu te retires », « tu t'isoles ») est remplacé par une mécanique symbolique (« la sensibilité sans filtre sature »). Les conseils d'action restent des invitations génériques à l'impératif.",
         "3. TICS : supprime TOUTE construction « non pas X, mais Y » (reformule directement) et toute tournure « tu n'as pas besoin de / n'a pas besoin de » (reformule en positif). Remplace les mots marquants répétés (« bâtisseuse », « double nature », « signature », « occuper tout l'espace ») par un équivalent quand ils reviennent dans le chapitre.",
     ]
     if ctx.get("tutoie"):
         consignes.append("4. PERSONNE : tout le chapitre est à « tu ». Convertis chaque passage à la troisième personne (« Amélie… elle », « une femme qui », « son père ») en « tu / ton » ; seule exception : citer le prénom du client dans une phrase adressée à lui.")
     if futur:
-        consignes.append("5. FUTUR : tout événement, changement ou période à venir est au CONDITIONNEL (« pourrait », « inviterait »), jamais au présent de l'indicatif ; plus aucune date exacte (« automne 2027 ») : « autour de », « entre … et … ». Le portrait de la personne reste au présent.")
+        consignes.append("5. FUTUR : tout événement, changement ou période à venir reste prudent (jamais de certitude) : au plus 8 formes en « -erait / -rait / -raient » dans le chapitre, le reste en « invite à », « demande de », « cette fenêtre peut » ; plus aucune date exacte (« automne 2027 ») : « autour de », « entre … et … ». Le portrait de la personne reste au présent.")
     prompt = (
         "Tu es relecteur éditorial d'ORIGIN. Réécris ce chapitre en gardant : même longueur (±10 %), mêmes idées et images fortes, même nombre de balises <p>, mêmes accords de genre, même style littéraire. "
         "Applique UNIQUEMENT ces corrections ; si un point est déjà conforme, ne touche pas au passage concerné. CONSERVE INTÉGRALEMENT tout fait issu des DONNÉES (qui a choisi le prénom, pour qui, proche évoqué, mots du client) : ne le supprime ni ne le généralise jamais. N'ajoute aucun fait, chiffre ou date ; ne supprime pas la phrase à dire à voix haute entre guillemets ; garde les âges en chiffres.\n"
@@ -1651,6 +1651,9 @@ TICS À ÉVITER : la construction « non pas X, mais Y » (2 fois maximum dans t
 SITUATION DU CLIENT INCONNUE : tu ne sais pas si la personne traverse une crise, une transition ou une période stable. Ne présuppose JAMAIS une remise en question, un bilan, un tri, une rupture, un « recommencer », un « repartir de zéro » ni un âge qui rendrait un nouveau départ « tardif », sauf si le texte libre du client le dit. Si son texte montre une vie stable et posée, le livret s'adresse à quelqu'un de stable : il éclaire et approfondit, il ne secoue pas.
 RÉPÉTITIONS : un événement ou un fait de vie donné par le client (maladie, séparation, déménagement, rupture, etc.) n'est évoqué qu'UNE fois dans ce bloc, en une phrase ou deux, et jamais reformulé ensuite sous d'autres images (corps, immobilité, traversée...). Le reste du texte parle de ce que la personne fait et porte aujourd'hui, pas de ce qu'elle a subi.
 RÉPÉTITIONS DES MOTS DU CLIENT : un fait, un chiffre ou une expression que le client a lui-même écrit (nombre d'enfants, métier, situation, formule de son formulaire) ne revient pas plus de 2 fois dans tout le livret. Quand tu dois y revenir, dis-le autrement : un synonyme, une périphrase, ou une allusion (« ta tribu », « ceux qui comptent sur toi ») au lieu de redire le même chiffre ou la même formule. Pas de tic de langage répété d'un chapitre à l'autre.
+CŒUR ET CONCRET -- PRIORITÉ : cette lecture doit toucher la personne au cœur, pas ressembler à un horoscope. Chaque paragraphe contient au moins une image précise et reconnaissable (un geste, une matière, un lieu, un moment de journée, une sensation du corps) plutôt qu'une idée abstraite. Bannis les formules vagues qui pourraient s'adresser à n'importe qui : « ce type de moment », « cette période », « ce genre de situation », « une forme de », « une certaine ». Chaque chapitre contient au moins UNE phrase que cette personne-là pourrait recopier dans son carnet parce qu'elle se reconnaît dedans. Si les DONNÉES contiennent un texte libre du client (histoire, situation, contexte, message), il devient la matière centrale : reprends ses mots au moins 2 fois dans le livret (reformulés au plus près, sans dire « tu as écrit ») et réponds-y précisément, sans jamais rien ajouter qui n'y figure pas. La précision vient des DONNÉES (chemin de vie, prénom, indicateurs, âge exact, texte libre du client) et du langage sensoriel, jamais de faits de vie inventés.
+MOTS TICS : « autorité », « armure » (et « armature »), « endurance », « magnétique », « socle », « ampleur », « tri », « inventaire », « radar », « étoffe » : chacun apparaît AU PLUS 1 fois dans tout le livret (2 pour « autorité »), mantra compris. Cherche un autre mot ou une autre image.
+SOURCE DES CALCULS : ne dis jamais d'où viennent les repères, sauf éventuellement « ta date de naissance » et « ton prénom ». Interdits dans le texte : « l'heure exacte », « l'heure de ta naissance », « tes coordonnées », « le ciel au moment de ta naissance », « ton thème ».
 ÂGES ET NOMBRES : écris toujours les âges et les durées en chiffres (59 ans, 62 ans, 6 enfants), jamais en lettres (« cinquante-neuf »), c'est plus lisible. Évite aussi les repères relatifs qui vieillissent mal (« jusqu'à la fin de l'année prochaine ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 RIEN D'INVENTÉ SUR LES PROCHES -- RÈGLE ABSOLUE : tu ne connais de l'entourage du client (enfants, conjoint, parents, collègues) que ce que contiennent les DONNÉES. N'attribue JAMAIS à un proche un métier, un caractère, une hésitation, une réussite, une étape de vie (« un fils qui n'ose pas... », « une fille qui devient mère... ») ni une qualité de relation (« une forme de sécheresse en retour », une distance, une fatigue des autres) si ce n'est pas écrit dans les données. Si les données ne disent rien sur un proche, parle seulement de ce que le client PEUT porter ou ressentir, sans mettre en scène les autres.
 FORMULATIONS INTERDITES (affirmations déguisées en faits) : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », « tu n'as pas besoin de », « tu n'as jamais besoin de ». Écris directement la qualité ou le geste (« tu tiens », « tu sens avant de comprendre », « tu poses un cadre »), sans enrober.
@@ -1685,9 +1688,9 @@ IMPORTANT : le genre de la personne est indiqué dans les données (Homme/Femme)
 - §5 (OMBRE) : les points de vigilance qui apparaissent quand une force est poussée trop loin, dits simplement (« poussée trop loin, ta sensibilité te sature »). Ne parle jamais de « face cachée », de pattern déjà vécu ni de ce qui se répète malgré elle. Un point de vigilance n'est pas un verdict : reste bienveillante, sans multiplier les « peut-être ».
 
 Mouvement 2 -- CE QUE TU PEUX OBSERVER DANS TA PÉRIODE ACTUELLE (titre poétique libre, 3 paragraphes longs) :
-- §1 : des thèmes symboliques possibles de la période actuelle, formulés comme des pistes à vérifier dans le réel. Aucun cycle chiffré, aucune durée technique.
+- §1 : ouvre sur une image précise de la tonalité de la période (voir ANGLE UNIQUE), pas sur une généralité. Aucun cycle chiffré, aucune durée technique.
 - §2 : des tensions et ouvertures typiques de ce moment, dites avec netteté ; une seule nuance au plus pour signaler que c'est à vérifier dans son vécu. Ne prétends jamais savoir qu'une transformation intérieure précise est déjà en cours. INTERDITS : « fin de chapitre », « fissure », « imprévus dans la sphère émotionnelle », « ce que tu tenais pour acquis se met à bouger », « appui qui semblait inébranlable » : ce sont des événements de vie déguisés en symboles. Parle d'une tonalité (ce que la période invite à écouter, affiner, approfondir), pas de ruptures ni de secousses.
-GESTES : les conseils d'action concrets (marcher, écrire, créer, attendre avant de trancher) ne figurent QUE dans ce mouvement ; les mouvements 3 et 5 n'en répètent AUCUN. ANGLE UNIQUE : ce mouvement décrit la TEXTURE de la période actuelle (ce qu'elle invite à écouter, trier, expérimenter), jamais la vie de la personne : aucun constat sur ses relations, son travail, son état ou ses doutes (tu ne les connais pas), tournures « cette période invite à… », « ce moment demande… ». Il ne parle ni des années à venir ni des grandes fenêtres de vie, réservées au mouvement 4. N'écris « 2027 » ou une année précise que dans le mouvement 4.
+GESTES : les conseils d'action concrets (marcher, écrire, créer, attendre avant de trancher) ne figurent QUE dans ce mouvement ; les mouvements 3 et 5 n'en répètent AUCUN. ANGLE UNIQUE : ce mouvement décrit la tonalité de la période actuelle par des images CONCRÈTES du quotidien (rythme, énergie, relations, travail, foyer, envies), jamais par des événements ni des ruptures, et sans présupposer de crise : la personne peut être stable. Si les DONNÉES contiennent un texte libre du client, construis ce mouvement dessus : reprends ses mots, réponds-y directement et chaleureusement, sans ajouter un seul fait. Interdit de rester dans l'abstrait (« cette période invite à… » ne peut pas ouvrir deux phrases de suite). Une fenêtre souple est permise (« ces prochains mois »). Ce mouvement ne traite pas les grandes fenêtres de vie, réservées au mouvement 4 : n'y écris ni année précise ni âge futur.
 - §3 : comment utiliser cette période comme terrain d'observation et d'expérimentation concrète. Aucun « l'univers facilite », aucun « soutien invisible », aucune promesse implicite."""
 
     prompt_b = base + """
@@ -1736,6 +1739,18 @@ Message final : 2 paragraphes qui donnent envie de refermer le livret avec le se
         a2 = _appel_claude_chunk(prompt_a, max_tokens=9000)
         if _eyebrows_ok(a2):
             a = a2
+    # Le chunk B ne voit pas le chunk A : on lui donne un résumé de ce qui est déjà dit
+    # (idées + images) pour éviter les redites entre chapitres.
+    try:
+        _deja = []
+        for x in (a.get("sections") or []):
+            _ps = re.findall(r'<p[^>]*>(.*?)</p>', str(x.get("contenu") or ""), flags=re.DOTALL)
+            _deja.append("- " + str(x.get("titre") or "") + " : " + " / ".join(re.sub(r'<[^>]+>', '', p).strip()[:140] for p in _ps))
+        if _deja:
+            prompt_b += ("\n\nDÉJÀ DIT dans les chapitres précédents (ne reprends NI ces idées, NI ces images, NI ces mots marquants ; "
+                         "trouve un angle et un vocabulaire neufs, et ne renvoie jamais à « ce dont on a parlé ») :\n" + "\n".join(_deja)[:4500])
+    except Exception as ex:
+        print(f"[solo] résumé chunk A ignoré : {ex}", flush=True)
     b = _appel_claude_chunk(prompt_b, max_tokens=8000)
     if not _eyebrows_ok(b):
         print("[solo] chunk B : petit titre manquant, nouvel essai", flush=True)
@@ -4485,7 +4500,7 @@ body {
 .ch-title { font-family: 'Cinzel', serif; font-weight: 400; font-size: 25pt; line-height: 1.34;
   letter-spacing: .03em; color: #231C11; string-set: chap content(text); max-width: 128mm; margin: 0 auto; }
 .ch-head .rule { width: 26mm; height: .7pt; background: #B08A3A; opacity: .6; margin: 9mm auto 0; }
-.ch-head .eyebrow { display: none; }
+.ch-head .eyebrow { display: block; margin: 0 0 4mm; font-size: 7.6pt; letter-spacing: .34em; text-align: center; }
 .ch-bandeau { width: 100%; margin: 0 0 12mm; border-radius: 1.6mm; overflow: hidden; break-after: avoid; page-break-after: avoid; }
 .ch-bandeau img { display: block; width: 100%; height: auto; }
 .ch.has-bandeau { padding-top: 4mm; }
@@ -4558,8 +4573,9 @@ body {
 .final { break-before: page; padding-top: 10mm; }
 .final-head { text-align: center; }
 .final .ch-title { font-size: 19pt; }
-.final-close { text-align: center; margin-top: 12mm; break-inside: avoid; }
-.final-close svg { width: 20mm; height: 20mm; }
+.final-close { text-align: center; margin-top: 6mm; break-inside: avoid; page-break-inside: avoid; }
+.final-close svg { width: 13mm; height: 13mm; }
+.final .prose p:last-child { break-after: avoid; page-break-after: avoid; }
 .final-sign { font-family: 'Cinzel', serif; font-size: 7.5pt; letter-spacing: .5em; color: #A5612A; margin-top: 3mm; }
 
 /* ── Carnet ──────────────────────────────────────────────── */
@@ -4598,6 +4614,70 @@ body {
 CH_END_SVG = ('<div class="ch-end"><svg viewBox="0 0 88 12" xmlns="http://www.w3.org/2000/svg">'
               '<path d="M0 6h30M58 6h30" stroke="#B08A3A" stroke-width=".6"/>'
               '<path d="M44 1l5 5-5 5-5-5z" fill="#B08A3A"/><circle cx="34" cy="6" r="1.2" fill="#B08A3A"/><circle cx="54" cy="6" r="1.2" fill="#B08A3A"/></svg></div>')
+
+
+# ─────────────────────────────────────────────────────────────
+# Contrôle des pages quasi vides (fin de chapitre qui déborde de 2-3 lignes)
+# On rend une première fois ; si une page de fin de chapitre contient très peu de texte,
+# on ajuste légèrement l'interligne (resserré ou desserré) et on re-rend (max 3 essais).
+# Tout échec => PDF d'origine.
+# ─────────────────────────────────────────────────────────────
+_SEUIL_PAGE_ORPHELINE = 380  # caractères
+
+def _pages_orphelines(doc):
+    res = []
+    for idx, page in enumerate(doc.pages):
+        chars, only_ch, has_head = 0, True, False
+        stack = [(page._page_box, False)]
+        while stack:
+            b, inch = stack.pop()
+            if type(b).__name__ == 'MarginBox':
+                continue
+            el = getattr(b, 'element', None)
+            cls = (el.get('class') or '').split() if el is not None and hasattr(el, 'get') else []
+            now = inch or (el is not None and getattr(el, 'tag', '') == 'section' and ('ch' in cls or 'final' in cls))
+            if 'ch-head' in cls or 'ch-banner' in cls or 'final-head' in cls:
+                has_head = True
+            t = getattr(b, 'text', None)
+            if isinstance(t, str) and t.strip():
+                chars += len(t.strip())
+                if not now:
+                    only_ch = False
+            for c in (getattr(b, 'children', None) or []):
+                stack.append((c, now))
+        if only_ch and not has_head and 0 < chars < _SEUIL_PAGE_ORPHELINE:
+            res.append(idx + 1)
+    return res
+
+
+def _rendre_pdf_sans_pages_orphelines(html_print):
+    import time
+    t0 = time.time()
+    base = "https://origin-famille.fr"
+    doc = WeasyprintHTML(string=html_print, base_url=base).render(presentational_hints=True)
+    meilleur, meilleur_nb = doc, None
+    try:
+        orph = _pages_orphelines(doc)
+        meilleur_nb = len(orph)
+        if orph and (time.time() - t0) < 150:
+            print(f"[pdf] pages quasi vides : {orph}, ajustement de l'interligne", flush=True)
+            niveaux = [
+                ".ch .prose, .final .prose { line-height: 1.53; } .prose p { margin-bottom: 2.9mm; }",
+                ".ch .prose, .final .prose { line-height: 1.64; } .prose p { margin-bottom: 3.6mm; }",
+                ".ch .prose, .final .prose { line-height: 1.47; } .prose p { margin-bottom: 2.5mm; }",
+            ]
+            for css in niveaux:
+                if time.time() - t0 > 240 or meilleur_nb == 0:
+                    break
+                h2 = html_print.replace("</head>", "<style>" + css + "</style></head>", 1)
+                d2 = WeasyprintHTML(string=h2, base_url=base).render(presentational_hints=True)
+                n2 = len(_pages_orphelines(d2))
+                print(f"[pdf] essai interligne : {n2} page(s) quasi vide(s)", flush=True)
+                if n2 < meilleur_nb:
+                    meilleur, meilleur_nb = d2, n2
+    except Exception as ex:
+        print(f"[pdf] contrôle des pages ignoré : {ex}", flush=True)
+    return meilleur.write_pdf()
 
 
 def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='adulte'):
@@ -5097,7 +5177,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 </body>
 </html>"""
 
-    return WeasyprintHTML(string=html_print, base_url="https://origin-famille.fr").write_pdf(presentational_hints=True)
+    return _rendre_pdf_sans_pages_orphelines(html_print)
 
 
 
