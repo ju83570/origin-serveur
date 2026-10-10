@@ -1542,6 +1542,31 @@ def _securiser_note_mantra_couple(mantras, chemins):
     return mantras
 
 
+_PLAFONDS_MOTS = [
+    ("porter (porte, portes, portons, portent, porté…)", r"\bport(?:e|es|er|ons|ent|ait|aient|é|ée|és|ées|ant|erai|era|eront)\b", 8),
+    ("tenir (tient, tiens, tenu, tenons…)", r"\b(?:ten(?:ir|ez|ons|ant|u|ue|us|ues)|tien(?:s|t|nent)|tiendr\w+)\b", 8),
+    ("sol / solide(s)", r"\b(?:sol|solides?)\b", 3),
+    ("feu / flamme", r"\b(?:feu|flammes?)\b", 1),
+    ("ancre / ancré / ancrage", r"\bancr\w*", 2),
+    ("poids", r"\bpoids\b", 2),
+    ("exigence", r"\bexigences?\b", 2),
+    ("profondeur", r"\bprofondeurs?\b", 2),
+    ("intensité", r"\bintensités?\b", 3),
+    ("ampleur / amplitude", r"\b(?:ampleur|amplitude)\b", 1),
+]
+
+
+def _plafonds_globaux(secs):
+    """Compte chaque mot plafonné sur tout le livret ; ne garde que ceux qui dépassent."""
+    textes = [re.sub(r'<[^>]+>', ' ', str(x.get("contenu") or '')) for x in secs]
+    out = []
+    for label, rx, cap in _PLAFONDS_MOTS:
+        parts = [len(re.findall(rx, t, re.I)) for t in textes]
+        if sum(parts) > cap:
+            out.append((label, rx, cap, sum(parts)))
+    return out
+
+
 def _polir_section(sec, ctx):
     contenu = str(sec.get("contenu") or "")
     texte = re.sub(r'<[^>]+>', ' ', contenu)
@@ -1567,6 +1592,15 @@ def _polir_section(sec, ctx):
         consignes.append("4. PERSONNE : tout le chapitre est à « tu ». Convertis chaque passage à la troisième personne (« Amélie… elle », « une femme qui », « son père ») en « tu / ton » ; seule exception : citer le prénom du client dans une phrase adressée à lui.")
     if futur:
         consignes.append("5. FUTUR : tout événement, changement ou période à venir reste prudent (jamais de certitude) : au plus 8 formes en « -erait / -rait / -raient » dans le chapitre, le reste en « invite à », « demande de », « cette fenêtre peut » ; plus aucune date exacte (« automne 2027 ») : « autour de », « entre … et … ». Le portrait de la personne reste au présent.")
+    over = []
+    for label, rx, cap, total in ctx.get("plafonds", []):
+        ici = len(re.findall(rx, texte, re.I))
+        if ici:
+            q = int(cap * ici / total)
+            if ici > q:
+                over.append(f"« {label} » : {ici} fois ici, garde au plus {q} (le livret entier en compte {total}, maximum {cap}) ; remplace les autres par des verbes ou images variés et précis")
+    if over:
+        consignes.append("6. MOTS RÉPÉTÉS : " + " ; ".join(over) + ".")
     prompt = (
         "Tu es relecteur éditorial d'ORIGIN. Réécris ce chapitre en gardant : même longueur (±10 %), mêmes idées et images fortes, même nombre de balises <p>, mêmes accords de genre, même style littéraire. "
         "Applique UNIQUEMENT ces corrections ; si un point est déjà conforme, ne touche pas au passage concerné. CONSERVE INTÉGRALEMENT tout fait issu des DONNÉES (qui a choisi le prénom, pour qui, proche évoqué, mots du client) : ne le supprime ni ne le généralise jamais. N'ajoute aucun fait, chiffre ou date ; ne supprime pas la phrase à dire à voix haute entre guillemets ; garde les âges en chiffres.\n"
@@ -1581,7 +1615,8 @@ def _polir_section(sec, ctx):
     nb2 = len(_RE_CONDITIONNEL.findall(nt))
     np2 = len(re.findall(r"non pas", nt, re.I))
     pb2 = len(re.findall(r"pas besoin de", nt, re.I))
-    if new.count("<p>") == contenu.count("<p>") and 0.8 * mots <= nm <= 1.2 * mots \
+    _cmp = sum(len(re.findall(rx, nt, re.I)) for _l, rx, _c, _t in ctx.get("plafonds", [])) <= sum(len(re.findall(rx, texte, re.I)) for _l, rx, _c, _t in ctx.get("plafonds", []))
+    if new.count("<p>") == contenu.count("<p>") and 0.8 * mots <= nm <= 1.2 * mots and _cmp \
        and (nb2 <= max(nb, 4)) and np2 <= nonpas and pb2 <= pasbesoin:
         sec["contenu"] = new
         print(f"[polish] chapitre poli : cond {nb}->{nb2}, non pas {nonpas}->{np2}, tierce {tierce}, futur {futur}", flush=True)
@@ -1617,6 +1652,10 @@ def resserrer_narratif(narratif, type_analyse='adulte', offre='solo', clients=No
         "tutoie": offre in ('solo', 'vocation'),
     }
     secs = [x for x in (narratif.get("sections") or []) if isinstance(x, dict)]
+    try:
+        ctx["plafonds"] = _plafonds_globaux(secs)
+    except Exception:
+        ctx["plafonds"] = []
     def _go(sec):
         try:
             _polir_section(sec, ctx)
@@ -1654,7 +1693,7 @@ RÉPÉTITIONS DES MOTS DU CLIENT : un fait, un chiffre ou une expression que le 
 CŒUR ET CONCRET -- PRIORITÉ : cette lecture doit toucher la personne au cœur, pas ressembler à un horoscope. Chaque paragraphe contient au moins une image précise et reconnaissable (un geste, une matière, un lieu, un moment de journée, une sensation du corps) plutôt qu'une idée abstraite. Bannis les formules vagues qui pourraient s'adresser à n'importe qui : « ce type de moment », « cette période », « ce genre de situation », « une forme de », « une certaine ». Chaque chapitre contient au moins UNE phrase que cette personne-là pourrait recopier dans son carnet parce qu'elle se reconnaît dedans. Si les DONNÉES contiennent un texte libre du client (histoire, situation, contexte, message), il devient la matière centrale : reprends ses mots au moins 2 fois dans le livret (reformulés au plus près, sans dire « tu as écrit ») et réponds-y précisément, sans jamais rien ajouter qui n'y figure pas. La précision vient des DONNÉES (chemin de vie, prénom, indicateurs, âge exact, texte libre du client) et du langage sensoriel, jamais de faits de vie inventés.
 MOTS TICS : « autorité », « armure » (et « armature »), « endurance », « magnétique », « socle », « ampleur », « tri », « inventaire », « radar », « étoffe », « feu », « flamme » : chacun apparaît AU PLUS 1 fois dans tout le livret (2 pour « autorité »), mantra compris. Mots à plafonner : « intensité » 3 fois au plus, « poids », « profondeur », « exigence », « solidité » 2 fois au plus chacun, « ampleur » et « amplitude » 1 fois au plus à eux deux ; les verbes « porter » et « tenir » (toutes formes) : 8 fois au plus chacun dans tout le livret, « sol » et « solide » 3 fois au plus à eux deux (varie : « soutenir », « garder », « poser », « maintenir », « assumer », « mener »). Cherche un autre mot ou une autre image.
 TITRES ET PETITS TITRES : aucun détail physique ou biographique (une main, un corps, un lieu, un âge, un métier) qui ne vienne pas des DONNÉES ; jamais le même mot-clé dans plus de 2 titres du livret (ex. « feu »), et jamais deux titres qui commencent par les mêmes mots (ex. « L'homme qui… » / « L'homme à qui… »).
-IMAGES : un même champ d'images (la main, le bois et l'artisanat, l'arbre, la pierre, l'eau, le feu) ne revient pas plus de 3 fois dans tout le livret ; varie les registres d'un chapitre à l'autre. N'invente pas de métier ni de décor : n'écris « artisan », « menuisier », « compagnon », « apprenti », « luthier », « atelier », « forgeron », « verger » ou « arbre fruitier » que si les DONNÉES le disent. Ne dis jamais « ce que tu mentionnes », « dans ton propre vocabulaire » ou « tu as écrit » sauf pour reprendre mot pour mot le texte libre du formulaire. N'écris jamais « depuis toujours », « depuis longtemps », « au fil des décennies », « ce que tu as bâti », « les rôles que tu assumes » : c'est supposer son passé. Ne décris pas de scènes de sa vie comme si tu les avais vues (« un dimanche pluvieux », « tu ne reviens pas dessus toutes les 5 minutes », « tu as passé beaucoup de temps à produire en silence ») : parle de tendances et de capacités (« tu as tendance à… », « tu sais… »), et si tu donnes une scène, présente-la comme une image (« comme quand… »). Pas de portrait à la 3e personne (« une femme qui… »). N'invente aucune durée sur sa vie (« près d'une décennie », « pendant des années ») : seules les dates des DONNÉES comptent. Ne décris pas le son, la sonorité ou la forme des lettres du prénom (« souffle », « qui bute contre les dents », « tes lettres le dessinent ») : rien de cela ne vient d'un calcul. GESTES : jamais de sport générique (nage, grimpe, cours, « pousse contre une résistance », « corps fatigué le soir ») ni de geste qui conviendrait à tout le monde : chaque geste doit découler d'un trait précis de CE profil et de son texte libre. Jamais de geste à effet physiologique ou médical (eau froide, respiration forcée, jeûne, privation de sommeil) ; reste sur des gestes simples d'attention, d'écriture, de marche ou de parole.
+IMAGES : un même champ d'images (la main, le bois et l'artisanat, l'arbre, la pierre, l'eau, le feu) ne revient pas plus de 3 fois dans tout le livret ; varie les registres d'un chapitre à l'autre. N'invente pas de métier ni de décor : n'écris « artisan », « menuisier », « compagnon », « apprenti », « luthier », « atelier », « forgeron », « verger » ou « arbre fruitier » que si les DONNÉES le disent. Ne dis jamais « ce que tu mentionnes », « dans ton propre vocabulaire » ou « tu as écrit » sauf pour reprendre mot pour mot le texte libre du formulaire. N'écris jamais « depuis toujours », « depuis longtemps », « au fil des décennies », « ce que tu as bâti », « les rôles que tu assumes » : c'est supposer son passé. Ne décris pas de scènes de sa vie comme si tu les avais vues (« un dimanche pluvieux », « tu ne reviens pas dessus toutes les 5 minutes », « tu as passé beaucoup de temps à produire en silence ») : parle de tendances et de capacités (« tu as tendance à… », « tu sais… »), et si tu donnes une scène, présente-la comme une image (« comme quand… »). Pas de portrait ni de comparaison à la 3e personne (« une femme qui… », « comme un homme qui planterait… ») : toute image se dit avec « tu » ou « on ». N'écris pas « ont le droit de » non plus. N'invente aucune durée sur sa vie (« près d'une décennie », « pendant des années ») : seules les dates des DONNÉES comptent. Ne décris pas le son, la sonorité ou la forme des lettres du prénom (« souffle », « qui bute contre les dents », « tes lettres le dessinent ») : rien de cela ne vient d'un calcul. GESTES : jamais de sport générique (nage, grimpe, cours, « pousse contre une résistance », « corps fatigué le soir ») ni de geste qui conviendrait à tout le monde : chaque geste doit découler d'un trait précis de CE profil et de son texte libre. Jamais de geste à effet physiologique ou médical (eau froide, respiration forcée, jeûne, privation de sommeil) ; reste sur des gestes simples d'attention, d'écriture, de marche ou de parole.
 AVENIR SANS PROJET INVENTÉ : ne décris jamais un projet concret absent des DONNÉES (ouvrir un lieu, enseigner, accueillir des apprentis, changer de métier, fonder quelque chose) : parle d'une direction intérieure, pas d'un plan de vie.
 LECTEUR : ne suppose jamais ce que la personne a ressenti ou fait en lisant (« si tu as senti un creux dans la poitrine », « si une phrase t'a arrêté ») : parle du livret, pas de sa réaction.
 SOURCE DES CALCULS : ne dis jamais d'où viennent les repères, sauf éventuellement « ta date de naissance » et « ton prénom ». Interdits dans le texte : « l'heure exacte », « l'heure de ta naissance », « tes coordonnées », « le ciel au moment de ta naissance », « ton thème ».
