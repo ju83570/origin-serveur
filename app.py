@@ -697,6 +697,11 @@ def fmt_profil(p, avec_transits=False, avec_dettes_karma=True):
     aujourdhui = date.today()
     age_actuel = aujourdhui.year - a - ((aujourdhui.month, aujourdhui.day) < (m, j))
 
+    try:
+        _vp = calcul_vibration_nom(pr)
+    except Exception:
+        _vp = None
+
     lines = [
         f"PROFIL : {pr} {nm}{genre_str}",
         f"Né le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}{fratrie_str}" if genre == 'Homme' else f"Née le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}{fratrie_str}" if genre == 'Femme' else f"Né(e) le {j:02d}/{m:02d}/{a} à {p.get('ville','')} ({heure_str}){filiation_str}{fratrie_str}",
@@ -713,6 +718,7 @@ def fmt_profil(p, avec_transits=False, avec_dettes_karma=True):
         f"  Cycle de vie  : {pin_str}",
         f"  Dominants     : {dom_str}",
         f"  Manquants     : {man_str}",
+        *([f"  Analyse du prénom (INTERNE, jamais exposée) : {_resume_vibration(_vp)}"] if _vp else []),
         "",
         "ASTROLOGIE",
     ]
@@ -1669,7 +1675,7 @@ RÉPÉTITIONS DES MOTS DU CLIENT : un fait, un chiffre ou une expression que le 
 CŒUR ET CONCRET -- PRIORITÉ : cette lecture doit toucher la personne au cœur, pas ressembler à un horoscope. Chaque paragraphe contient au moins une image précise et reconnaissable (un geste, une matière, un lieu, un moment de journée, une sensation du corps) plutôt qu'une idée abstraite. Bannis les formules vagues qui pourraient s'adresser à n'importe qui : « ce type de moment », « cette période », « ce genre de situation », « une forme de », « une certaine ». Chaque chapitre contient au moins UNE phrase que cette personne-là pourrait recopier dans son carnet parce qu'elle se reconnaît dedans. Si les DONNÉES contiennent un texte libre du client (histoire, situation, contexte, message), il devient la matière centrale : reprends ses mots au moins 2 fois dans le livret (reformulés au plus près, sans dire « tu as écrit ») et réponds-y précisément, sans jamais rien ajouter qui n'y figure pas. La précision vient des DONNÉES (chemin de vie, prénom, indicateurs, âge exact, texte libre du client) et du langage sensoriel, jamais de faits de vie inventés.
 MOTS TICS : « autorité », « armure » (et « armature »), « endurance », « magnétique », « socle », « ampleur », « tri », « inventaire », « radar », « étoffe », « feu », « flamme » : chacun apparaît AU PLUS 1 fois dans tout le livret (2 pour « autorité »), mantra compris. Mots à plafonner : « intensité » 3 fois au plus, « poids », « profondeur », « exigence », « solidité » 2 fois au plus chacun, « ampleur » et « amplitude » 1 fois au plus à eux deux ; les verbes « porter » et « tenir » (toutes formes) : 8 fois au plus chacun dans tout le livret, « sol » et « solide » 3 fois au plus à eux deux (varie : « soutenir », « garder », « poser », « maintenir », « assumer », « mener »). Cherche un autre mot ou une autre image.
 TITRES ET PETITS TITRES : aucun détail physique ou biographique (une main, un corps, un lieu, un âge, un métier) qui ne vienne pas des DONNÉES ; jamais le même mot-clé dans plus de 2 titres du livret (ex. « feu »), et jamais deux titres qui commencent par les mêmes mots (ex. « L'homme qui… » / « L'homme à qui… »).
-IMAGES : un même champ d'images (la main, le bois et l'artisanat, l'arbre, la pierre, l'eau, le feu) ne revient pas plus de 3 fois dans tout le livret ; varie les registres d'un chapitre à l'autre. N'invente pas de métier ni de décor : n'écris « artisan », « menuisier », « compagnon », « apprenti », « luthier », « atelier », « forgeron », « verger » ou « arbre fruitier » que si les DONNÉES le disent. Ne dis jamais « ce que tu mentionnes », « dans ton propre vocabulaire » ou « tu as écrit » sauf pour reprendre mot pour mot le texte libre du formulaire. N'écris jamais « depuis toujours », « depuis longtemps », « au fil des décennies », « ce que tu as bâti », « les rôles que tu assumes » : c'est supposer son passé. Ne décris pas de scènes de sa vie comme si tu les avais vues (« un dimanche pluvieux », « tu ne reviens pas dessus toutes les 5 minutes », « tu as passé beaucoup de temps à produire en silence ») : parle de tendances et de capacités (« tu as tendance à… », « tu sais… »), et si tu donnes une scène, présente-la comme une image (« comme quand… »). Pas de portrait à la 3e personne (« une femme qui… »). N'invente aucune durée sur sa vie (« près d'une décennie », « pendant des années ») : seules les dates des DONNÉES comptent. Ne décris pas le son, la sonorité ou la forme des lettres du prénom (« souffle », « qui bute contre les dents », « tes lettres le dessinent ») : rien de cela ne vient d'un calcul. GESTES : jamais de sport générique (nage, grimpe, cours, « pousse contre une résistance », « corps fatigué le soir ») ni de geste qui conviendrait à tout le monde : chaque geste doit découler d'un trait précis de CE profil et de son texte libre. Jamais de geste à effet physiologique ou médical (eau froide, respiration forcée, jeûne, privation de sommeil) ; reste sur des gestes simples d'attention, d'écriture, de marche ou de parole.
+IMAGES : un même champ d'images (la main, le bois et l'artisanat, l'arbre, la pierre, l'eau, le feu) ne revient pas plus de 3 fois dans tout le livret ; varie les registres d'un chapitre à l'autre. N'invente pas de métier ni de décor : n'écris « artisan », « menuisier », « compagnon », « apprenti », « luthier », « atelier », « forgeron », « verger » ou « arbre fruitier » que si les DONNÉES le disent. Ne dis jamais « ce que tu mentionnes », « dans ton propre vocabulaire » ou « tu as écrit » sauf pour reprendre mot pour mot le texte libre du formulaire. N'écris jamais « depuis toujours », « depuis longtemps », « au fil des décennies », « ce que tu as bâti », « les rôles que tu assumes » : c'est supposer son passé. Ne décris pas de scènes de sa vie comme si tu les avais vues (« un dimanche pluvieux », « tu ne reviens pas dessus toutes les 5 minutes », « tu as passé beaucoup de temps à produire en silence ») : parle de tendances et de capacités (« tu as tendance à… », « tu sais… »), et si tu donnes une scène, présente-la comme une image (« comme quand… »). Pas de portrait à la 3e personne (« une femme qui… »). N'invente aucune durée sur sa vie (« près d'une décennie », « pendant des années ») : seules les dates des DONNÉES comptent. Tu peux évoquer la prononciation du prénom comme image, mais le fond vient toujours de l'analyse fournie du prénom. GESTES : jamais de sport générique (nage, grimpe, cours, « pousse contre une résistance », « corps fatigué le soir ») ni de geste qui conviendrait à tout le monde : chaque geste doit découler d'un trait précis de CE profil et de son texte libre. Jamais de geste à effet physiologique ou médical (eau froide, respiration forcée, jeûne, privation de sommeil) ; reste sur des gestes simples d'attention, d'écriture, de marche ou de parole.
 AVENIR SANS PROJET INVENTÉ : ne décris jamais un projet concret absent des DONNÉES (ouvrir un lieu, enseigner, accueillir des apprentis, changer de métier, fonder quelque chose) : parle d'une direction intérieure, pas d'un plan de vie.
 LECTEUR : ne suppose jamais ce que la personne a ressenti ou fait en lisant (« si tu as senti un creux dans la poitrine », « si une phrase t'a arrêté ») : parle du livret, pas de sa réaction.
 SOURCE DES CALCULS : ne dis jamais d'où viennent les repères, sauf éventuellement « ta date de naissance » et « ton prénom ». Interdits dans le texte : « l'heure exacte », « l'heure de ta naissance », « tes coordonnées », « le ciel au moment de ta naissance », « ton thème ».
@@ -1996,7 +2002,7 @@ _REGLE_AME_LIVRET = """ÂME DU LIVRET -- PRIORITAIRE : ce livret est une lecture
 
 """
 
-_REGLE_REPERES_INTERNES = """REPÈRES INTERNES : si un bloc « CONTEXTE ASTROLOGIQUE ACTUEL » est présent, il sert uniquement à colorer la tonalité du moment présent (rythme, énergie, ouvertures) : jamais nommé, jamais daté, jamais présenté comme un événement à venir ; pour un enfant ou un foyer, il nuance seulement l'atmosphère du moment, sans rien affirmer sur l'enfant. Si un bloc « NUMÉROLOGIE KARMIQUE » est présent, il nourrit en profondeur le portrait sans jamais apparaître : n'écris jamais « karma », « karmique », « dette », « vie passée », ni aucun chiffre de ce bloc, et ne lui consacre aucun chapitre. Utilise-le pour affiner les passages sur les zones de croissance, les points de vigilance et les gestes (une ou deux touches au plus, en images concrètes et bienveillantes), comme un apprentissage de vie présenté avec sa promesse, jamais comme un poids ni une fatalité.
+_REGLE_REPERES_INTERNES = """REPÈRES INTERNES : si un bloc « CONTEXTE ASTROLOGIQUE ACTUEL » est présent, il sert uniquement à colorer la tonalité du moment présent (rythme, énergie, ouvertures) : jamais nommé, jamais daté, jamais présenté comme un événement à venir ; pour un enfant ou un foyer, il nuance seulement l'atmosphère du moment, sans rien affirmer sur l'enfant. La ligne « Analyse du prénom (INTERNE) » donne l'analyse complète du prénom (voyelles, consonnes, total, pyramide, initiale, plans, absents) : elle nourrit en profondeur le portrait et chaque chapitre, sans jamais exposer la méthode, un chiffre ou un terme technique. Si un bloc « NUMÉROLOGIE KARMIQUE » est présent, il nourrit en profondeur le portrait sans jamais apparaître : n'écris jamais « karma », « karmique », « dette », « vie passée », ni aucun chiffre de ce bloc, et ne lui consacre aucun chapitre. Utilise-le pour affiner les passages sur les zones de croissance, les points de vigilance et les gestes (une ou deux touches au plus, en images concrètes et bienveillantes), comme un apprentissage de vie présenté avec sa promesse, jamais comme un poids ni une fatalité.
 
 """
 
@@ -2848,6 +2854,7 @@ _TABLE_LETTRES = {'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8,'I':9,
                   'J':1,'K':2,'L':3,'M':4,'N':5,'O':6,'P':7,'Q':8,'R':9,
                   'S':1,'T':2,'U':3,'V':4,'W':5,'X':6,'Y':7,'Z':8}
 _VOYELLES_NOM = set('AEIOUY')
+_PLANS_EXPRESSION = {'physique': (4, 5), 'émotionnel': (2, 3, 6), 'mental': (1, 8), 'intuitif': (7, 9)}
 
 
 def _propre(txt, n=80):
@@ -2885,20 +2892,43 @@ def calcul_vibration_nom(texte):
     repetes = [n for n, k in sorted(compte.items(), key=lambda x: (-x[1], x[0])) if k >= 2][:2]
     v = sum(_TABLE_LETTRES[c] for c in lettres if c in _VOYELLES_NOM)
     c = sum(_TABLE_LETTRES[c] for c in lettres if c not in _VOYELLES_NOM)
+    freq = {n: base.count(n) for n in range(1, 10)}
+    plans = {nom_plan: sum(freq[n] for n in nums) for nom_plan, nums in _PLANS_EXPRESSION.items()}
+    top = max(plans.values())
     return {
         'lettres': ''.join(lettres), 'base': base, 'sommet': pyramide[-1][0], 'repetes': repetes,
+        'rangs': ['-'.join(str(x) for x in rang) for rang in pyramide],
+        'initiale': lettres[0], 'val_init': base[0], 'finale': lettres[-1], 'val_fin': base[-1],
+        'plans': plans, 'plan_dom': [k for k, n in plans.items() if n == top],
+        'absents': [n for n in range(1, 10) if freq[n] == 0], 'repetes_prenom': [n for n in range(1, 10) if freq[n] >= 2],
         'ame_brut': v, 'ame': reduire(v) if v else 0,
         'perso_brut': c, 'perso': reduire(c) if c else 0,
         'expr_brut': v + c, 'expr': reduire(v + c),
     }
 
 
-def _ligne_vibration(libelle, v):
+def _resume_vibration(v):
+    """Toutes les données d'analyse d'un prénom/nom (INTERNES), avec le sens de chaque repère."""
+    def sig(n):
+        return SIGNIF_CHIFFRES.get(n, '')
     rep = ', '.join(str(n) for n in v['repetes']) or 'aucun'
-    return (f"- {libelle} : lettres {v['lettres']} | base {'-'.join(str(n) for n in v['base'])} | "
+    plans = ', '.join(f"{k} {n}" for k, n in v['plans'].items())
+    absents = ', '.join(str(n) for n in v['absents']) or 'aucun'
+    repetes_p = ', '.join(str(n) for n in v['repetes_prenom']) or 'aucun'
+    return (f"lettres {v['lettres']} | base {'-'.join(str(n) for n in v['base'])} | "
             f"sommet {v['sommet']} | chiffres qui reviennent dans la pyramide : {rep} | "
             f"voyelles {v['ame_brut']}→{v['ame']} | consonnes {v['perso_brut']}→{v['perso']} | "
-            f"total {v['expr_brut']}→{v['expr']}")
+            f"total {v['expr_brut']}→{v['expr']} | "
+            f"initiale {v['initiale']}→{v['val_init']} | lettre finale {v['finale']}→{v['val_fin']} | "
+            f"rangs de la pyramide : {' / '.join(v['rangs'])} | "
+            f"plans d'expression : {plans} (dominant : {', '.join(v['plan_dom'])}) | "
+            f"chiffres absents du prénom : {absents} | chiffres répétés dans le prénom : {repetes_p} | "
+            f"sens : élan intime {v['ame']} = {sig(v['ame'])} ; réalisation {v['perso']} = {sig(v['perso'])} ; "
+            f"total {v['expr']} = {sig(v['expr'])} ; sommet {v['sommet']} = {sig(v['sommet'])} ; initiale {v['val_init']} = {sig(v['val_init'])}")
+
+
+def _ligne_vibration(libelle, v):
+    return f"- {libelle} : " + _resume_vibration(v)
 
 
 def _noms_famille(clients):
@@ -2930,7 +2960,7 @@ _REGLES_VIBRATION = """RÈGLES ABSOLUES (ORIGIN) :
 - Les chiffres de calcul restent INTERNES. N'écris AUCUN chiffre, ni les mots « pyramide », « sommet », « base », « voyelles », « consonnes », « expression », « nombre », ni « chemin de vie ». Traduis tout en images et en qualités humaines : ce que le prénom murmure à l'intérieur, ce qu'il montre à l'extérieur, la direction qu'il dessine.
 - La donnée « chemin de vie (interne) » sert seulement à faire dialoguer le prénom et la date de naissance (écho ou contraste) : jamais de numéro écrit.
 - Lecture symbolique : conditionnel, « peut », « il est possible que ». Aucune certitude, aucun diagnostic, aucune prédiction, aucune scène vécue inventée.
-- INTERDIT : décrire la prononciation, le son, les syllabes ou la forme des lettres du prénom (« se prononce comme… », « la première syllabe… ») : la vibration vient du calcul (pyramide, voyelles, consonnes, total), traduit en qualités humaines et en images concrètes.
+- Appuie-toi sur TOUS les repères fournis (initiale, élan intime des voyelles, réalisation des consonnes, total, rangs et sommet de la pyramide, plans d'expression, chiffres absents ou répétés) : chaque paragraphe croise au moins deux repères différents, aucun repère fourni ne reste inexploité. La méthode n'est jamais expliquée.
 - INTERDIT : étymologie, origine ou signification historique d'un prénom ou d'un nom, saints, fêtes, personnalités célèbres, histoire de famille, métier ancestral, anciens porteurs. Jamais de formule du type « X est un prénom de passeur / de bâtisseur / de guide » : la vibration du prénom se décrit par ses lettres et ses chiffres, jamais par ce que le prénom « signifie ». Rien qui ne vienne des données ci-dessous.
 - INTERDIT : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », et les formules creuses (quête, éveil, cheminement de l'âme, énergie cosmique) sans image concrète derrière.
 - Si deux indicateurs tirent dans des directions différentes (ce que le prénom murmure et ce qu'il montre, par exemple), synthétise-les en « potentiel réel qui peut demander confiance, pratique ou cadre » : jamais deux affirmations opposées.
@@ -2970,7 +3000,7 @@ def _prompt_section_prenoms(produit, clients, data):
 
     if produit in ('solo', 'vocation'):
         adresse = "Tutoiement : adresse-toi directement au client (« tu »)."
-        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche concrète sur ce que ce prénom murmure à l'intérieur (jamais sa prononciation, sa sonorité, ses syllabes ni la forme de ses lettres) ; "
+        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche sensorielle sur ce prénom, puis ce qu'il murmure à l'intérieur ; "
                      "2) ce qu'il montre à l'extérieur, et la façon dont ces deux faces se parlent ; "
                      "3) son écho ou son contraste avec la direction générale que dessine la date de naissance ; "
                      "4) ce que ce prénom invite à faire de sa vie, et une dernière phrase de portée.")
@@ -2983,7 +3013,7 @@ def _prompt_section_prenoms(produit, clients, data):
                               "N'ajoute rien à ces informations.")
     elif produit == 'naissance':
         adresse = "Tutoiement : texte adressé directement à l'enfant (« tu »), voix douce, comme le reste du carnet."
-        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche concrète sur ce que ce prénom murmure à l'intérieur (jamais sa prononciation, sa sonorité, ses syllabes ni la forme de ses lettres) ; "
+        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche sensorielle sur ce prénom, puis ce qu'il murmure à l'intérieur ; "
                      "2) ce qu'il montre à l'extérieur, et la façon dont ces deux faces se parlent ; "
                      "3) son écho ou son contraste avec la direction générale que dessine la date de naissance ; "
                      "4) un prénom se transmet : il est choisi, porté, parfois reçu d'un proche. ")
@@ -3424,7 +3454,7 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         r'\bmercure\b', r'\bvénus\b', r'\bvenus\b', r'\bsoleil en\b', r'\blune en\b',
         r'\bton soleil\b', r'\bta lune\b', r'\ble soleil\b', r'\bla lune\b',
         r'\d+(?:[.,]\d+)?\s*°',
-        r'karm', r'\bvies? (?:passées?|antérieures?)\b'
+        r'karm', r'\bvies? (?:passées?|antérieures?)\b', r'\bpyramide\b', r"\bplans? d[’' ]expression\b"
     ]
     trouves = [pat for pat in interdits if re.search(pat, texte_cf, flags=re.IGNORECASE)]
     if trouves:
