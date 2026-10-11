@@ -2002,13 +2002,15 @@ _REGLE_AME_LIVRET = """ÂME DU LIVRET -- PRIORITAIRE : ce livret est une lecture
 
 """
 
+_REGLE_VARIETE = """VARIÉTÉ ET SOBRIÉTÉ : (1) un même fait de la vie de la personne (son métier, ses enfants, un lieu, un événement) ne revient pas plus de deux fois dans tout le livret : au-delà, parle de ce qu'il fait vivre, sans le renommer. (2) Les mots « fondation(s) », « poids », « ancrage », « autorité », « endurance », « colonne », « socle » : trois emplois en tout dans le livret entier, pas plus ; cherche des images neuves, tirées de la vie concrète de la personne. (3) Titres de chapitres sobres, justes et lumineux : jamais de titre dramatique ou anxiogène (« le sol se dérobe », « la chute », « la blessure », « le piège »), même pour parler d'une difficulté ; nomme plutôt ce qui s'ouvre ou ce qui se transforme.
+"""
 _REGLE_REPERES_INTERNES = """REPÈRES INTERNES : si un bloc « CONTEXTE ASTROLOGIQUE ACTUEL » est présent, il sert uniquement à colorer la tonalité du moment présent (rythme, énergie, ouvertures) : jamais nommé, jamais daté, jamais présenté comme un événement à venir ; pour un enfant ou un foyer, il nuance seulement l'atmosphère du moment, sans rien affirmer sur l'enfant. La ligne « Analyse du prénom (INTERNE) » donne l'analyse complète du prénom (voyelles, consonnes, total, pyramide, initiale, plans, absents) : elle nourrit en profondeur le portrait et chaque chapitre, sans jamais exposer la méthode, un chiffre ou un terme technique. Si un bloc « NUMÉROLOGIE KARMIQUE » est présent, il nourrit en profondeur le portrait sans jamais apparaître : n'écris jamais « karma », « karmique », « dette », « vie passée », ni aucun chiffre de ce bloc, et ne lui consacre aucun chapitre. Utilise-le pour affiner les passages sur les zones de croissance, les points de vigilance et les gestes (une ou deux touches au plus, en images concrètes et bienveillantes), comme un apprentissage de vie présenté avec sa promesse, jamais comme un poids ni une fatalité.
 
 """
 
 def _ton_affirme(prompt):
     """Place la règle de ton en tête ET en rappel final du prompt (priorité sur les consignes de conditionnel)."""
-    return _REGLE_TON_AFFIRME + _REGLE_AME_LIVRET + _REGLE_NON_DITS + _REGLE_REPERES_INTERNES + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que ». Jamais « tu captes / tu ressens ce qui ne se dit pas » ni aucune variante sur les non-dits."
+    return _REGLE_TON_AFFIRME + _REGLE_AME_LIVRET + _REGLE_NON_DITS + _REGLE_VARIETE + _REGLE_REPERES_INTERNES + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que ». Jamais « tu captes / tu ressens ce qui ne se dit pas » ni aucune variante sur les non-dits."
 
 
 def _appel_claude_chunk(prompt, max_tokens=8000):
