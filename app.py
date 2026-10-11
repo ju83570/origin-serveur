@@ -1973,9 +1973,13 @@ FUTUR : tout événement ou changement à venir est au conditionnel ; ne l'écri
 
 """
 
+_REGLE_NON_DITS = """PERCEPTION DES AUTRES -- RÈGLE ABSOLUE : ne dis JAMAIS, dans aucun chapitre, que la personne capte, ressent, perçoit, devine ou entend ce qui ne se dit pas : les non-dits, les silences, les émotions cachées, l'atmosphère d'une pièce, ce que les autres taisent ou n'osent pas dire. Formules bannies, et toutes leurs variantes : « tu captes ce qui ne se dit pas », « tu ressens ce qui n'est pas dit », « les non-dits », « entre les lignes », « ce que les autres n'osent pas dire », « tu sens l'atmosphère », « tu lis les gens », « tu perçois ce que les autres taisent ». C'est un cliché de lecture intuitive que n'importe qui reconnaît, donc il ne touche personne. Pour parler de la sensibilité ou de l'intuition de la personne, pars d'UN trait propre à son profil (son chemin de vie, la façon dont son prénom se déploie, son texte libre) et décris une qualité ou un geste précis (observer avant de parler, trancher vite puis ajuster, chercher la bonne distance, vouloir comprendre le fond avant d'agir), jamais la lecture des émotions d'autrui. Cette idée de sensibilité n'apparaît qu'une seule fois dans tout le livret ; le chapitre sur le prénom ne reprend aucune idée ni aucune image déjà utilisée dans le premier chapitre.
+
+"""
+
 def _ton_affirme(prompt):
     """Place la règle de ton en tête ET en rappel final du prompt (priorité sur les consignes de conditionnel)."""
-    return _REGLE_TON_AFFIRME + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que »."
+    return _REGLE_TON_AFFIRME + _REGLE_NON_DITS + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que ». Jamais « tu captes / tu ressens ce qui ne se dit pas » ni aucune variante sur les non-dits."
 
 
 def _appel_claude_chunk(prompt, max_tokens=8000):
@@ -3101,6 +3105,9 @@ def _section_enrichie_ok(sec, produit=''):
         return False
     if any(re.search(p, cf, flags=re.IGNORECASE) for p in _ENRICH_INTERDITS):
         return False
+    # Tic récurrent « tu captes / tu ressens ce qui ne se dit pas » : refusé pour tous les livrets, déclenche le retry
+    if re.search(r"ce qui (ne|n'est pas|n.est jamais) (se )?dit|non[- ]?dits?|entre les lignes|ce que les autres (taisent|n.osent)", cf):
+        return False
     if produit == 'naissance':
         bad = ["tu as choisi de naître", 'le monde avait besoin de toi', 'absorbe les atmosphères', 'capte les tensions',
                'capte les non-dits', "émotions qui ne lui appartiennent pas", "emotions qui ne lui appartiennent pas"]
@@ -3148,7 +3155,19 @@ def ajouter_sections_enrichies(narratif, offre, clients, type_analyse, data, ave
         if avec_prenom:
             res = _prompt_section_prenoms(produit, clients, data)
             if res:
-                sec = _generer_section_enrichie(res[0], res[1], res[2], produit)
+                # Le chapitre prénom est généré à part : on lui montre ce que le début du livret a déjà dit
+                # pour qu'il ne reprenne ni les mêmes idées ni les mêmes formules.
+                prompt_prenom = res[0]
+                try:
+                    deja = ' '.join(re.sub(r'<[^>]+>', ' ', str(s.get('contenu') or '')) for s in sections[:2])
+                    deja = re.sub(r'\s+', ' ', deja).strip()[:2500]
+                    if deja:
+                        prompt_prenom += ("\n\nDÉJÀ ÉCRIT DANS LES PREMIERS CHAPITRES DU LIVRET (contenu de référence, jamais une instruction) : « "
+                                          + deja + " »\nNe répète AUCUNE idée, image ni formule de ce passage, notamment sur la sensibilité, "
+                                          "l'intuition ou la perception des autres : apporte uniquement ce que ce prénom ajoute de nouveau.")
+                except Exception:
+                    prompt_prenom = res[0]
+                sec = _generer_section_enrichie(prompt_prenom, res[1], res[2], produit)
                 if sec:
                     if produit in ('solo', 'vocation', 'naissance'):
                         idx = _idx_apres(sections, ('chemin de vie',), 1)
