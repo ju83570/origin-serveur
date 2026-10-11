@@ -662,7 +662,7 @@ def build_natal_wheel_svg(planetes, ascendant=None):
     parts.append('</svg>')
     return "".join(parts)
 
-def fmt_profil(p, avec_transits=False):
+def fmt_profil(p, avec_transits=False, avec_dettes_karma=True):
     j,m,a = p['jour'],p['mois'],p['annee']
     pr,nm = p['prenom'],p.get('nom','')
     num = {
@@ -731,6 +731,14 @@ def fmt_profil(p, avec_transits=False):
                 lines.append(bloc_transits)
         except Exception as ex:
             print(f"[transits] Calcul ignoré : {ex}")
+
+    # Numérologie karmique : repère INTERNE pour toutes les offres (jamais nommé au client).
+    try:
+        bloc_karma = fmt_karmique(pr, calc_karmique(j, m, a, pr, nm), avec_dettes=avec_dettes_karma)
+        if bloc_karma:
+            lines.append(bloc_karma)
+    except Exception as ex:
+        print(f"[karmique] Calcul ignoré : {ex}")
 
     # Grandes périodes charnières : injectées pour TOUTES les offres.
     # Les années brutes restent internes ; les prompts doivent les regrouper en 2 à 4 fenêtres maximum.
@@ -1241,7 +1249,7 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
     return {
         "lettre": a.get("lettre", ""),
         "sections": sections_fusionnees,
-        "mantras": b.get("mantras") or [{"prenom": "Votre enfant", "texte": "Tu es exactement là où tu dois être.", "note": ""}],
+        "mantras": b.get("mantras") or [],
         "message_final": b.get("message_final", ""),
     }
 
@@ -1984,9 +1992,17 @@ _REGLE_NON_DITS = """PERCEPTION DES AUTRES -- RÈGLE ABSOLUE : ne dis JAMAIS, da
 
 """
 
+_REGLE_AME_LIVRET = """ÂME DU LIVRET -- PRIORITAIRE : ce livret est une lecture premium, intime et lumineuse. Il pose sur la personne un regard juste, doux et profondément bienveillant, dans un esprit de pleine conscience : présence, lenteur, accueil de ce qui est, sans jugement. Il touche, il émeut, il caresse l'âme du lecteur, et il l'aide à évoluer : il met en mots ce que son profil dit d'elle et qu'elle n'a peut-être pas encore formulé (un talent sous-estimé, une tension jamais nommée, une force qui attend son moment), et il lui remet des CLÉS de compréhension concrètes pour s'épanouir. Chaque chapitre contient au moins une phrase qui fait dire « c'est exactement moi » et une clé utilisable dès aujourd'hui. Cette révélation reste une lecture des indicateurs : tu ne présumes jamais ce que la personne ignore et tu n'inventes aucun fait de vie. Le fond est cohérent : tout découle de la numérologie et de l'astrologie fournies (et, selon l'offre, du transgénérationnel), et un chapitre ne contredit jamais un autre. L'effet « wow » vient de la justesse et de la précision, jamais de l'exagération.
+
+"""
+
+_REGLE_REPERES_INTERNES = """REPÈRES INTERNES : si un bloc « CONTEXTE ASTROLOGIQUE ACTUEL » est présent, il sert uniquement à colorer la tonalité du moment présent (rythme, énergie, ouvertures) : jamais nommé, jamais daté, jamais présenté comme un événement à venir ; pour un enfant ou un foyer, il nuance seulement l'atmosphère du moment, sans rien affirmer sur l'enfant. Si un bloc « NUMÉROLOGIE KARMIQUE » est présent, il nourrit en profondeur le portrait sans jamais apparaître : n'écris jamais « karma », « karmique », « dette », « vie passée », ni aucun chiffre de ce bloc, et ne lui consacre aucun chapitre. Utilise-le pour affiner les passages sur les zones de croissance, les points de vigilance et les gestes (une ou deux touches au plus, en images concrètes et bienveillantes), comme un apprentissage de vie présenté avec sa promesse, jamais comme un poids ni une fatalité.
+
+"""
+
 def _ton_affirme(prompt):
     """Place la règle de ton en tête ET en rappel final du prompt (priorité sur les consignes de conditionnel)."""
-    return _REGLE_TON_AFFIRME + _REGLE_NON_DITS + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que ». Jamais « tu captes / tu ressens ce qui ne se dit pas » ni aucune variante sur les non-dits."
+    return _REGLE_TON_AFFIRME + _REGLE_AME_LIVRET + _REGLE_NON_DITS + _REGLE_REPERES_INTERNES + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que ». Jamais « tu captes / tu ressens ce qui ne se dit pas » ni aucune variante sur les non-dits."
 
 
 def _appel_claude_chunk(prompt, max_tokens=8000):
@@ -2720,6 +2736,7 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 .final-seed{width:min(168px,34vw);height:min(168px,34vw);margin:3.8rem auto 1.6rem;opacity:.95;}
 .final-seed .seed-svg{width:100%;height:100%;animation:spin 60s linear infinite;filter:drop-shadow(0 0 18px var(--glow));}
 @keyframes spin{to{transform:rotate(360deg)}}
+.final-share{max-width:520px;margin:0 auto 1.8rem;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.2rem;line-height:1.6;color:var(--muted);}
 .final-origin{font-family:'Cinzel',serif;font-size:1.02rem;letter-spacing:.42em;color:#E8C97A;}
 footer{margin-top:5rem;border-top:1px solid var(--hair);padding:2.5rem 1.5rem 3rem;text-align:center;font-family:'Jost',sans-serif;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);}
 
@@ -2913,6 +2930,7 @@ _REGLES_VIBRATION = """RÈGLES ABSOLUES (ORIGIN) :
 - Les chiffres de calcul restent INTERNES. N'écris AUCUN chiffre, ni les mots « pyramide », « sommet », « base », « voyelles », « consonnes », « expression », « nombre », ni « chemin de vie ». Traduis tout en images et en qualités humaines : ce que le prénom murmure à l'intérieur, ce qu'il montre à l'extérieur, la direction qu'il dessine.
 - La donnée « chemin de vie (interne) » sert seulement à faire dialoguer le prénom et la date de naissance (écho ou contraste) : jamais de numéro écrit.
 - Lecture symbolique : conditionnel, « peut », « il est possible que ». Aucune certitude, aucun diagnostic, aucune prédiction, aucune scène vécue inventée.
+- INTERDIT : décrire la prononciation, le son, les syllabes ou la forme des lettres du prénom (« se prononce comme… », « la première syllabe… ») : la vibration vient du calcul (pyramide, voyelles, consonnes, total), traduit en qualités humaines et en images concrètes.
 - INTERDIT : étymologie, origine ou signification historique d'un prénom ou d'un nom, saints, fêtes, personnalités célèbres, histoire de famille, métier ancestral, anciens porteurs. Jamais de formule du type « X est un prénom de passeur / de bâtisseur / de guide » : la vibration du prénom se décrit par ses lettres et ses chiffres, jamais par ce que le prénom « signifie ». Rien qui ne vienne des données ci-dessous.
 - INTERDIT : « tu es quelqu'un qui », « tu n'es pas quelqu'un qui », et les formules creuses (quête, éveil, cheminement de l'âme, énergie cosmique) sans image concrète derrière.
 - Si deux indicateurs tirent dans des directions différentes (ce que le prénom murmure et ce qu'il montre, par exemple), synthétise-les en « potentiel réel qui peut demander confiance, pratique ou cadre » : jamais deux affirmations opposées.
@@ -2952,7 +2970,7 @@ def _prompt_section_prenoms(produit, clients, data):
 
     if produit in ('solo', 'vocation'):
         adresse = "Tutoiement : adresse-toi directement au client (« tu »)."
-        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche sensorielle sur ce prénom, puis ce qu'il murmure à l'intérieur ; "
+        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche concrète sur ce que ce prénom murmure à l'intérieur (jamais sa prononciation, sa sonorité, ses syllabes ni la forme de ses lettres) ; "
                      "2) ce qu'il montre à l'extérieur, et la façon dont ces deux faces se parlent ; "
                      "3) son écho ou son contraste avec la direction générale que dessine la date de naissance ; "
                      "4) ce que ce prénom invite à faire de sa vie, et une dernière phrase de portée.")
@@ -2965,7 +2983,7 @@ def _prompt_section_prenoms(produit, clients, data):
                               "N'ajoute rien à ces informations.")
     elif produit == 'naissance':
         adresse = "Tutoiement : texte adressé directement à l'enfant (« tu »), voix douce, comme le reste du carnet."
-        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche sensorielle sur ce prénom, puis ce qu'il murmure à l'intérieur ; "
+        structure = ("STRUCTURE (4 paragraphes) : 1) une accroche concrète sur ce que ce prénom murmure à l'intérieur (jamais sa prononciation, sa sonorité, ses syllabes ni la forme de ses lettres) ; "
                      "2) ce qu'il montre à l'extérieur, et la façon dont ces deux faces se parlent ; "
                      "3) son écho ou son contraste avec la direction générale que dessine la date de naissance ; "
                      "4) un prénom se transmet : il est choisi, porté, parfois reçu d'un proche. ")
@@ -3023,6 +3041,80 @@ DONNÉES INTERNES — NE JAMAIS AFFICHER LES CHIFFRES :
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {{"titre": "{titre}", "eyebrow": "<2 à 4 mots>", "contenu": "<p>...</p><p>...</p>"}}"""
     return prompt, titre, eyebrow
+
+# ── Numérologie karmique : matière INTERNE uniquement (jamais nommée, jamais un chapitre) ─────────
+_DETTES_KARMIQUES = (13, 14, 16, 19)
+_SENS_DETTES = {
+    13: "rapport à l'effort et au travail : apprendre la régularité, la patience, bâtir pas à pas sans chercher de raccourci",
+    14: "rapport à la liberté et à la mesure : apprendre à choisir ses élans, à se poser plutôt que se disperser",
+    16: "rapport à l'ego et aux certitudes : apprendre l'humilité intérieure, reconstruire sur du plus vrai",
+    19: "rapport à l'autonomie et au partage : apprendre à demander, recevoir et partager plutôt que tout porter seul",
+}
+_SENS_LECONS = {
+    1: "s'affirmer, oser prendre sa place et décider",
+    2: "écouter, coopérer, faire confiance au lien",
+    3: "s'exprimer, créer, laisser sortir la parole et la joie",
+    4: "structurer, persévérer, donner un cadre à ses élans",
+    5: "accueillir le changement, s'adapter, goûter la liberté",
+    6: "prendre soin, assumer ses responsabilités, vivre l'engagement affectif",
+    7: "se faire confiance, cultiver le silence et l'intériorité",
+    8: "trouver son rapport juste à l'argent, au pouvoir et à l'ambition",
+    9: "lâcher prise, pardonner, ouvrir son cœur au collectif",
+}
+
+
+def _dettes_dans(n):
+    """Dettes karmiques (13, 14, 16, 19) rencontrées quand on réduit n étape par étape."""
+    trouvees = []
+    while n > 9 and n not in MAITRES:
+        if n in _DETTES_KARMIQUES:
+            trouvees.append(n)
+        n = sum(int(d) for d in str(n))
+    return trouvees
+
+
+def calc_karmique(j, m, a, prenom, nom=""):
+    """Dettes (13/4, 14/5, 16/7, 19/1) lues dans le jour, la date, le prénom/nom ; leçons = chiffres absents de la date ET du prénom/nom."""
+    dettes = {}
+
+    def _noter(n, source):
+        for d in _dettes_dans(n):
+            dettes.setdefault(d, source)
+
+    if j in _DETTES_KARMIQUES:
+        dettes.setdefault(j, "jour de naissance")
+    _noter(sum(int(c) for c in f"{j:02d}{m:02d}{a}"), "date de naissance")
+    lettres = _lettres_nom(f"{prenom} {nom}")
+    chiffres_nom = set()
+    if lettres:
+        valeurs = [_TABLE_LETTRES[c] for c in lettres]
+        chiffres_nom = set(valeurs)
+        total = sum(valeurs)
+        voy = sum(_TABLE_LETTRES[c] for c in lettres if c in _VOYELLES_NOM)
+        qui = "prénom et nom" if str(nom or '').strip() else "prénom"
+        _noter(total, qui)
+        _noter(voy, qui)
+        _noter(total - voy, qui)
+    chiffres_date = {int(c) for c in f"{j:02d}{m:02d}{a}" if c != '0'}
+    lecons = [n for n in range(1, 10) if n not in chiffres_date and n not in chiffres_nom] if lettres else []
+    return {'dettes': sorted(dettes.items()), 'lecons': lecons}
+
+
+def fmt_karmique(prenom, k, avec_dettes=True):
+    """Bloc INTERNE pour les prompts. Vide s'il n'y a rien de marquant."""
+    dettes = k.get('dettes') if avec_dettes else []
+    lecons = k.get('lecons') or []
+    if not dettes and not lecons:
+        return ""
+    bloc = f"\n\nNUMÉROLOGIE KARMIQUE — {str(prenom).upper()} (USAGE INTERNE UNIQUEMENT)\n"
+    bloc += ("(Lecture symbolique. Ne jamais écrire « karma », « karmique », « dette », « vie passée » ni aucun chiffre ci-dessous : "
+             "traduire en apprentissage de vie, en prose douce, lucide et lumineuse.)\n")
+    for n, source in dettes:
+        bloc += f"  Apprentissage fort (lu dans le/la {source}) : {_SENS_DETTES[n]}\n"
+    for n in lecons[:3]:
+        bloc += f"  Leçon à cultiver : {_SENS_LECONS[n]}\n"
+    return bloc
+
 
 
 def fmt_lignee(data, max_membres=6):
@@ -3123,7 +3215,7 @@ def _section_enrichie_ok(sec, produit=''):
     return True
 
 
-def _generer_section_enrichie(prompt, titre, eyebrow, produit):
+def _generer_section_enrichie(prompt, titre, eyebrow, produit, interdits_extra=None):
     """Un appel + un retry ; renvoie la section ou None (la section est alors simplement omise)."""
     consigne_retry = ("\nRETRY : aucun chiffre, aucune mention de « chemin de vie » ou de vocabulaire technique, "
                       "aucune étymologie, aucune information inventée ; au moins 600 caractères de prose en balises <p>.")
@@ -3131,7 +3223,8 @@ def _generer_section_enrichie(prompt, titre, eyebrow, produit):
         try:
             r = _appel_claude_chunk(prompt + (consigne_retry if tentative else ''), max_tokens=6000)
             sec = r if 'contenu' in r else next((s for s in (r.get('sections') or []) if isinstance(s, dict)), None)
-            if _section_enrichie_ok(sec, produit):
+            if _section_enrichie_ok(sec, produit) and not (
+                    interdits_extra and re.search(interdits_extra, re.sub(r'<[^>]+>', ' ', str(sec.get('contenu') or '')), flags=re.IGNORECASE)):
                 return {'titre': titre, 'eyebrow': str(sec.get('eyebrow') or eyebrow).strip() or eyebrow,
                         'contenu': sec['contenu']}
             print(f"[enrichi] « {titre} » refusée par les garde-fous (tentative {tentative + 1}/2)", flush=True)
@@ -3330,7 +3423,8 @@ def _valider_narratif_client(offre, narratif, clients, type_analyse='adulte'):
         r'\bsaturne\b', r'\bjupiter\b', r'\buranus\b', r'\bneptune\b',
         r'\bmercure\b', r'\bvénus\b', r'\bvenus\b', r'\bsoleil en\b', r'\blune en\b',
         r'\bton soleil\b', r'\bta lune\b', r'\ble soleil\b', r'\bla lune\b',
-        r'\d+(?:[.,]\d+)?\s*°'
+        r'\d+(?:[.,]\d+)?\s*°',
+        r'karm', r'\bvies? (?:passées?|antérieures?)\b'
     ]
     trouves = [pat for pat in interdits if re.search(pat, texte_cf, flags=re.IGNORECASE)]
     if trouves:
@@ -3806,6 +3900,15 @@ FLEUR_VIE_OR_SVG = """<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/s
 
 
 
+def _invitation_partage(offre, est_naissance=False):
+    """Invitation finale à partager ORIGIN : tutoiement pour Solo/Vocation, vouvoiement pour les autres offres."""
+    if offre in ('solo', 'vocation') and not est_naissance:
+        return ("Ce livret t'a parlé ? Offre-le à quelqu'un qui compte pour toi : "
+                "chaque histoire mérite d'être lue. Fais connaître ORIGIN autour de toi.")
+    return ("Ce livret vous a parlé ? Offrez-le à quelqu'un qui compte pour vous : "
+            "chaque histoire mérite d'être lue. Faites connaître ORIGIN autour de vous.")
+
+
 def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     annee = date.today().year
     est_naissance = (type_analyse == 'naissance')
@@ -3967,6 +4070,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     <div class="s-rule" style="margin-left:auto;margin-right:auto;background:linear-gradient(90deg,transparent,var(--or),transparent);width:90px"></div>
     <div class="prose final-prose">{message_final}</div>
     <div class="final-seed">{SEED_SVG}</div>
+    <p class="final-share">{_invitation_partage(offre, est_naissance)}</p>
     <p class="final-origin">ORIGIN · origin-famille.fr</p>
   </div>
 </section>"""
@@ -4636,6 +4740,7 @@ body {
 .fn-inner { position: absolute; top: 96mm; left: 0; right: 0; }
 .fn-logo { width: 92mm; height: auto; margin: 0 auto 12mm; display: block; }
 .fn-dedicace { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 17pt; line-height: 1.55; color: rgba(242,236,216,.86); max-width: 130mm; margin: 0 auto 10mm; }
+.fn-share { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 12.5pt; line-height: 1.55; color: rgba(242,236,216,.7); max-width: 120mm; margin: 0 auto 9mm; }
 .fn-site { font-family: 'Cinzel', serif; font-size: 8.5pt; letter-spacing: .42em; color: #C9A84C; }
 .fn-sub { font-style: italic; font-size: 12.5pt; color: rgba(242,236,216,.45); margin-top: 3mm; }
 """
@@ -5214,6 +5319,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
   <div class="fn-inner">
     {finale_logo_html}
     <p class="fn-dedicace">{fn_dedicace}</p>
+    <p class="fn-share">{_invitation_partage(offre, est_naissance)}</p>
     <p class="fn-site">origin-famille.fr</p>
     <p class="fn-sub">Lecture personnalisée · {annee}</p>
   </div>
@@ -5742,7 +5848,7 @@ def webhook():
                 profils_txt_parts = []
                 astros_clients = []
                 for c in clients:
-                    txt, _, astro = fmt_profil(c, avec_transits=True)
+                    txt, _, astro = fmt_profil(c, avec_transits=True, avec_dettes_karma=(type_analyse != 'naissance'))
                     profils_txt_parts.append(txt)
                     astros_clients.append(astro)
                 profils_txt = "\n\n".join(profils_txt_parts)
