@@ -5599,6 +5599,203 @@ def _rapport_qualite(narratif):
         print(f"[rapport_qualite] ignoré : {ex}", flush=True)
         return ''
 
+# ─────────────────────────────────────────────────────────────
+# Contrôle qualité BLOQUANT (16 oct. 2026)
+# Avant : _rapport_qualite signalait les défauts dans le mail, sans les corriger.
+# Maintenant : on détecte, on corrige chapitre par chapitre (réécriture ciblée),
+# on vérifie que ça s'est amélioré, et on recommence (2 passes max).
+# Ce qui reste est signalé par _rapport_qualite comme avant.
+# ─────────────────────────────────────────────────────────────
+_RE_TIERCE = re.compile(r"\b(?:une|cette) femme qui\b|\bce n'est pas une femme\b|\bun homme qui\b|\bcet homme qui\b", re.I)
+_RE_NONPAS = re.compile(r"non pas", re.I)
+_RE_PASBESOIN = re.compile(r"pas besoin de", re.I)
+_RE_SUPPOSE = re.compile(r"depuis toujours|depuis longtemps|au fil des décennies|près d'une décennie", re.I)
+_RE_METIERS = re.compile(r"\b(?:luthier|forgeron|verger|arbre fruitier|menuisier|artisan|apprenti|compagnon|atelier)\b", re.I)
+# (regex, maximum dans tout le livret, libellé, pistes de remplacement)
+_MOTS_BUDGET = (
+    (r"port(?:e|es|ent|ez|er|ons|ais|ait|aient|é|ée|és|ées|ant)?", 8, "porter / porte / portes",
+     "tenir, abriter, loger, soutenir, détenir, incarner, avoir, garder, ou une tournure sans verbe"),
+    (r"sol|solide|solides", 3, "sol / solide",
+     "terrain, assise, fondations, ancrage, base, stable, ferme, robuste, tenir debout"),
+)
+_OFFRES_TUTOIEMENT_QC = ('solo', 'vocation', 'couple')  # famille/lignée parlent volontairement à la 3e personne
+
+
+def _texte_brut(s):
+    return re.sub(r'<[^>]+>', ' ', str(s or ''))
+
+
+def _blocs_narratif(narratif):
+    """[(clé, champ_dict, nom_du_champ)] pour tout le texte client : lettre, chapitres, notes de mantras, mot final."""
+    blocs = []
+    if not isinstance(narratif, dict):
+        return blocs
+    if narratif.get('lettre'):
+        blocs.append((('lettre',), narratif, 'lettre'))
+    for i, sec in enumerate(narratif.get('sections') or []):
+        if isinstance(sec, dict) and sec.get('contenu'):
+            blocs.append((('sec', i), sec, 'contenu'))
+    for i, m in enumerate(narratif.get('mantras') or []):
+        if isinstance(m, dict) and m.get('note'):
+            blocs.append((('mantra', i), m, 'note'))
+    if narratif.get('message_final'):
+        blocs.append((('final',), narratif, 'message_final'))
+    return blocs
+
+
+def _mesures_qc(texte, offre, donnees_min=''):
+    """Compteurs de défauts d'UN bloc de texte (sans balises)."""
+    d = {
+        'tierce': len(_RE_TIERCE.findall(texte)) if offre in _OFFRES_TUTOIEMENT_QC else 0,
+        'nonpas': len(_RE_NONPAS.findall(texte)),
+        'pasbesoin': len(_RE_PASBESOIN.findall(texte)),
+        'suppose': len(_RE_SUPPOSE.findall(texte)),
+        'metier': len([m for m in _RE_METIERS.findall(texte) if m.lower() not in donnees_min]),
+        'cond': len(_RE_CONDITIONNEL.findall(texte)),
+    }
+    for idx, (motif, _mx, _lib, _pistes) in enumerate(_MOTS_BUDGET):
+        d[f'mot{idx}'] = len(re.findall(r"\b(?:" + motif + r")\b", texte, re.I))
+    return d
+
+
+def _suppr_longtemps(texte):
+    """« depuis longtemps » en milieu de phrase : suppression sûre (le sens et la grammaire tiennent)."""
+    return re.sub(r"(?<=[\wà-ÿ])\s+depuis longtemps(?=[\s,.;:!?…<])", "", texte, flags=re.I)
+
+
+def _plan_corrections(narratif, offre, donnees_min=''):
+    """Retourne {clé_bloc: [consignes précises]} pour tous les défauts détectés, + nombre de défauts."""
+    blocs = _blocs_narratif(narratif)
+    textes = {cle: _texte_brut(ch[nom]) for cle, ch, nom in blocs}
+    mes = {cle: _mesures_qc(t, offre, donnees_min) for cle, t in textes.items()}
+    plan = {}
+
+    def add(cle, msg):
+        plan.setdefault(cle, []).append(msg)
+
+    total_np = sum(m['nonpas'] for m in mes.values())
+    for cle, t in textes.items():
+        m = mes[cle]
+        if m['tierce']:
+            ex = [x.group(0) for x in _RE_TIERCE.finditer(t)][:4]
+            add(cle, "PERSONNE : supprime les portraits à la 3e personne (" + ", ".join(f"« {e} »" for e in ex) +
+                ") ; adresse-toi directement à la personne (« tu… », ou « Prénom, tu… » dans un texte de couple), "
+                "sans « un homme qui / une femme qui ».")
+        if m['pasbesoin']:
+            add(cle, "TIC : supprime « (n')a pas besoin de » (reformule en positif).")
+        if m['suppose']:
+            ex = sorted({x.group(0).lower() for x in _RE_SUPPOSE.finditer(t)})
+            add(cle, "INVENTION : supprime " + ", ".join(f"« {e} »" for e in ex) + " (on ne sait rien de son passé ; parle de tendances, pas de durée).")
+        if m['metier']:
+            ex = sorted({x.lower() for x in _RE_METIERS.findall(t) if x.lower() not in donnees_min})
+            add(cle, "INVENTION : retire " + ", ".join(f"« {e} »" for e in ex) + " (absent des DONNÉES) ; remplace par une image neutre.")
+    if total_np > 2:
+        for cle, m in sorted(mes.items(), key=lambda kv: -kv[1]['nonpas']):
+            if m['nonpas'] and total_np > 2:
+                add(cle, "TIC : supprime la construction « non pas X, mais Y » (reformule directement) ; "
+                         "elle revient trop dans le livret.")
+                total_np -= m['nonpas']
+    # budgets de mots sur tout le livret
+    for idx, (motif, mx, lib, pistes) in enumerate(_MOTS_BUDGET):
+        k = f'mot{idx}'
+        tot = sum(m[k] for m in mes.values())
+        if tot <= mx:
+            continue
+        reste = mx
+        budget = {cle: 0 for cle in mes}
+        ordre = sorted((c for c in mes if mes[c][k]), key=lambda c: -mes[c][k])
+        for c in ordre:
+            if reste > 0:
+                budget[c] = 1
+                reste -= 1
+        while reste > 0 and any(budget[c] < mes[c][k] for c in ordre):
+            for c in ordre:
+                if reste > 0 and budget[c] < mes[c][k]:
+                    budget[c] += 1
+                    reste -= 1
+        for c in ordre:
+            if mes[c][k] > budget[c]:
+                add(c, f"MOT RÉPÉTÉ « {lib} » : {mes[c][k]} occurrences dans ce texte, {tot} dans tout le livret (maximum {mx}). "
+                       f"Ramène à {budget[c]} au plus, en variant (pistes : {pistes}).")
+    # répétitions entre chapitres : suites de 7 mots identiques
+    vus = {}
+    for cle, ch, nom in blocs:
+        if cle[0] != 'sec':
+            continue
+        mots_b = re.findall(r"[\wàâäçéèêëîïôöùûüœ'’-]+", textes[cle].lower())
+        deja = set()
+        for k in range(0, max(0, len(mots_b) - 6)):
+            g = ' '.join(mots_b[k:k + 7])
+            if g in vus and vus[g] != cle and g not in deja and len([1 for x in plan.get(cle, []) if x.startswith('RÉPÉTITION')]) < 3:
+                add(cle, f"RÉPÉTITION : la suite « {g} » figure déjà dans un autre chapitre ; reformule cette phrase avec d'autres mots et une autre image.")
+                deja.add(g)
+            else:
+                vus.setdefault(g, cle)
+    return plan
+
+
+def controle_qualite_final(narratif, offre='solo', type_analyse='adulte', donnees='', max_passes=2):
+    """Détecte puis CORRIGE les défauts de forme (3e personne, tics, mots répétés, doublons entre chapitres).
+    Le livret d'origine est conservé si une réécriture n'améliore pas ou casse la structure."""
+    if type_analyse == 'naissance' or not isinstance(narratif, dict):
+        return narratif
+    donnees_min = str(donnees or '').lower()
+    try:
+        # 1) corrections sûres, sans IA
+        for cle, ch, nom in _blocs_narratif(narratif):
+            ch[nom] = _suppr_longtemps(str(ch[nom]))
+        for passe in range(1, max_passes + 1):
+            plan = _plan_corrections(narratif, offre, donnees_min)
+            if not plan:
+                print(f"[qc] passe {passe} : aucun défaut", flush=True)
+                break
+            print(f"[qc] passe {passe} : {sum(len(v) for v in plan.values())} défaut(s) dans {len(plan)} bloc(s)", flush=True)
+            blocs = {cle: (ch, nom) for cle, ch, nom in _blocs_narratif(narratif)}
+
+            def _reecrire(item):
+                cle, consignes = item
+                ch, nom = blocs[cle]
+                ancien = str(ch[nom])
+                try:
+                    prompt = (
+                        "Tu es relecteur éditorial d'ORIGIN. Corrige UNIQUEMENT les défauts listés ci-dessous dans ce texte, "
+                        "en changeant le moins de mots possible : mêmes idées, mêmes images fortes, même style, mêmes accords de genre, "
+                        "même nombre de balises <p>, même longueur (±15 %). Ne touche pas aux passages qui ne sont pas concernés. "
+                        "N'ajoute aucun fait nouveau sur la vie de la personne ; conserve tout fait issu des DONNÉES. "
+                        "Âges, années et durées en chiffres. Ton affirmé, présent de l'indicatif.\n\nDÉFAUTS À CORRIGER :\n- "
+                        + "\n- ".join(consignes) +
+                        '\n\nRetourne UNIQUEMENT ce JSON valide, sans markdown : {"contenu": "<texte corrigé, mêmes balises>"}\n\n'
+                        "DONNÉES (seule source de faits) :\n" + str(donnees or '')[:6000] + "\n\nTEXTE :\n" + ancien
+                    )
+                    r = _appel_claude_chunk(prompt, max_tokens=7000)
+                    new = str((r or {}).get('contenu') or '')
+                    if not new:
+                        return
+                    a, b = _texte_brut(ancien), _texte_brut(new)
+                    na, nb_ = len(a.split()), len(b.split())
+                    ma, mb = _mesures_qc(a, offre, donnees_min), _mesures_qc(b, offre, donnees_min)
+                    meme_structure = new.count('<p>') == ancien.count('<p>') and 0.8 * na <= nb_ <= 1.2 * na
+                    pas_pire = all(mb[k] <= ma[k] for k in ma if k != 'cond') and mb['cond'] <= max(ma['cond'], 4)
+                    mieux = sum(v for k, v in mb.items() if k != 'cond') < sum(v for k, v in ma.items() if k != 'cond')
+                    if meme_structure and pas_pire and mieux:
+                        ch[nom] = new
+                        print(f"[qc] {cle} corrigé : {ma} -> {mb}", flush=True)
+                    else:
+                        print(f"[qc] {cle} : réécriture refusée (structure={meme_structure}, pas_pire={pas_pire}, mieux={mieux})", flush=True)
+                except Exception as ex:
+                    print(f"[qc] {cle} ignoré : {ex}", flush=True)
+
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                list(pool.map(_reecrire, list(plan.items())))
+        else:
+            reste = _plan_corrections(narratif, offre, donnees_min)
+            print(f"[qc] après {max_passes} passes : {sum(len(v) for v in reste.values())} défaut(s) restant(s) (signalés dans le mail)", flush=True)
+    except Exception as ex:
+        print(f"[qc] contrôle ignoré : {ex}", flush=True)
+    return narratif
+
+
 def _ascii_nom(txt):
     """Nom de fichier ASCII sûr (sans accents ni espaces) : évite les pièces jointes cassées
     (« .pd f », téléchargement impossible) quand le prénom contient un accent."""
@@ -5921,8 +6118,10 @@ def webhook():
                     narratif_solo     = _generer_et_valider('solo')
                     narratif_solo     = ajouter_sections_enrichies(narratif_solo, 'solo', clients, 'adulte', data)
                     narratif_solo     = resserrer_narratif(narratif_solo, 'adulte', 'solo', clients, _donnees_pour_polish(profils_txt, data))
+                    narratif_solo     = controle_qualite_final(narratif_solo, 'solo', 'adulte', _donnees_pour_polish(profils_txt, data))
                     narratif_vocation = _generer_et_valider('vocation')
                     narratif_vocation = resserrer_narratif(narratif_vocation, 'adulte', 'vocation', clients, _donnees_pour_polish(profils_txt, data))
+                    narratif_vocation = controle_qualite_final(narratif_vocation, 'vocation', 'adulte', _donnees_pour_polish(profils_txt, data))
                     narratif_solo     = _chiffrer_nombres(narratif_solo)
                     narratif_vocation = _chiffrer_nombres(narratif_vocation)
                     rapport_q = _rapport_qualite(narratif_solo) + _rapport_qualite(narratif_vocation)
@@ -5938,6 +6137,7 @@ def webhook():
                     narratif = _generer_et_valider(offre)
                     narratif = ajouter_sections_enrichies(narratif, offre, clients, type_analyse, data)
                     narratif = resserrer_narratif(narratif, type_analyse, offre, clients, _donnees_pour_polish(profils_txt, data))
+                    narratif = controle_qualite_final(narratif, offre, type_analyse, _donnees_pour_polish(profils_txt, data))
                     narratif = _chiffrer_nombres(narratif)
                     rapport_q = _rapport_qualite(narratif)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
