@@ -165,6 +165,37 @@ def realisation(prenom, nom=""):
     texte = _normaliser_lettres_numerologie(prenom + nom)
     return reduire(sum(T.get(c.upper(),0) for c in texte if c.isalpha() and c.upper() not in V))
 
+def lecture_jma(j, m, a):
+    """Lecture jour / mois / année (méthode de réduction, 16 oct. 2026) :
+    le jour de naissance = comment la personne PENSE, le mois = comment elle EST, l'année = comment elle FAIT.
+    Chaque nombre est réduit à un chiffre, sauf les maîtres nombres 11, 22, 33, 44 qui ne se réduisent pas."""
+    def chaine(n):
+        etapes = [str(n)]
+        while n > 9 and n not in MAITRES:
+            n = sum(int(d) for d in str(n))
+            etapes.append(str(n))
+        return n, " -> ".join(etapes)
+    jour, cj = chaine(int(j))
+    mois, cm = chaine(int(m))
+    annee, ca = chaine(sum(int(d) for d in str(int(a))))
+    return {'jour': jour, 'mois': mois, 'annee': annee,
+            'chaine_jour': cj, 'chaine_mois': cm,
+            'chaine_annee': f"{int(a)} -> " + ca}
+
+def _mots_nombre(n):
+    return SIGNIF_CHIFFRES.get(n) or {44: "bâtisseur d'envergure, discipline, réalisation durable au service du collectif"}.get(n, "")
+
+def fmt_jma(p_prenom, j, m, a):
+    d = lecture_jma(j, m, a)
+    return "\n".join([
+        "",
+        "LECTURE JOUR / MOIS / ANNÉE (INTERNE -- méthode de réduction)",
+        f"  Jour de naissance ({d['chaine_jour']}) = {d['jour']} : COMMENT {p_prenom} PENSE (mental, façon de raisonner, de décider) -- {_mots_nombre(d['jour'])}",
+        f"  Mois de naissance ({d['chaine_mois']}) = {d['mois']} : COMMENT {p_prenom} EST (nature profonde, sensibilité, intériorité) -- {_mots_nombre(d['mois'])}",
+        f"  Année de naissance ({d['chaine_annee']}) = {d['annee']} : COMMENT {p_prenom} FAIT (façon d'agir, de mener, de produire, de s'y prendre) -- {_mots_nombre(d['annee'])}",
+    ])
+
+
 def annee_perso(j, m):
     return reduire(sum(int(d) for d in f"{j:02d}{m:02d}{date.today().year}"))
 
@@ -719,6 +750,7 @@ def fmt_profil(p, avec_transits=False, avec_dettes_karma=True):
         f"  Dominants     : {dom_str}",
         f"  Manquants     : {man_str}",
         *([f"  Analyse du prénom (INTERNE, jamais exposée) : {_resume_vibration(_vp)}"] if _vp else []),
+        fmt_jma(pr, j, m, a),
         "",
         "ASTROLOGIE",
     ]
@@ -2008,9 +2040,13 @@ _REGLE_REPERES_INTERNES = """REPÈRES INTERNES : si un bloc « CONTEXTE ASTROLOG
 
 """
 
+_REGLE_JMA = """LECTURE JOUR / MOIS / ANNÉE : pour chaque personne, le bloc « LECTURE JOUR / MOIS / ANNÉE (INTERNE) » donne trois nombres : le jour de naissance dit COMMENT elle PENSE, le mois dit COMMENT elle EST, l'année dit COMMENT elle FAIT. C'est une lecture très intime : elle nourrit en profondeur le portrait de chaque personne (ou de l'enfant, ou de chaque membre du foyer, ou du couple) en trois dimensions croisées : sa façon de penser, sa façon d'être, sa façon d'agir. Montre comment ces trois dimensions se répondent, s'appuient ou se contredisent chez elle (ex. une tête qui analyse, un cœur qui sent autrement, une action qui avance à son rythme), avec des situations concrètes, jamais des généralités. Pour un couple, un foyer ou une lignée, croise aussi les dimensions d'une personne à l'autre (comment l'un pense face à la façon de faire de l'autre, etc.). Ne cite jamais « jour de naissance », « mois de naissance », « année de naissance » comme sources, ni la méthode, ni ces nombres, ni de calcul : traduis en pensée, en être, en action. Ne fais jamais trois paragraphes mécaniques « il pense / il est / il fait » : fonds-les dans le texte.
+
+"""
+
 def _ton_affirme(prompt):
     """Place la règle de ton en tête ET en rappel final du prompt (priorité sur les consignes de conditionnel)."""
-    return _REGLE_TON_AFFIRME + _REGLE_AME_LIVRET + _REGLE_NON_DITS + _REGLE_VARIETE + _REGLE_REPERES_INTERNES + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que ». Jamais « tu captes / tu ressens ce qui ne se dit pas » ni aucune variante sur les non-dits."
+    return _REGLE_TON_AFFIRME + _REGLE_AME_LIVRET + _REGLE_NON_DITS + _REGLE_VARIETE + _REGLE_REPERES_INTERNES + _REGLE_JMA + prompt + "\n\nRAPPEL FINAL : ton affirmé, présent de l'indicatif pour le portrait, quasi aucun « peut-être / pourrait / il est possible que ». Jamais « tu captes / tu ressens ce qui ne se dit pas » ni aucune variante sur les non-dits."
 
 
 def _appel_claude_chunk(prompt, max_tokens=8000):
