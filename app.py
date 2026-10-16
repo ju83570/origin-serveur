@@ -3977,6 +3977,136 @@ def _invitation_partage(offre, est_naissance=False):
             "chaque histoire mérite d'être lue. Faites connaître ORIGIN autour de vous.")
 
 
+# ─────────────────────────────────────────────────────────────
+# Fiche « Tes repères / Vos repères » (16 oct. 2026)
+# Données techniques CALCULÉES par le serveur (jamais écrites par l'IA), sans aucune interprétation.
+# Volontairement absents : karmique, jour/mois/année, transits, périodes charnières, analyse détaillée du prénom.
+# ─────────────────────────────────────────────────────────────
+_MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août',
+            'septembre', 'octobre', 'novembre', 'décembre']
+
+def _donnees_fiche(clients, astros):
+    """[{nom, naissance, nombres:[(libellé, valeur)], astro:[(libellé, valeur)]}] -- toute ligne incalculable est omise."""
+    fiches = []
+    for i, c in enumerate(clients or []):
+        try:
+            j, m, a = int(c['jour']), int(c['mois']), int(c['annee'])
+            pr, nm = str(c.get('prenom') or ''), str(c.get('nom') or '')
+        except Exception:
+            continue
+        naiss = f"{j} {_MOIS_FR[m - 1]} {a}"
+        ville = str(c.get('ville') or '').strip()
+        if ville:
+            naiss += f" · {ville}"
+        if c.get('heure') is not None:
+            try:
+                naiss += f" · {int(c['heure']):02d}h{int(c.get('minute') or 0):02d}"
+            except Exception:
+                pass
+        nombres = []
+        def _ajout(lib, fn):
+            try:
+                nombres.append((lib, label_nombre(fn())))
+            except Exception as ex:
+                print(f"[fiche] {lib} ignoré : {ex}", flush=True)
+        _ajout("Chemin de vie", lambda: chemin_de_vie(j, m, a))
+        _ajout("Expression", lambda: expression(pr, nm))
+        _ajout("Nombre intime", lambda: intime(pr, nm))
+        _ajout("Réalisation", lambda: realisation(pr, nm))
+        _ajout("Année personnelle", lambda: annee_perso(j, m))
+        _ajout("Cycle de vie en cours", lambda: pinnacles(j, m, a)[1])
+        astro_l = []
+        try:
+            astro = astros[i] if astros and i < len(astros) else None
+            if astro:
+                asc = astro.get('ascendant')
+                heure_connue = c.get('heure') is not None
+                for np_, d in (astro.get('planetes') or {}).items():
+                    if np_ == 'Lune' and not heure_connue:
+                        continue  # sans heure de naissance, le signe de la Lune n'est pas fiable
+                    astro_l.append((np_, f"{d['signe']} {str(d['degre']).replace('.', ',')}°"))
+                if asc and asc.get('signe') and heure_connue:
+                    deg = asc.get('degre')
+                    astro_l.insert(0, ("Ascendant", f"{asc['signe']}" + (f" {str(deg).replace('.', ',')}°" if deg is not None else "")))
+        except Exception as ex:
+            print(f"[fiche] astro ignoré : {ex}", flush=True)
+        if nombres or astro_l:
+            fiches.append({'nom': _prenom_affiche(pr), 'naissance': naiss, 'nombres': nombres, 'astro': astro_l})
+    return fiches
+
+
+def _html_fiche(clients, astros, tutoie, mode):
+    """Section 'Tes/Vos repères'. mode = 'web' ou 'pdf'. Retourne '' si rien à afficher (le livret n'est jamais bloqué)."""
+    try:
+        fiches = _donnees_fiche(clients, astros)
+        if not fiches:
+            return ''
+        titre = "Tes repères" if tutoie else "Vos repères"
+        blocs = ''
+        for f in fiches:
+            lignes_n = ''.join(f'<tr><td>{html_lib.escape(l)}</td><td>{html_lib.escape(v)}</td></tr>' for l, v in f['nombres'])
+            lignes_a = ''.join(f'<tr><td>{html_lib.escape(l)}</td><td>{html_lib.escape(v)}</td></tr>' for l, v in f['astro'])
+            blocs += (f'<div class="fiche-pers"><h3 class="fiche-nom">{html_lib.escape(f["nom"])}</h3>'
+                      f'<p class="fiche-naiss">{html_lib.escape(f["naissance"])}</p>'
+                      f'<div class="fiche-cols">'
+                      + (f'<div><p class="fiche-sous">Numérologie</p><table class="fiche-tab">{lignes_n}</table></div>' if lignes_n else '')
+                      + (f'<div><p class="fiche-sous">Astrologie</p><table class="fiche-tab">{lignes_a}</table></div>' if lignes_a else '')
+                      + '</div></div>')
+        note = "Calculs établis à partir de la date, de l'heure et du lieu de naissance."
+        if mode == 'web':
+            return f"""
+<section class="section" id="reperes" data-title="{titre}">
+  <div class="wrap">
+    <div class="center reveal">
+      <span class="s-eyebrow">Les données de {'ta' if tutoie else 'votre'} lecture</span>
+      <h2 class="s-title">{titre}</h2>
+      <div class="s-rule"></div>
+    </div>
+    <div class="fiche reveal">{blocs}<p class="fiche-note">{note}</p></div>
+  </div>
+</section>"""
+        return f"""<section class="fiche-page" id="reperes">
+  <div class="final-head">
+    <span class="eyebrow">Les données de {'ta' if tutoie else 'votre'} lecture</span>
+    <h2 class="ch-title">{titre}</h2>
+    <div class="rule rule-c"></div>
+  </div>
+  <div class="fiche">{blocs}<p class="fiche-note">{note}</p></div>
+</section>"""
+    except Exception as ex:
+        print(f"[fiche] section ignorée : {ex}", flush=True)
+        return ''
+
+
+FICHE_CSS_WEB = """
+.fiche{max-width:760px;margin:2.2rem auto 0;}
+.fiche-pers{margin-bottom:2.4rem;padding:1.6rem 1.4rem;border:1px solid var(--card-b);background:var(--card);border-radius:14px;}
+.fiche-nom{font-family:'Cinzel',serif;font-weight:400;letter-spacing:.12em;color:var(--or-clair);font-size:1.15rem;text-align:center;}
+.fiche-naiss{text-align:center;color:var(--muted);font-size:1rem;margin:.35rem 0 1.2rem;font-style:italic;}
+.fiche-cols{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;}
+@media(max-width:640px){.fiche-cols{grid-template-columns:1fr;}}
+.fiche-sous{font-family:'Jost',sans-serif;font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--or);margin-bottom:.5rem;}
+.fiche-tab{width:100%;border-collapse:collapse;}
+.fiche-tab td{padding:.38rem 0;border-bottom:1px solid var(--hair);font-size:1.05rem;color:var(--txt-soft);}
+.fiche-tab td:last-child{text-align:right;color:var(--txt);}
+.fiche-note{text-align:center;color:var(--muted);font-size:.92rem;font-style:italic;margin-top:1rem;}
+"""
+
+FICHE_CSS_PRINT = """
+.fiche-page { break-before: page; padding-top: 10mm; }
+.fiche-pers { margin-top: 7mm; break-inside: avoid; page-break-inside: avoid; }
+.fiche-nom { font-family: 'Cinzel', serif; font-weight: 400; font-size: 14pt; letter-spacing: .12em; color: #A5612A; text-align: center; }
+.fiche-naiss { text-align: center; font-style: italic; font-size: 11pt; color: #6b5f4a; margin: 1mm 0 4mm; }
+.fiche-cols { display: flex; gap: 10mm; }
+.fiche-cols > div { flex: 1; }
+.fiche-sous { font-family: 'Jost', sans-serif; font-size: 7.5pt; letter-spacing: .26em; text-transform: uppercase; color: #B08A3A; margin-bottom: 2mm; }
+.fiche-tab { width: 100%; border-collapse: collapse; }
+.fiche-tab td { padding: 1.4mm 0; border-bottom: .3mm solid #e5d9bd; font-size: 11.5pt; color: #3a3122; }
+.fiche-tab td:last-child { text-align: right; }
+.fiche-note { text-align: center; font-style: italic; font-size: 10pt; color: #857A66; margin-top: 6mm; }
+"""
+
+
 def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     annee = date.today().year
     est_naissance = (type_analyse == 'naissance')
@@ -4061,6 +4191,9 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     titre_mantras = 'Vos mantras' if not tutoie else 'Ton mantra personnel'
     if narratif_mantras:
         toc.append(('mantras', '✦', titre_mantras))
+    reperes_section = _html_fiche(clients, astros, tutoie, 'web')
+    if reperes_section:
+        toc.append(('reperes', '✦', 'Tes repères' if tutoie else 'Vos repères'))
     if message_final:
         toc.append(('final', '✦', 'Un dernier mot'))
     toc_html = ''.join(
@@ -4159,7 +4292,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <script>try{{var t=localStorage.getItem('origin-theme');if(t)document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}</script>
-<style>{CSS}</style>
+<style>{CSS}{FICHE_CSS_WEB}</style>
 </head>
 <body>
 <div class="progress" id="progress"></div>
@@ -4217,6 +4350,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
 {lettre_html}
 {sections_html}
 {mantras_section}
+{reperes_section}
 {final_section}
 </main>
 
@@ -4989,6 +5123,9 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
         toc_items.append((f'ch-{i+1}', f'{i+1:02d}', re.sub(r'<[^>]+>', '', str(sec.get('titre', ''))), False))
     if _mantras_pdf:
         toc_items.append(('mantras', '·', 'Vos mantras' if not tutoie else 'Ton mantra', True))
+    reperes_pdf_html = _html_fiche(clients, astros, tutoie, 'pdf')
+    if reperes_pdf_html:
+        toc_items.append(('reperes', '·', 'Tes repères' if tutoie else 'Vos repères', True))
     final_txt = str(narratif.get('message_final') or '').strip()
     if final_txt:
         toc_items.append(('final', '·', 'Un dernier mot', True))
@@ -5319,7 +5456,7 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 <head>
 <meta charset="UTF-8">
 <title>ORIGIN</title>
-<style>{CSS_PRINT}</style>
+<style>{CSS_PRINT}{FICHE_CSS_PRINT}</style>
 </head>
 <body>
 
@@ -5369,6 +5506,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 {sections_html}
 
 {mantras_page_html}
+
+{reperes_pdf_html}
 
 {final_message_html}
 
