@@ -6108,6 +6108,30 @@ def add_cors(response):
 # ─────────────────────────────────────────────────────────────
 import hmac, hashlib, secrets, html as _html_codes
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
+OWNER_CODE = os.environ.get("OWNER_CODE", "")          # accès libre réservé à Julien (illimité, toutes offres)
+STRIPE_KEY = os.environ.get("STRIPE_KEY", "")          # clé restreinte en lecture seule (Checkout Sessions)
+ENFORCE_ACCESS = os.environ.get("ENFORCE_ACCESS", "") == "1"   # 1 = formulaire fermé sans code ni paiement vérifié
+_stripe_usages = {}
+
+def _est_code_proprietaire(code):
+    return bool(OWNER_CODE) and hmac.compare_digest(_code_normaliser(code), _code_normaliser(OWNER_CODE))
+
+def _stripe_verifier(session_id):
+    """Un paiement Stripe vérifié ouvre le formulaire (3 envois max par paiement, pour corriger une faute de frappe)."""
+    if not STRIPE_KEY:
+        return False, "Vérification du paiement indisponible."
+    if not re.fullmatch(r"cs_[A-Za-z0-9_]{10,250}", session_id or ""):
+        return False, "Lien de paiement invalide."
+    if _stripe_usages.get(session_id, 0) >= 3:
+        return False, "Ce paiement a déjà servi. Écris-nous à contact@origin-famille.fr."
+    try:
+        r = requests.get(f"https://api.stripe.com/v1/checkout/sessions/{session_id}",
+                         headers={"Authorization": f"Bearer {STRIPE_KEY}"}, timeout=15)
+        ok = r.status_code == 200 and r.json().get("payment_status") in ("paid", "no_payment_required")
+    except Exception:
+        return False, "Vérification du paiement momentanément indisponible. Réessaie dans un instant."
+    return (True, "") if ok else (False, "Paiement non confirmé.")
+
 _CODES_SECRET = (os.environ.get("CODES_SECRET") or os.environ.get("WEBHOOK_SECRET") or ANTHROPIC_API_KEY or "origin").encode()
 _CODE_ALPHA = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 _CODE_OFFRES = {'S': 'solo', 'C': 'couple', 'F': 'famille', 'P': 'prestige', 'N': 'naissance', 'V': 'vocation', 'B': 'bundle'}
@@ -6172,6 +6196,8 @@ def _code_marquer(code, utilise):
 
 @app.route("/code/check", methods=["GET"])
 def code_check():
+    if _est_code_proprietaire(request.args.get("code", "")):
+        return jsonify({"valid": True, "offre": "libre", "message": ""}), 200
     ok, offre, msg = code_verifier(request.args.get("code", ""))
     return jsonify({"valid": ok, "offre": offre if ok else None, "message": msg}), 200
 
@@ -6233,17 +6259,27 @@ def webhook():
 
         offre = str(data.get('offre', 'solo')).lower().strip()
 
-        # Code cadeau : l'offre est celle du code, et le code ne sert qu'une fois.
+        # Accès : code propriétaire (libre) · code cadeau (offre imposée, usage unique) · paiement Stripe vérifié.
         code_cadeau = str(data.get('code_cadeau') or '').strip()
-        if code_cadeau:
+        session_id = str(data.get('stripe_session') or '').strip()
+        jeton = ''   # ce qui est « consommé » une fois le livret lancé (vide pour l'accès libre)
+        if code_cadeau and _est_code_proprietaire(code_cadeau):
+            data['code_cadeau'] = 'ACCÈS ORIGIN (libre)'
+            code_cadeau = ''
+        elif code_cadeau:
             _ok, _offre_code, _msg = code_verifier(code_cadeau)
             if not _ok:
                 return jsonify({'status': 'error', 'message': _msg}), 403
             offre = _offre_code
             data['offre'] = _offre_code
-        offres_valides = {'solo','naissance','vocation','couple','famille','prestige','bundle'}
-        if offre not in offres_valides:
-            return jsonify({'status':'error','message':'Offre inconnue'}), 400
+            jeton = code_cadeau
+        elif session_id and (STRIPE_KEY or ENFORCE_ACCESS):
+            _ok, _msg = _stripe_verifier(session_id)
+            if not _ok:
+                return jsonify({'status': 'error', 'message': _msg}), 403
+            data['code_cadeau'] = f'Paiement Stripe {session_id[:14]}…'
+        elif ENFORCE_ACCESS:
+            return jsonify({'status': 'error', 'message': "Accès réservé : utilise le lien reçu après ton paiement ou ton code cadeau."}), 403
         type_analyse = str(data.get('type_analyse') or 'adulte').lower().strip()
         email_client = data.get('email', '')
 
@@ -6443,8 +6479,8 @@ def webhook():
                     prenoms_log = " & ".join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
             except Exception as ex:
-                if code_cadeau:
-                    _code_marquer(code_cadeau, False)  # génération échouée : le code reste utilisable
+                if jeton:
+                    _code_marquer(jeton, False)  # génération échouée : le code reste utilisable
                 print(f"ERREUR génération : {ex}")
                 import traceback; traceback.print_exc()
                 try:
@@ -6466,8 +6502,10 @@ def webhook():
                 except Exception as mail_ex:
                     print(f"Impossible d'envoyer l'alerte : {mail_ex}")
 
-        if code_cadeau and not _code_marquer(code_cadeau, True):
+        if jeton and not _code_marquer(jeton, True):
             return jsonify({'status': 'error', 'message': 'Ce code a déjà été utilisé.'}), 403
+        if session_id and not jeton and data.get('code_cadeau', '').startswith('Paiement Stripe'):
+            _stripe_usages[session_id] = _stripe_usages.get(session_id, 0) + 1
         t = threading.Thread(target=generer, daemon=False)
         t.start()
 
