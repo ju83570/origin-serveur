@@ -1838,6 +1838,10 @@ def appeler_claude_couple(profils_txt):
 
 ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
 
+AGE DES ENFANTS ET PROCHES -- RÈGLE ABSOLUE : ne calcule JAMAIS l'âge futur d'un enfant ou d'un proche pour une année ou une période donnée (aucun « il aura 4 à 6 ans en 2027 »). Les calculs d'âge sont une source d'erreurs. Tu peux citer l'âge tel qu'il figure dans les données, une seule fois, ou parler de façon qualitative (« quand Prénom sera plus grand », « pendant ses premières années d'école »).
+
+VARIÉTÉ DU STYLE : ne répète pas la tournure « ta façon de penser / d'agir / de réfléchir » (3 emplois maximum dans tout le livret, varie : « ta pensée », « ton élan », « ton passage à l'acte »). Évite les mots « redoutable » et « abrite » (2 emplois maximum chacun).
+
 ANNÉE EN COURS : {annee_courante}
 Toutes les références à "cette année", "en {annee_courante}", l'année personnelle, les transits actuels, doivent se baser sur {annee_courante}.
 
@@ -1902,6 +1906,10 @@ Mouvement 3 -- Portrait de Personne 2 (5 paragraphes, titre poétique libre avec
     prompt_b = f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
 
 ÂGES ET NOMBRES : écris toujours les âges, les années et les durées en chiffres (59 ans, 2027, 6 enfants), jamais en lettres (« cinquante-neuf », « deux mille vingt-sept »), c'est plus lisible. Évite les repères relatifs qui vieillissent mal (« l'année prochaine », « cette année ») : préfère une année précise ou « d'ici 2 à 3 ans ».
+
+AGE DES ENFANTS ET PROCHES -- RÈGLE ABSOLUE : ne calcule JAMAIS l'âge futur d'un enfant ou d'un proche pour une année ou une période donnée (aucun « il aura 4 à 6 ans en 2027 »). Les calculs d'âge sont une source d'erreurs. Tu peux citer l'âge tel qu'il figure dans les données, une seule fois, ou parler de façon qualitative (« quand Prénom sera plus grand », « pendant ses premières années d'école »).
+
+VARIÉTÉ DU STYLE : ne répète pas la tournure « ta façon de penser / d'agir / de réfléchir » (3 emplois maximum dans tout le livret, varie : « ta pensée », « ton élan », « ton passage à l'acte »). Évite les mots « redoutable » et « abrite » (2 emplois maximum chacun).
 
 ANNÉE EN COURS : {annee_courante}
 
