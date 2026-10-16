@@ -5,3 +5,4 @@ pytz==2024.1
 timezonefinder
 gunicorn==22.0.0
 weasyprint
+qrcode==7.4.2

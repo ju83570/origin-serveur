@@ -5549,6 +5549,8 @@ def _resume_donnees_formulaire(data):
 
     lignes = []
     lignes.append(f"Offre saisie : {data.get('offre', '')}")
+    if data.get('code_cadeau'):
+        lignes.append(f"🎁 CODE CADEAU utilisé : {data.get('code_cadeau')}")
     lignes.append(f"Type d'analyse : {data.get('type_analyse', '')}")
     lignes.append(f"Email client : {data.get('email', '')}")
 
@@ -6098,6 +6100,116 @@ def add_cors(response):
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-ORIGIN-SECRET"
     return response
 
+# ─────────────────────────────────────────────────────────────
+# Codes cadeau (16 oct. 2026)
+#  Un code = une offre + un identifiant aléatoire + une signature (HMAC). Aucune base de données :
+#  le serveur reconnaît un code valide à sa signature. Un code ne sert qu'une fois (mémoire du serveur
+#  + petit fichier ; remis à zéro si le serveur est réinstallé : le code figure aussi dans chaque mail).
+# ─────────────────────────────────────────────────────────────
+import hmac, hashlib, secrets, html as _html_codes
+ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
+_CODES_SECRET = (os.environ.get("CODES_SECRET") or os.environ.get("WEBHOOK_SECRET") or ANTHROPIC_API_KEY or "origin").encode()
+_CODE_ALPHA = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+_CODE_OFFRES = {'S': 'solo', 'C': 'couple', 'F': 'famille', 'P': 'prestige', 'N': 'naissance', 'V': 'vocation', 'B': 'bundle'}
+_CODE_LETTRE = {v: k for k, v in _CODE_OFFRES.items()}
+_CODES_FICHIER = os.path.join(os.environ.get("TMPDIR", "/tmp"), "origin_codes_utilises.json")
+_codes_lock = threading.Lock()
+_codes_utilises = set()
+try:
+    with open(_CODES_FICHIER, "r", encoding="utf-8") as _f:
+        _codes_utilises = set(json.load(_f))
+except Exception:
+    pass
+
+def _code_signature(corps):
+    dig = hmac.new(_CODES_SECRET, corps.encode(), hashlib.sha256).digest()
+    return "".join(_CODE_ALPHA[b % len(_CODE_ALPHA)] for b in dig[:8])
+
+def _code_normaliser(code):
+    return re.sub(r"[^A-Z0-9]", "", str(code or "").upper())
+
+def _code_formater(brut):
+    # brut = lettre (1) + aléa (6) + signature (8) -> ORG-S-ABCDEF-GHJKMNPQ
+    return f"ORG-{brut[0]}-{brut[1:7]}-{brut[7:]}"
+
+def code_creer(offre):
+    lettre = _CODE_LETTRE[offre]
+    alea = "".join(secrets.choice(_CODE_ALPHA) for _ in range(6))
+    corps = lettre + alea
+    return _code_formater(corps + _code_signature(corps))
+
+def code_verifier(code):
+    """Retourne (valide, offre, message)."""
+    n = _code_normaliser(code)
+    if n.startswith("ORG"):
+        n = n[3:]
+    if len(n) != 15 or n[0] not in _CODE_OFFRES:
+        return False, None, "Code inconnu."
+    corps, sig = n[:7], n[7:]
+    if not hmac.compare_digest(_code_signature(corps), sig):
+        return False, None, "Code inconnu."
+    if n in _codes_utilises:
+        return False, _CODE_OFFRES[n[0]], "Ce code a déjà été utilisé."
+    return True, _CODE_OFFRES[n[0]], ""
+
+def _code_marquer(code, utilise):
+    n = _code_normaliser(code)
+    if n.startswith("ORG"):
+        n = n[3:]
+    with _codes_lock:
+        if utilise:
+            if n in _codes_utilises:
+                return False
+            _codes_utilises.add(n)
+        else:
+            _codes_utilises.discard(n)
+        try:
+            with open(_CODES_FICHIER, "w", encoding="utf-8") as f:
+                json.dump(sorted(_codes_utilises), f)
+        except Exception:
+            pass
+    return True
+
+@app.route("/code/check", methods=["GET"])
+def code_check():
+    ok, offre, msg = code_verifier(request.args.get("code", ""))
+    return jsonify({"valid": ok, "offre": offre if ok else None, "message": msg}), 200
+
+@app.route("/admin/codes", methods=["GET"])
+def admin_codes():
+    cle = request.args.get("key", "")
+    if not ADMIN_KEY or not hmac.compare_digest(cle, ADMIN_KEY):
+        return "Accès refusé.", 403
+    offre = request.args.get("offre", "")
+    try:
+        nb = max(1, min(int(request.args.get("n", "1")), 20))
+    except ValueError:
+        nb = 1
+    options = "".join(f'<option value="{o}"{" selected" if o == offre else ""}>{o}</option>' for o in _CODE_LETTRE)
+    cartes = ""
+    if offre in _CODE_LETTRE:
+        import qrcode, qrcode.image.svg
+        for _ in range(nb):
+            c = code_creer(offre)
+            lien = f"https://origin-famille.fr/merci.html?code={c}"
+            img = qrcode.make(lien, image_factory=qrcode.image.svg.SvgPathImage, box_size=8)
+            svg = img.to_string().decode()
+            svg = svg[svg.find("<svg"):]
+            cartes += (f'<div class="c"><b>{_html_codes.escape(offre)}</b> · <code>{c}</code>'
+                       f'<p><a href="{lien}">{lien}</a></p><div class="q">{svg}</div></div>')
+    page = f"""<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Codes cadeau ORIGIN</title>
+<style>body{{font-family:system-ui,sans-serif;background:#0d0b08;color:#e8dcc0;max-width:640px;margin:2rem auto;padding:0 1rem}}
+.c{{border:1px solid #c9a84c;border-radius:8px;padding:1rem;margin:1rem 0;background:#16130d}}code{{font-size:1.2rem;color:#e8c97a}}
+a{{color:#c9a84c;word-break:break-all}}.q{{background:#fff;width:180px;padding:8px;margin-top:.5rem}}.q svg{{width:100%;height:auto}}
+select,input,button{{padding:.5rem;font-size:1rem}}button{{background:#c9a84c;border:0;cursor:pointer}}</style></head><body>
+<h1>Codes cadeau ORIGIN</h1>
+<form method="get"><input type="hidden" name="key" value="{_html_codes.escape(cle)}">
+<select name="offre">{options}</select> <input type="number" name="n" value="{nb}" min="1" max="20" style="width:4rem">
+<button>Générer</button></form>
+<p>S solo · C couple · F famille · P prestige (lignée) · N naissance · V vocation · B bundle. Chaque code ne sert qu'une fois.</p>{cartes}</body></html>"""
+    return page, 200
+
 @app.route("/webhook", methods=["OPTIONS"])
 def webhook_preflight():
     return jsonify({}), 200
@@ -6120,6 +6232,15 @@ def webhook():
         print(f"Webhook reçu : offre={data.get('offre','solo')} type={data.get('type_analyse','adulte')}")
 
         offre = str(data.get('offre', 'solo')).lower().strip()
+
+        # Code cadeau : l'offre est celle du code, et le code ne sert qu'une fois.
+        code_cadeau = str(data.get('code_cadeau') or '').strip()
+        if code_cadeau:
+            _ok, _offre_code, _msg = code_verifier(code_cadeau)
+            if not _ok:
+                return jsonify({'status': 'error', 'message': _msg}), 403
+            offre = _offre_code
+            data['offre'] = _offre_code
         offres_valides = {'solo','naissance','vocation','couple','famille','prestige','bundle'}
         if offre not in offres_valides:
             return jsonify({'status':'error','message':'Offre inconnue'}), 400
@@ -6322,6 +6443,8 @@ def webhook():
                     prenoms_log = " & ".join(c['prenom'] for c in clients)
                     log_client_gsheet(email_client, prenoms_log, offre_label, date.today().strftime('%d/%m/%Y'))
             except Exception as ex:
+                if code_cadeau:
+                    _code_marquer(code_cadeau, False)  # génération échouée : le code reste utilisable
                 print(f"ERREUR génération : {ex}")
                 import traceback; traceback.print_exc()
                 try:
@@ -6343,6 +6466,8 @@ def webhook():
                 except Exception as mail_ex:
                     print(f"Impossible d'envoyer l'alerte : {mail_ex}")
 
+        if code_cadeau and not _code_marquer(code_cadeau, True):
+            return jsonify({'status': 'error', 'message': 'Ce code a déjà été utilisé.'}), 403
         t = threading.Thread(target=generer, daemon=False)
         t.start()
 
