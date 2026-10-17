@@ -1291,6 +1291,92 @@ RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
         "message_final": b.get("message_final", ""),
     }
 
+_OFFRES_RESUME_FINAL = ('couple', 'famille', 'prestige')
+
+def _generer_resume_final(offre, narratif, clients):
+    """Page « L'essentiel » : synthèse courte et concrète du livret, avant « Un dernier mot ».
+    Construite UNIQUEMENT à partir du texte déjà écrit (aucun fait nouveau). Jamais bloquante :
+    renvoie {} au moindre problème, le livret part alors sans cette page."""
+    try:
+        if offre not in _OFFRES_RESUME_FINAL:
+            return {}
+        def _brut(h):
+            return re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', str(h or ''))).strip()
+        blocs = []
+        if narratif.get('lettre'):
+            blocs.append(_brut(narratif.get('lettre')))
+        for sec in (narratif.get('sections') or []):
+            blocs.append(_brut(sec.get('titre')) + ' : ' + _brut(sec.get('contenu')))
+        mantras = [m for m in (narratif.get('mantras') or []) if isinstance(m, dict) and str(m.get('texte') or '').strip()]
+        for m in mantras:
+            blocs.append('MANTRA : ' + _brut(m.get('texte')))
+        corpus = '\n\n'.join(b for b in blocs if b)
+        if len(corpus) < 1500:
+            return {}
+        prenoms = ', '.join(str(c.get('prenom') or '').strip() for c in clients if str(c.get('prenom') or '').strip())
+        plans = {
+            'couple': (
+                "Un couple. Points attendus (4 à 5, dans cet ordre) : « Ce qui vous rapproche » ; « Ce qui peut frotter » ; "
+                "« Ce que [prénom 1] peut offrir à [prénom 2] » ; « Ce que [prénom 2] peut offrir à [prénom 1] » ; "
+                "« Un geste à essayer » (uniquement un geste ou une phrase déjà suggéré dans le texte)."),
+            'famille': (
+                "Un foyer. Points attendus (4 à 6, dans cet ordre) : « Ce qui vous relie » ; « Ce qui peut frotter » ; "
+                "un point court par membre du foyer cité dans le texte, « Ce que [prénom] apporte » ; "
+                "« Un geste pour le foyer » (uniquement un geste déjà suggéré dans le texte)."),
+            'prestige': (
+                "Une lignée. Points attendus (4 à 5, dans cet ordre) : « Le fil qui traverse la lignée » ; "
+                "« Ce que chaque branche semble transmettre » ; « Ce qui mérite d'être observé » (formulé comme une piste, jamais comme un fait) ; "
+                "« Ce que vous pouvez choisir de transmettre » ; « Un geste pour relier les générations » (uniquement si le texte en suggère un)."),
+        }
+        prompt = f"""Tu es le moteur narratif d'ORIGIN. Tu rédiges la page « L'ESSENTIEL » qui clôt un livret personnalisé, juste avant le mot de la fin.
+
+OBJECTIF : permettre au lecteur de retenir l'essentiel en 1 minute, de façon directe et concrète. Pas de belles phrases : qui fait quoi, ce qui rapproche, ce qui frotte.
+
+SOURCE UNIQUE : le TEXTE DU LIVRET ci-dessous. N'ajoute AUCUN fait, AUCUN conseil, AUCUNE interprétation absente de ce texte. Rien d'inventé sur le vécu, les proches ou l'avenir. Pas de jargon : jamais « numérologie », « astrologie », « chemin de vie », « Soleil », « Lune », « transit », ni aucun nombre technique. Pas de prédiction : tout ce qui touche à l'avenir reste au conditionnel. Ne calcule JAMAIS l'âge futur d'un enfant ou d'un proche. Écris les âges et les années en chiffres.
+
+PRÉNOMS : {prenoms}
+TYPE : {plans[offre]}
+
+FORME : vouvoiement collectif (« vous ») pour le couple ou le foyer, et prénom + troisième personne (« Julien peut… ») pour un individu. Chaque point = 1 label court + 1 à 2 phrases (35 mots maximum), langage simple et chaleureux. Total : 220 mots maximum.
+« a_garder » : 3 phrases à retenir, COPIÉES MOT POUR MOT depuis le texte du livret (de préférence les mantras ou des phrases marquantes), sans les modifier.
+
+TEXTE DU LIVRET :
+{corpus}
+
+Retourne UNIQUEMENT ce JSON valide, sans markdown :
+{{
+  "points": [{{"label": "...", "texte": "..."}}],
+  "a_garder": ["...", "...", "..."]
+}}"""
+        data = _appel_claude_chunk(prompt, max_tokens=2500)
+        points = []
+        for pt in (data.get('points') or []):
+            if isinstance(pt, dict):
+                lab = re.sub(r'<[^>]+>', '', str(pt.get('label') or '')).strip()
+                txt = re.sub(r'<[^>]+>', '', str(pt.get('texte') or '')).strip()
+                if lab and txt and len(txt.split()) <= 60:
+                    points.append({'label': lab, 'texte': txt})
+        points = points[:6]
+        if len(points) < 3:
+            return {}
+        norm = lambda t: re.sub(r'\s+', ' ', str(t or '').replace('’', "'")).strip().lower().rstrip('.')
+        corpus_n = norm(corpus)
+        garder = []
+        for ph in (data.get('a_garder') or []):
+            ph = re.sub(r'<[^>]+>', '', str(ph or '')).strip()
+            if ph and norm(ph) in corpus_n and ph not in garder:
+                garder.append(ph)
+        if len(garder) < 2:
+            for m in mantras:
+                ph = _brut(m.get('texte'))
+                if ph and ph not in garder:
+                    garder.append(ph)
+        return {'points': points, 'a_garder': garder[:3]}
+    except Exception as ex:
+        print(f"[resume_final] ignoré ({offre}) : {ex}", flush=True)
+        return {}
+
+
 def appeler_claude(offre, profils_txt, type_analyse='adulte'):
     if type_analyse == 'naissance':
         return appeler_claude_naissance(profils_txt)
@@ -2783,6 +2869,12 @@ body.drawer-open .drawer{transform:none;}body.drawer-open .drawer-veil{opacity:1
 .mantra-note{margin-top:1rem;font-size:1.05rem;color:var(--muted);font-style:italic;}
 
 /* Final */
+.essentiel{max-width:640px;margin:0 auto;}
+.ess-point{margin-bottom:1.6rem;}
+.ess-label{font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--or);margin-bottom:.35rem;}
+.ess-text{font-size:clamp(1.2rem,2.1vw,1.34rem);line-height:1.7;color:var(--txt-soft);margin:0;}
+.ess-garder{margin-top:2.4rem;padding-top:1.6rem;border-top:1px solid var(--hair);text-align:center;}
+.ess-phrase{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.3rem;line-height:1.6;color:var(--txt-soft);margin:.6rem 0;}
 .final-wrap{text-align:center;padding-top:2rem;padding-bottom:3rem;}
 .final-prose{max-width:620px;margin:0 auto;text-align:left;}
 .final-seed{width:min(168px,34vw);height:min(168px,34vw);margin:3.8rem auto 1.6rem;opacity:.95;}
@@ -4202,6 +4294,9 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
     reperes_section = _html_fiche(clients, astros, tutoie, 'web')
     if reperes_section:
         toc.append(('reperes', '✦', 'Tes repères' if tutoie else 'Vos repères'))
+    resume_final = narratif.get('resume_final') or {}
+    if resume_final.get('points'):
+        toc.append(('essentiel', '✦', "L'essentiel"))
     if message_final:
         toc.append(('final', '✦', 'Un dernier mot'))
     toc_html = ''.join(
@@ -4266,6 +4361,25 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
       <div class="s-rule"></div>
     </div>
     <div class="mantras">{mantras_html}</div>
+  </div>
+</section>"""
+
+    essentiel_section = ""
+    if resume_final.get('points'):
+        _ess_pts = ''.join(
+            f'<div class="ess-point"><p class="ess-label">{_esc(pt.get("label"))}</p><p class="ess-text">{_esc(pt.get("texte"))}</p></div>'
+            for pt in resume_final['points'])
+        _ess_gar = ''.join(f'<p class="ess-phrase">« {_esc(ph)} »</p>' for ph in (resume_final.get('a_garder') or []))
+        _ess_gar_html = f'<div class="ess-garder"><p class="ess-label">À garder</p>{_ess_gar}</div>' if _ess_gar else ''
+        essentiel_section = f"""
+<section class="section" id="essentiel" data-title="L'essentiel">
+  <div class="wrap">
+    <div class="center reveal">
+      <span class="s-eyebrow">En une page</span>
+      <h2 class="s-title">L'essentiel</h2>
+      <div class="s-rule"></div>
+    </div>
+    <div class="essentiel reveal">{_ess_pts}{_ess_gar_html}</div>
   </div>
 </section>"""
 
@@ -4359,6 +4473,7 @@ def generer_html(offre, clients, narratif, astros=None, type_analyse='adulte'):
 {sections_html}
 {mantras_section}
 {reperes_section}
+{essentiel_section}
 {final_section}
 </main>
 
@@ -4913,6 +5028,15 @@ body {
 .compact .rule { margin: 4mm auto 3mm; }
 .mantra-sep { color: #C9A84C; font-size: 7pt; opacity: .6; }
 
+/* ── L'essentiel ─────────────────────────────────────────── */
+.essentiel-page { break-before: page; padding-top: 10mm; }
+.essentiel { max-width: 150mm; margin: 6mm auto 0; }
+.ess-point { margin-bottom: 5mm; break-inside: avoid; page-break-inside: avoid; }
+.ess-label { font-family: 'Cinzel', serif; font-size: 9pt; letter-spacing: .2em; text-transform: uppercase; color: #C9A84C; margin: 0 0 1mm; }
+.ess-text { font-size: 13pt; line-height: 1.5; margin: 0; }
+.ess-garder { margin-top: 8mm; padding-top: 5mm; border-top: .3mm solid #C9A84C; text-align: center; break-inside: avoid; page-break-inside: avoid; }
+.ess-phrase { font-style: italic; font-size: 13.5pt; line-height: 1.45; margin: 2mm 0; }
+
 /* ── Dernier mot ─────────────────────────────────────────── */
 .final { break-before: page; padding-top: 10mm; }
 .final-head { text-align: center; }
@@ -5135,6 +5259,9 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     if reperes_pdf_html:
         toc_items.append(('reperes', '·', 'Tes repères' if tutoie else 'Vos repères', True))
     final_txt = str(narratif.get('message_final') or '').strip()
+    resume_final_pdf = narratif.get('resume_final') or {}
+    if resume_final_pdf.get('points'):
+        toc_items.append(('essentiel', '·', "L'essentiel", True))
     if final_txt:
         toc_items.append(('final', '·', 'Un dernier mot', True))
     toc_items.append(('carnet', '·', 'Carnet de vie' if est_naissance else "Carnet d'intégration", True))
@@ -5454,6 +5581,22 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
     else:
         final_message_html = ""
 
+    essentiel_page_html = ""
+    if resume_final_pdf.get('points'):
+        _ep = ''.join(
+            f'<div class="ess-point"><p class="ess-label">{_esc(pt.get("label"))}</p><p class="ess-text">{_esc(pt.get("texte"))}</p></div>'
+            for pt in resume_final_pdf['points'])
+        _eg = ''.join(f'<p class="ess-phrase">« {_esc(ph)} »</p>' for ph in (resume_final_pdf.get('a_garder') or []))
+        _eg_html = f'<div class="ess-garder"><p class="ess-label">À garder</p>{_eg}</div>' if _eg else ''
+        essentiel_page_html = f'''<section class="essentiel-page" id="essentiel">
+  <div class="final-head">
+    <span class="eyebrow">En une page</span>
+    <h2 class="ch-title">L'essentiel</h2>
+    <div class="rule rule-c"></div>
+  </div>
+  <div class="essentiel">{_ep}{_eg_html}</div>
+</section>'''
+
     carnet_titre = 'Carnet de vie' if est_naissance else "Carnet d'intégration"
     carnet_sub = (f'Un carnet qui grandit avec toi, {_esc(_prenom_affiche(prenom_enfant))}. À ouvrir à chaque étape de ta vie.' if est_naissance
                   else ('Vos réflexions · Vos prises de conscience · Votre chemin' if not tutoie
@@ -5516,6 +5659,8 @@ def generer_pdf_imprimable(offre, clients, narratif, astros=None, type_analyse='
 {mantras_page_html}
 
 {reperes_pdf_html}
+
+{essentiel_page_html}
 
 {final_message_html}
 
@@ -6478,6 +6623,10 @@ def webhook():
                     narratif = ajouter_sections_enrichies(narratif, offre, clients, type_analyse, data)
                     narratif = resserrer_narratif(narratif, type_analyse, offre, clients, _donnees_pour_polish(profils_txt, data))
                     narratif = controle_qualite_final(narratif, offre, type_analyse, _donnees_pour_polish(profils_txt, data))
+                    if offre in _OFFRES_RESUME_FINAL and type_analyse != 'naissance':
+                        _resume = _generer_resume_final(offre, narratif, clients)
+                        if _resume:
+                            narratif['resume_final'] = _resume
                     narratif = _chiffrer_nombres(narratif)
                     rapport_q = _rapport_qualite(narratif)
                     html = generer_html(offre, clients, narratif, astros_clients, type_analyse)
