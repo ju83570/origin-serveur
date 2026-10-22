@@ -16,12 +16,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class PreservationTests(unittest.TestCase):
-    def test_all_engine_logic_and_prompts_are_identical_to_commercial_base(self):
-        proof = json.loads((ROOT / 'fixtures/engine-preservation.json').read_text())
+    def test_all_non_security_engine_logic_and_prompts_are_preserved(self):
+        proof = json.loads((ROOT / 'fixtures/security-engine-preservation.json').read_text())
         module = ast.parse((ROOT / 'app.py').read_text())
-        module.body = [n for n in module.body if not isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) or n.name not in proof['excluded_functions']]
+        webhook = next(n for n in module.body if isinstance(n, ast.FunctionDef) and n.name == 'webhook')
+        worker = next(n for n in ast.walk(webhook) if isinstance(n, ast.FunctionDef) and n.name == 'generer')
+        self.assertEqual(hashlib.sha256(ast.dump(worker, include_attributes=False).encode()).hexdigest(), proof['generation_worker_sha256'])
+        module.body = [n for n in module.body
+            if not (isinstance(n, ast.FunctionDef) and n.name in proof['authorized_security_functions'])
+            and not (isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == '_CODES_SECRET' for t in n.targets))
+            and not (isinstance(n, ast.ImportFrom) and n.module == 'premium_security')]
         digest = hashlib.sha256(ast.dump(module, include_attributes=False).encode()).hexdigest()
-        self.assertEqual(digest, proof['ast_excluding_health_sha256'])
+        self.assertEqual(digest, proof['protected_module_sha256'])
 
     def test_original_dependencies_and_assets_are_unchanged(self):
         proof = json.loads((ROOT / 'fixtures/engine-preservation.json').read_text())

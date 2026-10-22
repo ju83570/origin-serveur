@@ -1,0 +1,12 @@
+{
+  "source_commit": "32d6b68b3106828dbdea58c00a620e3698c03632",
+  "authorized_security_functions": [
+    "_stripe_verifier",
+    "_code_signature",
+    "code_verifier",
+    "admin_codes",
+    "webhook"
+  ],
+  "protected_module_sha256": "d20cac123170f0605477b9c26d2d9a832f82ceb1230beb2d7e176153d6385246",
+  "generation_worker_sha256": "ab5eaf334792c25e0874a339b7d2e267df672f670246c09e1f37e76e7f3442ff"
+}

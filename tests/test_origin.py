@@ -60,11 +60,11 @@ class HealthTests(OfflineTest):
         self.assertFalse(result.json["external_services_checked"])
 
     def test_invalid_webhook_does_not_start_generation(self):
-        with patch.object(origin.threading, "Thread") as thread:
+        with patch.object(origin.threading, "Thread") as thread, patch.object(origin, "WEBHOOK_SECRET", "unit-fixture-only-" * 3):
             client = origin.app.test_client()
             for data in ({}, {"email": "invalid"}, {"email": "client@example.invalid"}):
                 with self.subTest(data=data):
-                    self.assertEqual(client.post("/webhook", json=data).status_code, 400)
+                    self.assertEqual(client.post("/webhook", json=data, headers={"X-ORIGIN-SECRET": "unit-fixture-only-" * 3}).status_code, 400)
             thread.assert_not_called()
 
 
