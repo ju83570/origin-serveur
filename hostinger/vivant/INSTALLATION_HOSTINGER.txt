@@ -1,0 +1,2 @@
+ATTENTION : cette notice ancienne concerne la démo, pas la version commerciale.
+Consulter INSTALLATION_COMMERCIALE_V2.txt à la racine du ZIP.

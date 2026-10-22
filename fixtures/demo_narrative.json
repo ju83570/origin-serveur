@@ -1,0 +1,31 @@
+{
+  "lettre": "<p>Bienvenue dans cette démonstration ORIGIN RÉVOLUTION. Ces textes sont des exemples préécrits et ne constituent pas une lecture personnalisée.</p>",
+  "sections": [
+    {
+      "eyebrow": "Prendre un repère",
+      "titre": "Un espace pour faire le point",
+      "contenu": "<p>Cette page présente un exemple de livret. Prends un instant pour noter ce qui compte pour toi aujourd'hui.</p><p>Choisis un sujet simple à explorer, puis formule une question ouverte.</p>"
+    },
+    {
+      "eyebrow": "Observer",
+      "titre": "Ce qui mérite ton attention",
+      "contenu": "<p>Observe un moment de ta journée sans chercher immédiatement une explication.</p><p>Écris ce que tu souhaites conserver et ce que tu aimerais essayer autrement.</p>"
+    },
+    {
+      "eyebrow": "Se donner une marge",
+      "titre": "Des ressources à explorer",
+      "contenu": "<p>Identifie une ressource concrète : une plage de temps, une personne disponible ou une activité accessible.</p><p>Choisis la manière dont tu souhaites t'en servir cette semaine.</p>"
+    },
+    {
+      "eyebrow": "Ouvrir le dialogue",
+      "titre": "Une question pour se rencontrer",
+      "contenu": "<p>Quelle petite action rendrait un échange plus facile aujourd'hui ?</p><p>Prends le temps d'écouter une réponse complète avant de proposer la tienne.</p>"
+    },
+    {
+      "eyebrow": "Avancer",
+      "titre": "Un premier pas à choisir",
+      "contenu": "<p>Définis une action assez petite pour être essayée sans attendre des conditions parfaites.</p><p>Après cet essai, note ce que tu souhaites garder, ajuster ou laisser de côté.</p>"
+    }
+  ],
+  "message_final": "<p>Fin de la démonstration. Le livret et son message de livraison sont disponibles localement. Aucun message n'a été envoyé.</p>"
+}

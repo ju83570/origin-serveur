@@ -1,0 +1,3 @@
+-r requirements.txt
+# API URLFetcher utilisée pour interdire les ressources réseau dans la démo.
+weasyprint==70.0

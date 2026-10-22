@@ -1,0 +1,39 @@
+ORIGIN VIVANT — CHECKLIST TECHNIQUE POUR HOSTINGER (V2)
+=======================================================
+0. AVANT TOUT : sauvegarder site et base actuels dans hPanel.
+1. Vérifier la technologie utilisée : le site ORIGIN existant n'est PAS à migrer.
+   Hostinger Website Builder/AI Builder n'exécute pas directement le PHP dans son
+   éditeur. Dans ce cas, créer un site PHP/HTML distinct sur un sous-domaine,
+   sans convertir ni effacer le site du domaine principal.
+2. Si hébergement PHP/HTML compatible : vérifier PHP >=8.3 et extensions
+   PDO_MYSQL, sodium, mbstring, curl, openssl avec hPanel > Sites web > Tableau
+   de bord > Configuration PHP.
+3. Dans la base hPanel, créer une base MySQL NEUVE et dédiée. Importer
+   vivant/api/schema.sql dans phpMyAdmin.
+4. Uploader le DOSSIER vivant à l'intérieur de public_html/ (donc
+   public_html/vivant/index.html), sans modifier public_html/index.*.
+5. Préparer un fichier privé origin-vivant-config.php à la RACINE du compte,
+   au-dessus du DOCUMENT_ROOT, en reprenant config-exemple/*.EXEMPLE.
+6. Remplir les paramètres DB et SMTP DANS hPanel, jamais dans le chat.
+7. App key : 32 octets aléatoires, base64, conserver une copie hors serveur
+   dans un coffre : sa perte rend le carnet cloud illisible.
+8. Vérifier https://origin-famille.fr/vivant/api/?op=status ; le service
+   doit répondre ok: true. S'il répond 'Configuration non installée', corriger
+   chemin et config. Tester email, connexion, reset, sauvegarde, restauration.
+9. Vérifier la légalité : mentions légales, RGPD, CGV complètes, rétractation,
+   résiliation, politique mineurs et publication des conditions.
+10. Stripe : aucun nouveau paiement réel tant que l'offre livrable n'est pas
+    testée. Connecter sk_test_ et whsec_ de test, ainsi que les price_ TEST.
+    Les événements webhooks prévus : checkout.session.completed,
+    customer.subscription.created, updated et deleted.
+    Tester paiement, abonnement, rétractation, annulation et désabonnement.
+11. Faire audit sécurité et sauvegardes régulières avant ouverture.
+12. SEULEMENT APRÈS AUTORISATION ET VALIDATION : brancher les ID réels,
+    sk_live_ et whsec_ correspondants ; activer family_ready/mirror_paid_ready
+    UNIQUEMENT si réellement livrable. Activer 'legal_approved'=true et
+    'payments_enabled'=true, avec mode=production.
+
+ÉTAT DES TESTS EFFECTUÉS HORS HOSTINGER
+- Syntaxe PHP, JavaScript, cohérence fichiers et contrôle de configuration.
+- Aucun test réel SMTP/MySQL/Stripe du site Hostinger : accès hPanel absent.
+- L'installation et l'activation du paiement sont des étapes distinctes.

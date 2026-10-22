@@ -1,0 +1,91 @@
+{
+  "archive": "ORIGIN_VIVANT_COMMERCIAL_HOSTINGER_V2.zip",
+  "sha256": "13bee11c0429c4eb3c792da371149e77d2f5ad1ad59190def8deb555eaf18d9c",
+  "files": [
+    {
+      "path": "INSTALLATION_COMMERCIALE_V2.txt",
+      "bytes": 2650,
+      "sha256": "d487213a766ae0167131fdcd122a687e437856a7b970138824afabb60fb44fc8"
+    },
+    {
+      "path": "LISEZ_MOI_EN_PREMIER.txt",
+      "bytes": 1543,
+      "sha256": "e825203ef2d54b81f23d759e93344e9d0acf9877cf84bfd7c99ecaa2106f9fb5"
+    },
+    {
+      "path": "config-exemple/origin-vivant-config.php.EXEMPLE",
+      "bytes": 1390,
+      "sha256": "5dd0b5fda3c94810d516b0c9d77d6a32efc5b8e6d6cbca4bdd3caa7743e40399"
+    },
+    {
+      "path": "vivant/.htaccess",
+      "bytes": 293,
+      "sha256": "11d645afc3783a182126315b9854ddebfec96bbf4018b88ea12644b17f4f6831"
+    },
+    {
+      "path": "vivant/CGV_A_COMPLETER_AVANT_LANCEMENT.txt",
+      "bytes": 951,
+      "sha256": "d66f12cd2fe5e71edcc4487ec77e3267929b86b4610523d27ec52cc1b1997867"
+    },
+    {
+      "path": "vivant/INSTALLATION_HOSTINGER.txt",
+      "bytes": 144,
+      "sha256": "847912f77c2f778c50cde13addb8d99c49c0d8cdb6ce09befb1a5e71c5785ff7"
+    },
+    {
+      "path": "vivant/api/.htaccess",
+      "bytes": 93,
+      "sha256": "a855e3d5641e5bd8ebc1e95cf1ed6f37acfff225ba06fcfdacb644740c8414b8"
+    },
+    {
+      "path": "vivant/api/bootstrap.php",
+      "bytes": 9060,
+      "sha256": "76a251444d73a9d761b3249b9534e180d3cd9ba97f6efddad66ec6b1ca3e8715"
+    },
+    {
+      "path": "vivant/api/index.php",
+      "bytes": 13789,
+      "sha256": "2604349a768a01354895d824a2b799547b8a7b935323af5fe99d95d687158a8e"
+    },
+    {
+      "path": "vivant/api/schema.sql",
+      "bytes": 2739,
+      "sha256": "ca9e4cbe338641b8707276827bbee9a19c0e2bba988b0fe3ec880569e354a7a2"
+    },
+    {
+      "path": "vivant/arbre-vivant.html",
+      "bytes": 910926,
+      "sha256": "53cda6eb17b452a116571de46acae1a9508899832523ec93e95c565178f1dcc6"
+    },
+    {
+      "path": "vivant/confidentialite.html",
+      "bytes": 3178,
+      "sha256": "1b65746755feb91cc36e746c386ead9d93a3baf3050645a5fe0e2a9bd367f28f"
+    },
+    {
+      "path": "vivant/index.html",
+      "bytes": 27666,
+      "sha256": "50cd3dc57f1a5038d52e2c0804a3e886ae969937091618240db0d51e0dbd2a85"
+    },
+    {
+      "path": "vivant/logo-origin-officiel.png",
+      "bytes": 650997,
+      "sha256": "19cc0a4f7b32219a18c1cf489aeaea7f5385a086db34ed79986fe387f7640d47"
+    },
+    {
+      "path": "vivant/origin-commercial.js",
+      "bytes": 8051,
+      "sha256": "64370b5bf77d77c308bd743f784653e33cbd9c68affefff029c9c2d0a538137e"
+    },
+    {
+      "path": "vivant/origin-vivant.css",
+      "bytes": 30140,
+      "sha256": "862fee67a2b70a6d9de71cb4ab71a2b505c5489d763cb231668c373cfafc9f71"
+    },
+    {
+      "path": "vivant/origin-vivant.js",
+      "bytes": 31675,
+      "sha256": "82fead17c10fd28240c3532ac2c85eae466235141a3eb68a8fc635f07dfa448d"
+    }
+  ]
+}

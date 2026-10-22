@@ -1,0 +1,27 @@
+ORIGIN VIVANT — PACK HOSTINGER V2 (22 OCTOBRE 2026)
+=============================================
+
+STATUT: PRÉPRODUCTION NON DÉPLOYÉE, PAIEMENTS DÉSACTIVÉS.
+Ce pack contient une application à installer. Aucune connexion automatique à Hostinger.
+Ne jamais écraser le site racine ORIGIN : installer exclusivement dans /vivant/.
+
+FONCTIONS LIVRÉES
+- Miroir des Liens interactif, numérologie symbolique, signes solaires indicatifs.
+- Arbre Vivant, carnet local, exercices 90 jours et export local.
+- Comptes client PHP/MySQL, vérification d'email, connexion sécurisée.
+- Récupération de mot de passe par email (nouveau en V2, 45 min).
+- Sauvegarde serveur chiffrée volontaire, restaurée sur confirmation.
+- Connecteurs Stripe Checkout/abonnements/portail client/webhooks.
+- Séparations explicites préproduction / production ; paiement uniquement si
+  mode=production ET legal_approved=true ET payments_enabled=true.
+- Anti-rejeu webhook par event ID et contrôle livemode Stripe.
+
+N'EST PAS ENCORE VALIDÉ POUR VENTE PUBLIQUE
+- Aucune installation dans ton compte Hostinger.
+- Pas d'essais MySQL ou SMTP sur TON hébergeur, ni de paiement test bout-en-bout.
+- Pas de liens d'invitation inter-comptes, ni moteur IA externe, ni génération
+  personnalisée serveur de tous les livrets de l'offre existante.
+- Aucune CGV/mention légale finale, ni audit de sécurité indépendant.
+
+PROCÉDURE DÉTAILLÉE : voir INSTALLATION_COMMERCIALE_V2.txt.
+IMPORTANT: jamais envoyer mots de passe, clés Stripe ou config PHP dans ChatGPT.

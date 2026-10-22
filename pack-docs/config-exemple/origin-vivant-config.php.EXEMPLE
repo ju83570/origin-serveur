@@ -1,0 +1,25 @@
+<?php
+// À COPIER ET RENOMMER EN origin-vivant-config.php UN NIVEAU AU-DESSUS DE public_html.
+// Ne jamais envoyer la configuration ni les clés API dans un chat.
+return [
+ 'site_url'=>'https://origin-famille.fr/vivant',
+ 'mode'=>'staging', // maintenir staging avant audit et validation légale
+ 'https_required'=>true,
+ 'db_dsn'=>'mysql:host=localhost;port=3306;dbname=VOTRE_BASE;charset=utf8mb4',
+ 'db_user'=>'VOTRE_UTILISATEUR_SQL',
+ 'db_password'=>'MOT_DE_PASSE_SQL',
+ // Générer par : php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"
+ 'app_key'=>'COLLER_CLE_BASE64_ALEATOIRE_32_OCTETS',
+ 'smtp_host'=>'smtp.hostinger.com',
+ 'smtp_port'=>587,
+ 'smtp_from'=>'contact@origin-famille.fr',
+ 'smtp_user'=>'contact@origin-famille.fr',
+ 'smtp_password'=>'MOT_DE_PASSE_SMTP',
+ 'stripe_secret'=>'', // sk_test_ d’abord ; sk_live_ uniquement après validation complète
+ 'stripe_webhook_secret'=>'', // whsec_ fourni par Stripe dans Paramètres > Webhooks
+ 'stripe_prices'=>[ 'individual'=>'', 'family'=>'', 'mirror'=>'' ],
+ 'legal_approved'=>false,   // Mettre true UNIQUEMENT quand les textes légaux et le checkout sont validés
+ 'payments_enabled'=>false,  // GARDER À FALSE tant que les tests ne sont pas terminés
+ 'family_ready'=>false,     // le partage familial privé à distance n'est PAS prêt
+ 'mirror_paid_ready'=>false // livraison du produit payant à compléter
+];

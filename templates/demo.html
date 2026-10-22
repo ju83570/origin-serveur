@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORIGIN RÉVOLUTION · Démonstration</title>
+  <style>
+    body { font: 17px/1.6 system-ui, sans-serif; color: #ecdfc2; background: #151711; max-width: 800px; margin: 3rem auto; padding: 0 1.2rem; }
+    h1 { font-family: Georgia, serif; letter-spacing: .06em; color: #d9be80; }
+    .notice, fieldset { border: 1px solid #87734a; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+    label { display: block; margin-top: .8rem; }
+    input, select, button { box-sizing: border-box; padding: .7rem; border-radius: 5px; font: inherit; }
+    input, select { width: 100%; background: #fffaf0; color: #211e16; }
+    button { background: #d9be80; color: #211e16; border: 0; cursor: pointer; margin-top: 1rem; }
+    small { color: #d3c5a5; } a { color: #d9be80; }
+  </style>
+</head>
+<body>
+  <h1>ORIGIN RÉVOLUTION</h1>
+  <p class="notice"><strong>Démonstration locale sans clés API.</strong><br>Textes préécrits, calculs et livrets générés localement. Aucun email envoyé.</p>
+  <p>Explore le parcours avec des profils fictifs, puis ouvre le livret HTML, le PDF et le message de livraison simulé.</p>
+  <p id="handoff-status" role="status" hidden></p>
+  <form action="{{ url_for('generate') }}" method="post">
+    <label for="offre">Livret</label>
+    <select id="offre" name="offre"><option value="solo">Solo</option><option value="couple">Couple</option></select>
+    {% for index, name, birth, gender in [(1, 'Camille', '1990-05-12', 'Femme'), (2, 'Alex', '1988-09-23', 'Homme')] %}
+    <fieldset {% if index == 2 %}id="second-profile" hidden disabled{% endif %}>
+      <legend>Profil {{ index }} · exemple fictif</legend>
+      <label for="prenom{{ index }}">Prénom</label>
+      <input id="prenom{{ index }}" name="prenom{{ index }}" value="{{ name }}" maxlength="60" required>
+      <label for="date_naissance{{ index }}">Date de naissance</label>
+      <input id="date_naissance{{ index }}" name="date_naissance{{ index }}" type="date" value="{{ birth }}" required>
+      <label for="genre{{ index }}">Genre proposé par le moteur actuel</label>
+      <select id="genre{{ index }}" name="genre{{ index }}">
+        {% for option in ['Femme', 'Homme'] %}<option {% if option == gender %}selected{% endif %}>{{ option }}</option>{% endfor %}
+      </select>
+      <label for="ville{{ index }}">Ville de naissance</label>
+      <select id="ville{{ index }}" name="ville{{ index }}">{% for city in cities %}<option value="{{ city }}">{{ city | capitalize }}</option>{% endfor %}</select>
+    </fieldset>
+    {% endfor %}
+    <small>Villes disponibles hors ligne. L'heure de naissance n'est pas renseignée dans cette démonstration.</small><br>
+    <button type="submit">Créer le livret de démonstration</button>
+    <p id="progress" role="status"></p>
+  </form>
+  <p><small>ORIGIN VIVANT et le Miroir des Liens : intégrations à raccorder après réception de leurs sources et contrats de données.</small></p>
+  <script>
+    const offer = document.getElementById('offre');
+    const second = document.getElementById('second-profile');
+    function updateOffer() { second.hidden = second.disabled = offer.value !== 'couple'; }
+    offer.addEventListener('change', updateOffer); updateOffer();
+    if (new URLSearchParams(location.search).has('origin_handoff')) {
+      const key = 'origin_premium_handoff_v1';
+      const message = document.getElementById('handoff-status');
+      message.hidden = false;
+      try {
+        const draft = JSON.parse(sessionStorage.getItem(key) || 'null');
+        sessionStorage.removeItem(key);
+        const count = draft?.offre === 'couple' ? 2 : 1;
+        if (draft?.schema !== 'origin.booklet-draft' || draft.version !== 1 || draft.consent !== true || !['solo','couple'].includes(draft.offre) || !Array.isArray(draft.clients) || draft.clients.length !== count) throw Error('Dossier invalide');
+        offer.value = draft.offre;
+        draft.clients.forEach((client, position) => {
+          const index = position + 1;
+          document.getElementById('prenom' + index).value = String(client.prenom || '').slice(0,60);
+          document.getElementById('date_naissance' + index).value = /^\d{4}-\d{2}-\d{2}$/.test(client.date_naissance || '') ? client.date_naissance : '';
+          for (const field of ['genre','ville']) {
+            const select = document.getElementById(field + index);
+            const option = document.createElement('option'); option.value = ''; option.textContent = 'À renseigner'; option.selected = true;
+            select.prepend(option); select.required = true;
+          }
+        });
+        updateOffer();
+        message.textContent = 'Prénoms et dates repris avec ton accord. Complète le genre et la ville, puis vérifie les informations. Le livret restera une démonstration à texte préécrit.';
+      } catch {
+        message.textContent = 'Le dossier local est absent ou invalide. Tu peux utiliser les profils fictifs ci-dessous.';
+      }
+      history.replaceState({}, '', location.pathname);
+    }
+    document.querySelector('form').addEventListener('submit', () => {
+      document.querySelector('button').disabled = true;
+      document.getElementById('progress').textContent = 'Création du livret en cours… Le rendu PDF peut prendre quelques secondes.';
+    });
+  </script>
+</body>
+</html>

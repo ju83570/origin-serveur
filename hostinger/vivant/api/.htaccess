@@ -1,0 +1,4 @@
+Options -Indexes
+<FilesMatch "^(bootstrap|payment-policy)\.php$|\.sql$">
+  Require all denied
+</FilesMatch>
