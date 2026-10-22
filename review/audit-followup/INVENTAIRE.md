@@ -60,3 +60,5 @@ Cet inventaire exclut ses deux propres fichiers, ajoutés avec lui.
 | A | `tools/export_review.py` | Outillage local : stack de test, construction visuelle ou export contrôlé. |
 | M | `tools/vivant/local_stack.py` | Outillage local : stack de test, construction visuelle ou export contrôlé. |
 | M | `review/VALIDATION_MATRIX.md` | Matrice historique conservée, avec renvoi vers les résultats actuels. |
+| A | `review/audit-followup/REVUE_CLAUDE_ORIGIN_2026-10-22.md` | Rapport original reçu, conservé sans modification ; source de constats, pas autorisation de déploiement. |
+| A | `review/audit-followup/CROISEMENT_CLAUDE.md` | Correspondance P1–P15 / Y1–Y5, preuves existantes et écarts encore ouverts sur le code 169636f. |

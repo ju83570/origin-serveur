@@ -209,29 +209,29 @@
       "status": "A",
       "path": "review/audit-followup/ARCHITECTURE_ET_MIGRATION.md",
       "function": "Documentation de revue, preuves, limites ou inventaire.",
-      "bytes": 5333,
-      "sha256": "eb998ef557611cc37758c46b7c757f547b27a20b91b7ab4f647af3c354f40298"
+      "bytes": 5812,
+      "sha256": "2dadcb231ecc2843b2c0d13ec8a626d52613b0d61b788c5b18731eb7b24d9b21"
     },
     {
       "status": "A",
       "path": "review/audit-followup/CORRECTIONS_ET_LIMITES.md",
       "function": "Documentation de revue, preuves, limites ou inventaire.",
-      "bytes": 9025,
-      "sha256": "331b16146e3e7abd55c938a8b02b93ff5b804769fbe246dcb8adde4da1d7445d"
+      "bytes": 9132,
+      "sha256": "860d8d0902ba4151f52a9599730451cba81651be2a52b4271588309a09be6e60"
     },
     {
       "status": "A",
       "path": "review/audit-followup/LIRE_EN_PREMIER.md",
       "function": "Documentation de revue, preuves, limites ou inventaire.",
-      "bytes": 2197,
-      "sha256": "273a19ef4ceeaee16cff3d2bbc67df126cac394632c0df09499cf9e0605e797d"
+      "bytes": 2372,
+      "sha256": "3162b25b3eea3ee7016c416f081be817622dd84a1412dd706016f70b05bf95b6"
     },
     {
       "status": "A",
       "path": "review/audit-followup/VALIDATION.md",
       "function": "Documentation de revue, preuves, limites ou inventaire.",
-      "bytes": 5909,
-      "sha256": "35ef7a1620020f335d25dd112f8d72e5b51da9bafc8a5c175a00746059407286"
+      "bytes": 6148,
+      "sha256": "f4fade9d9e5ac82116c357c601202eabee1ae188b641e2fefda09c8b1c4a23ff"
     },
     {
       "status": "A",
@@ -286,8 +286,8 @@
       "status": "A",
       "path": "review/audit-followup/source-state.json",
       "function": "Documentation de revue, preuves, limites ou inventaire.",
-      "bytes": 411,
-      "sha256": "1bb04311d0053ea6624429a7290ab6227a7dbdd3389d92543734f00b5ec0ee00"
+      "bytes": 632,
+      "sha256": "c91b767c3c146ec325667857f1a0f85c42bbb7b7b20f9c39fc5fd266269af7dc"
     },
     {
       "status": "M",
@@ -379,6 +379,20 @@
       "function": "Matrice historique conservée, avec renvoi vers les résultats actuels.",
       "bytes": 8788,
       "sha256": "eba38626730579ca14e69992675ca2eb06a9988521e9a2ce198df59ecf96acdd"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/REVUE_CLAUDE_ORIGIN_2026-10-22.md",
+      "function": "Rapport original reçu, conservé sans modification ; source de constats, pas autorisation de déploiement.",
+      "bytes": 15095,
+      "sha256": "a964464b01a8afd2f26428c6ff576cb1dac2abd1e5574b42d8602230998cdb5a"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/CROISEMENT_CLAUDE.md",
+      "function": "Correspondance P1–P15 / Y1–Y5, preuves existantes et écarts encore ouverts sur le code 169636f.",
+      "bytes": 9299,
+      "sha256": "84e117a771ba36039afb95d1586839330fd668cf953be1bb12842e790540ec9f"
     }
   ]
 }

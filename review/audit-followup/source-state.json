@@ -6,5 +6,8 @@
   "premium_app_sha256": "d75cce80cce151dc65230d9d47a4c6f41434fa64111fc7fcf13c84db6fb569f5",
   "deployed": false,
   "merged_to_main": false,
-  "original_claude_report_available": false
+  "original_claude_report_available": true,
+  "claude_report_sha256": "a964464b01a8afd2f26428c6ff576cb1dac2abd1e5574b42d8602230998cdb5a",
+  "claude_reviewed_base": "f2b1500 (archive 32d6b68)",
+  "implementation_compared": "169636f16d98e7d18fec267f65d55085f3c5d826"
 }

@@ -19,7 +19,7 @@ utilise une preuve calculée **avant modification** depuis `32d6b68`, exclut
 explicitement les seules fonctions de sécurité autorisées et vérifie séparément
 le travailleur complet. Il ne remplace pas une recette éditoriale avec Claude réel.
 
-## VIVANT : thèmes demandés, sans numéro P supposé
+## VIVANT : thèmes demandés (statuts exacts dans CROISEMENT_CLAUDE.md)
 
 | Thème | Correction réelle | Limites |
 | --- | --- | --- |
@@ -63,7 +63,7 @@ jamais être collées dans un rapport, une conversation ou le code client.
 
 ## Risques restants avant commercialisation
 
-- Rapport détaillé P1–P10 absent : rapprochement exhaustif non réalisable.
+- Rapport détaillé reçu et rapproché : P2, P3, P5, P7, P8 et P10 ne sont pas entièrement clos. Voir `CROISEMENT_CLAUDE.md`, qui précise aussi les limites Y1–Y3.
 - Ni Stripe TEST réel, ni Claude/Brevo réels, ni SMTP, ni Hostinger testés.
 - Le moteur historique conserve son compteur Stripe en mémoire, son journal
   temporaire des codes et ses threads de génération : pas encore de réservation

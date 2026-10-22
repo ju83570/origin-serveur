@@ -1,5 +1,9 @@
 # Validation des correctifs — 22 octobre 2026
 
+> Rapport original désormais reçu : [CROISEMENT_CLAUDE.md](CROISEMENT_CLAUDE.md)
+> détaille les exigences non encore couvertes. Les résultats ci-dessous ne
+> démontrent pas la clôture de l'ensemble des constats P1–P10 et Y1–Y3.
+
 Derniers résultats : **71 tests automatisés réussis, 0 échec, 0 test ignoré**,
 plus **31 assertions PHP réussies**. Ces totaux ne sont pas additionnés en
 « tests de bout en bout ». Les 40 tests et 13 assertions de la revue initiale

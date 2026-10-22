@@ -28,6 +28,11 @@ non qualifié comme une preuve de droit valable pour n'importe quel produit.
 
 ## Encore à intégrer
 
+Le §4 du rapport exige aussi `order_items`, `payment_attempts`, une inbox avec
+unicité événement/environnement, `entitlements` et `jobs`. Le schéma courant
+monoproduit ne satisfait pas encore l’ensemble de ces conditions. Aucun nouveau
+SKU payant ni essai avec de vraies données familiales avant cette revue.
+
 La proposition de `review/ARCHITECTURE_COMMUNE.md` décrit toujours le contrat
 PHP → worker Python, l'outbox, les baux de travail, les artefacts et la livraison.
 Ces composants ne sont pas annoncés comme réalisés ici. Les vérifications
@@ -40,7 +45,7 @@ registre et désactivation contrôlée de la création concurrente de paiements.
 
 ## Migration 003 — procédure proposée, non exécutée sur Hostinger
 
-1. Obtenir le rapport Claude détaillé et figer les correspondances produit/droits.
+1. Traiter les écarts du rapport Claude détaillé maintenant reçu, puis figer les correspondances produit/droits. Confirmer la version MySQL/MariaDB réelle d’Hostinger avant de choisir les baux du worker.
 2. Sur une **copie de préproduction**, sauvegarder base et trousseau de clés ;
    démontrer la restauration avant toute migration.
 3. Exécuter `pack-docs/migrations/003_security_backups_orders.sql` une seule fois.
@@ -71,7 +76,7 @@ restauration des sauvegardes chiffrées avec leurs clés sur une copie isolée.
 
 ## Accès nécessaires pour la suite
 
-- Rapport original Claude contenant P1 à P10 et fichiers/lignes concernés.
+- Rapport Claude désormais archivé ; validation de la réponse aux écarts P1–P10 et aux conditions du §4.
 - Environnement Hostinger de préproduction séparé du site public, copie
   anonymisée de schéma/données utiles et accès sécurisé aux clés conservées.
 - Compte Stripe TEST, Price IDs et catalogue existants approuvés, signature
