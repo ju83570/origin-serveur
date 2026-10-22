@@ -63,6 +63,13 @@ class PaymentSecurityTests(OfflineTest):
                 self.assertEqual(client.post('/webhook',json={},headers={'X-ORIGIN-SECRET':'wrong'}).status_code,401)
             thread.assert_not_called();post.assert_not_called()
 
+    def test_webhook_verifies_birth_offer_before_normalizing_to_solo(self):
+        secret=secrets.token_urlsafe(32)
+        with patch.object(engine,'WEBHOOK_SECRET',secret),patch.object(engine,'STRIPE_KEY',object()),patch.object(engine,'_stripe_verifier',return_value=(False,'refus')) as verify,patch.object(engine.threading,'Thread') as thread:
+            result=engine.app.test_client().post('/webhook',json={'offre':'solo','type_analyse':'naissance','stripe_session':paid()['id']},headers={'X-ORIGIN-SECRET':secret})
+            self.assertEqual(result.status_code,403)
+            verify.assert_called_once_with(paid()['id'],'naissance');thread.assert_not_called()
+
     def test_gift_codes_have_no_secret_fallback(self):
         for secret in (b'',b'origin',b'short'):
             with patch.object(engine,'_CODES_SECRET',secret):

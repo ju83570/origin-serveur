@@ -1,6 +1,9 @@
 <?php
 declare(strict_types=1);
 require __DIR__.'/bootstrap.php';
+require __DIR__.'/backups.php';
+require __DIR__.'/stripe-events.php';
+require __DIR__.'/checkout.php';
 $op=(string)($_GET['op']??'status');
 $method=(string)($_SERVER['REQUEST_METHOD']??'GET');
 try {
@@ -20,30 +23,7 @@ try {
    $t=$parts['t'][0]??'';if(!ctype_digit($t)||abs(time()-(int)$t)>300)fail('Signature expirée',400);
    $expected=hash_hmac('sha256',$t.'.'.$raw,$secret);$valid=false;foreach(($parts['v1']??[])as $sig)if(hash_equals($expected,$sig)){$valid=true;break;}if(!$valid)fail('Signature incorrecte',400);
    $event=json_decode($raw,true);if(!is_array($event)||empty($event['id'])||empty($event['type']))fail('Événement invalide');if(conf('mode','staging')==='production' && ($event['livemode']??null)!==true)fail('Événement Stripe de test reçu en production',400);if(conf('mode','staging')!=='production' && ($event['livemode']??null)!==false)fail('Événement Stripe réel rejeté en préproduction',400);
-   $eventId=(string)$event['id'];db()->beginTransaction();
-   try { query('INSERT INTO stripe_events(event_id,event_type,processed_at) VALUES(?,?,UTC_TIMESTAMP())',[$eventId,(string)$event['type']]); }
-   catch(PDOException $e) { if($e->getCode()==='23000'){db()->rollBack();respond(['received'=>true,'duplicate'=>true]);} throw $e; }
-   $type=(string)$event['type'];$obj=$event['data']['object']??[];
-   if($type==='checkout.session.completed' && is_array($obj)){
-     $uid=(int)($obj['client_reference_id']??0);$customer=is_string($obj['customer']??null)?$obj['customer']:null;
-     if($uid>0 && query('SELECT id FROM users WHERE id=?',[$uid])->fetch()){
-       if($customer)query('UPDATE users SET stripe_customer_id=? WHERE id=? AND (stripe_customer_id IS NULL OR stripe_customer_id=?)',[$customer,$uid,$customer]);
-       if(($obj['mode']??'')==='payment'&&($obj['payment_status']??'')==='paid'&&($obj['metadata']['plan']??'')==='mirror'){
-         query('INSERT INTO purchases(user_id,stripe_session_id,status,created_at) VALUES(?,?,?,UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE status=VALUES(status)',[$uid,(string)$obj['id'],'paid']);
-       }
-       if(($obj['mode']??'')==='subscription' && is_string($obj['subscription']??null)) {
-         $sub=stripe('GET','subscriptions/'.rawurlencode($obj['subscription'])); upsertSubscription($sub,$uid);
-       }
-     }
-   }
-   if(in_array($type,['customer.subscription.created','customer.subscription.updated','customer.subscription.deleted'],true)&&is_array($obj)) {
-     $customer=$obj['customer']??null;$owner=null;
-     if(is_string($customer))$owner=query('SELECT id FROM users WHERE stripe_customer_id=?',[$customer])->fetch();
-     if(!$owner && !empty($obj['metadata']['origin_user_id']))$owner=query('SELECT id FROM users WHERE id=?',[(int)$obj['metadata']['origin_user_id']])->fetch();
-     if($owner)upsertSubscription($obj,(int)$owner['id']);
-   }
-   // L'événement et ses effets sont validés ensemble ; un échec libère le rejeu.
-   db()->commit();respond(['received'=>true]);
+   respond(processStripeEvent($event,fn(string $route):array=>stripe('GET',$route)));
  }
  if($method!=='POST')fail('Méthode non autorisée',405);
  csrf();$data=input();
@@ -84,7 +64,7 @@ try {
    respond(['ok'=>true,'message'=>'Mot de passe modifié. Tu peux maintenant te connecter.']);
  }
  if($op==='login'){
-   rate('login',ip(),12,15);$email=mb_strtolower(trim((string)($data['email']??'')));$pw=(string)($data['password']??'');$u=query('SELECT * FROM users WHERE email=?',[$email])->fetch();
+   $email=mb_strtolower(trim((string)($data['email']??'')));rate('login_ip',ip(),60,15);rate('login_account',$email,12,15);$pw=(string)($data['password']??'');$u=query('SELECT * FROM users WHERE email=?',[$email])->fetch();
    if(!$u || !password_verify($pw,$u['password_hash']))fail('Identifiants incorrects',401);
    if(!$u['verified_at'])fail('Confirme ton adresse email avant de te connecter.',403,'email_unverified');
    session_regenerate_id(true);$_SESSION['user_id']=(int)$u['id'];$_SESSION['session_version']=(int)$u['session_version'];$_SESSION['csrf']=bin2hex(random_bytes(24));respond(['ok'=>true,'csrf'=>$_SESSION['csrf'],'user'=>publicUser($u),'entitlements'=>entitlement((int)$u['id'])]);
@@ -96,39 +76,42 @@ try {
    rate('resend',ip(),4,60);$email=mb_strtolower(trim((string)($data['email']??'')));$u=query('SELECT id,email,verified_at FROM users WHERE email=?',[$email])->fetch();if($u && !$u['verified_at'])emailVerify($u);respond(['ok'=>true,'message'=>'Si cette adresse existe, un nouveau message a été envoyé.']);
  }
  if($op==='save'){
-   $u=verified();if(conf('mode','staging')==='production' && !entitlement((int)$u['id'])['plans']) fail('Un abonnement actif est nécessaire pour la sauvegarde en ligne.',402,'subscription_required');$payload=$data['state']??null;$originalState=json_decode(file_get_contents('php://input'))->state??null;$json=json_encode($originalState,JSON_UNESCAPED_UNICODE|JSON_INVALID_UTF8_SUBSTITUTE);if(!is_array($payload)||$json===false||strlen($json)>750000)fail('Fichier personnel invalide ou trop volumineux',413);
-   $sealed=encryptState($json);query('INSERT INTO user_state(user_id,sealed_payload,updated_at) VALUES(?,?,UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE sealed_payload=VALUES(sealed_payload),updated_at=UTC_TIMESTAMP()',[$u['id'],$sealed]);respond(['ok'=>true,'message'=>'Sauvegarde privée réalisée']);
+   $u=verified();rate('backup_save',(string)$u['id'],30,15);
+   $body=json_decode(file_get_contents('php://input'));
+   respond(saveBackup((int)$u['id'],$body->state??null,$body->base_revision??null));
  }
- if($op==='load'){
-   $u=verified();if(conf('mode','staging')==='production' && !entitlement((int)$u['id'])['plans']) fail('Un abonnement actif est nécessaire pour synchroniser le carnet.',402,'subscription_required');$r=query('SELECT sealed_payload,updated_at FROM user_state WHERE user_id=?',[$u['id']])->fetch();$v=$r?decryptState($r['sealed_payload']):null;if($r && $v===null)fail('Sauvegarde illisible : conserve ta copie locale et contacte le support.',503,'backup_unreadable');respond(['ok'=>true,'state'=>$v?json_decode($v):null,'updated_at'=>$r['updated_at']??null]);
+ if($op==='load' || $op==='export'){
+   $u=verified();rate('backup_read',(string)$u['id'],90,15);
+   respond(loadBackup((int)$u['id'],$data['revision']??null));
+ }
+ if($op==='versions'){
+   $u=verified();$rows=query('SELECT revision,updated_at FROM user_state_history WHERE user_id=? ORDER BY revision DESC',[$u['id']])->fetchAll();
+   respond(['ok'=>true,'versions'=>$rows]);
  }
  if($op==='checkout'){
-   $u=verified();if(!paymentPolicy($cfg)['enabled'])fail('Paiements désactivés. Le checkout de test nécessite le mode test et son activation explicite.',503);
-   $plan=(string)($data['plan']??'');if(!in_array($plan,['individual','family','mirror'],true))fail('Offre inconnue');
-   if($plan==='family'&&!conf('family_ready',false))fail('Offre Famille non lancée');
-   if($plan==='mirror'&&!conf('mirror_paid_ready',false))fail('Offre Miroir non lancée');
-   $price=(string)(conf('stripe_prices',[])[$plan]??'');if(!preg_match('/^price_[A-Za-z0-9]+$/',$price))fail('Tarif non configuré',503);
-   $customer=$u['stripe_customer_id'];if(!$customer){$new=stripe('POST','customers',['email'=>$u['email'],'metadata'=>['origin_user_id'=>$u['id']]]);$customer=$new['id'];query('UPDATE users SET stripe_customer_id=? WHERE id=?',[$customer,$u['id']]);}
-   $mode=$plan==='mirror'?'payment':'subscription';
-   $params=['mode'=>$mode,'customer'=>$customer,'client_reference_id'=>(string)$u['id'],'line_items'=>[['price'=>$price,'quantity'=>1]],'metadata'=>['plan'=>$plan,'origin_user_id'=>(string)$u['id']],'success_url'=>rtrim((string)conf('site_url'),'/').'/?paiement=retour&session_id={CHECKOUT_SESSION_ID}','cancel_url'=>rtrim((string)conf('site_url'),'/').'/?paiement=annule','locale'=>'fr'];
-   if($mode==='subscription')$params['subscription_data']=['metadata'=>['plan'=>$plan,'origin_user_id'=>(string)$u['id']]];
-   $checkout=stripe('POST','checkout/sessions',$params);respond(['ok'=>true,'checkout_url'=>$checkout['url']??null]);
+   $u=verified();rate('checkout',(string)$u['id'],8,15);respond(createCheckout($u,(string)($data['plan']??'')));
  }
  if($op==='portal'){
    $u=verified();if(!$u['stripe_customer_id'])fail('Aucun abonnement Stripe associé');$s=stripe('POST','billing_portal/sessions',['customer'=>$u['stripe_customer_id'],'return_url'=>rtrim((string)conf('site_url'),'/').'/']);respond(['ok'=>true,'portal_url'=>$s['url']??null]);
  }
  if($op==='delete'){
-   $u=verified();$ent=entitlement((int)$u['id']);if($ent['plans'])fail('Résilie d’abord les abonnements actifs depuis le portail Stripe, puis demande la suppression.',409);
+   $u=verified();rate('delete_account',(string)$u['id'],5,60);
    if(($data['confirm']??'')!=='SUPPRIMER')fail('Confirmation de suppression requise');
-   // FK cascades data. Stripe customer is deliberately retained for legitimate bookkeeping.
-   query('DELETE FROM users WHERE id=?',[$u['id']]);$_SESSION=[];session_regenerate_id(true);$_SESSION['csrf']=bin2hex(random_bytes(24));respond(['ok'=>true,'message'=>'Compte et données personnelles de l’application supprimés']);
+   $stored=query('SELECT password_hash FROM users WHERE id=?',[$u['id']])->fetch();
+   if(!$stored || !password_verify((string)($data['password']??''),$stored['password_hash']))fail('Confirme ton mot de passe actuel pour supprimer ce compte.',403,'reauth_required');
+   if(query("SELECT id FROM subscriptions WHERE user_id=? AND status NOT IN ('canceled','incomplete_expired') LIMIT 1",[$u['id']])->fetch())fail('Résilie d’abord tous les abonnements depuis le portail Stripe.',409,'billing_active');
+   if($u['stripe_customer_id']){
+     $remote=stripe('GET','subscriptions',['customer'=>$u['stripe_customer_id'],'status'=>'all','limit'=>100]);
+     if(($remote['has_more']??true)!==false)throw new RuntimeException('Billing reconciliation incomplete');
+     foreach(($remote['data']??[]) as $sub)if(!in_array($sub['status']??'',['canceled','incomplete_expired'],true))fail('Un abonnement Stripe nécessite encore une résiliation.',409,'billing_active');
+   }
+   db()->beginTransaction();query('SELECT id FROM users WHERE id=? FOR UPDATE',[$u['id']]);
+   if(query("SELECT order_id FROM orders WHERE user_id=? AND status='pending' AND expires_at>UTC_TIMESTAMP() LIMIT 1 FOR UPDATE",[$u['id']])->fetch()){
+     db()->rollBack();fail('Un paiement est encore ouvert : termine-le ou attends son expiration avant la suppression.',409,'checkout_pending');
+   }
+   query('DELETE FROM users WHERE id=?',[$u['id']]);db()->commit();
+   $_SESSION=[];session_regenerate_id(true);$_SESSION['csrf']=bin2hex(random_bytes(24));
+   respond(['ok'=>true,'message'=>'Compte, sauvegardes et historique personnel supprimés. Les écritures comptables sans données familiales sont conservées.']);
  }
  fail('Action inconnue',404);
-} catch(PDOException $e){rollbackOpenTransaction();error_log('ORIGIN database: '.$e->getMessage());fail('Service temporairement indisponible',503);} catch(Throwable $e){rollbackOpenTransaction();error_log('ORIGIN: '.$e->getMessage());fail('Une erreur technique est survenue',500);}
-function upsertSubscription(array $s,int $uid):void {
- $price=(string)($s['items']['data'][0]['price']['id']??'');$plan=(string)($s['metadata']['plan']??'');
- if(!in_array($plan,['individual','family'],true)){foreach((array)conf('stripe_prices',[]) as $k=>$p)if($p===$price)$plan=$k;}
- if(!in_array($plan,['individual','family'],true))return;
- $periodEnd=$s['items']['data'][0]['current_period_end']??$s['current_period_end']??null;$end=$periodEnd?gmdate('Y-m-d H:i:s',(int)$periodEnd):null;
- query('INSERT INTO subscriptions(user_id,stripe_subscription_id,plan,status,current_period_end,updated_at) VALUES(?,?,?,?,?,UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE user_id=VALUES(user_id),plan=VALUES(plan),status=VALUES(status),current_period_end=VALUES(current_period_end),updated_at=UTC_TIMESTAMP()',[$uid,(string)$s['id'],$plan,(string)$s['status'],$end]);
-}
+} catch(PDOException $e){rollbackOpenTransaction();error_log('ORIGIN database error code '.(string)$e->getCode());fail('Service temporairement indisponible',503);} catch(RuntimeException $e){rollbackOpenTransaction();error_log('ORIGIN service unavailable '.get_class($e));fail('Service temporairement indisponible',503);} catch(Throwable $e){rollbackOpenTransaction();error_log('ORIGIN technical failure '.get_class($e));fail('Une erreur technique est survenue',500);}

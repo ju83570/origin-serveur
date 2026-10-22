@@ -84,8 +84,8 @@ class BrowserTests(unittest.TestCase):
         with self.page.expect_download() as download:
             self.page.locator('#exportJson').click()
         export = json.loads(Path(download.value.path()).read_text())
-        self.assertEqual(export['format'],'origin-vivant-1')
-        self.assertEqual(export['data']['mirrors'][0]['nameA'],'Lina')
+        self.assertEqual(export['format'],'origin-vivant-cloud-2')
+        self.assertEqual(export['carnet']['mirrors'][0]['nameA'],'Lina')
 
     def test_demo_is_explicit_and_cannot_be_converted_to_a_personal_draft(self):
         self.page.locator('#demoBtn').click()
@@ -95,6 +95,37 @@ class BrowserTests(unittest.TestCase):
         self.go('premium')
         self.page.locator('#premiumSource').select_option('mirror')
         self.assertEqual(self.page.locator('#premiumPersonA option').count(),0)
+
+    def test_viewing_a_demo_preserves_the_personal_draft_on_disk(self):
+        original={'draft':{'nameA':'Lina','nameB':'Noé'},'mirrors':[],'memories':[],'checkins':[]}
+        self.page.evaluate("data=>localStorage.setItem('origin_vivant_local_v1',JSON.stringify(data))",original)
+        self.page.reload();before=self.page.evaluate("localStorage.getItem('origin_vivant_local_v1')")
+        self.page.locator('#demoBtn').click()
+        self.page.locator('[data-step-jump="4"]').click()
+        self.page.locator('#saveMirror').click()
+        self.assertEqual(self.page.evaluate("localStorage.getItem('origin_vivant_local_v1')"),before)
+
+    def test_a_stale_tab_cannot_overwrite_another_tab_and_can_export_its_work(self):
+        other=self.context.new_page();other.goto(BASE+'/vivant/')
+        newer={'draft':{'nameA':'Copie récente'},'mirrors':[],'memories':[],'checkins':[]}
+        other.evaluate("data=>localStorage.setItem('origin_vivant_local_v1',JSON.stringify(data))",newer)
+        self.go('miroir');self.page.locator('#nameA').fill('Mon travail local')
+        self.assertIn('Sauvegarde interrompue',self.page.locator('#toast').inner_text())
+        self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('origin_vivant_local_v1')).draft.nameA"),'Copie récente')
+        self.go('carnet')
+        with self.page.expect_download() as download:self.page.locator('#exportJson').click()
+        saved=json.loads(Path(download.value.path()).read_text())
+        self.assertEqual(saved['carnet']['draft']['nameA'],'Mon travail local')
+
+    def test_malformed_local_backup_is_not_overwritten_and_can_be_rescued(self):
+        raw='{"draft":{},"memories":"format inconnu à préserver"}'
+        self.page.evaluate("raw=>localStorage.setItem('origin_vivant_local_v1',raw)",raw)
+        self.page.reload();self.go('miroir');self.page.locator('#nameA').fill('Camille')
+        self.assertEqual(self.page.evaluate("localStorage.getItem('origin_vivant_local_v1')"),raw)
+        self.go('carnet')
+        with self.page.expect_download() as download:self.page.locator('#exportJson').click()
+        recovered=json.loads(Path(download.value.path()).read_text())
+        self.assertEqual(recovered['format'],'origin-local-recovery-1');self.assertEqual(recovered['carnet_raw'],raw)
 
     def test_tree_creation_and_consent_handoff_to_real_demo_render(self):
         self.page.goto(BASE+'/vivant/arbre-vivant.html')

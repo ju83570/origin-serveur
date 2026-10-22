@@ -9,6 +9,14 @@ return [
  'db_user'=>'VOTRE_UTILISATEUR_SQL',
  'db_password'=>'MOT_DE_PASSE_SQL',
  // Générer par : php -r "echo base64_encode(random_bytes(32)), PHP_EOL;"
+ // Garder cette clé pour lire les sauvegardes historiques ; ne jamais la remplacer sans migration.
+ 'encryption_key_id'=>'legacy',
+ 'encryption_keys'=>[], // rotation : conserver toutes les anciennes clés hors document root
+ 'trusted_proxy_ips'=>[], // uniquement les IP exactes de proxys Hostinger confirmées
+ 'demo_features_enabled'=>false, // démo autorisée seulement dans le mode test local
+ 'product_features'=>[], // droits par produit à VALIDER avant activation commerciale
+ 'test_payments_enabled'=>false,
+ 'live_payments_approved'=>false,
  'app_key'=>'COLLER_CLE_BASE64_ALEATOIRE_32_OCTETS',
  'smtp_host'=>'smtp.hostinger.com',
  'smtp_port'=>587,

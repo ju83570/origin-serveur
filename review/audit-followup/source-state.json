@@ -1,0 +1,10 @@
+{
+  "base_review_commit": "32d6b68b3106828dbdea58c00a620e3698c03632",
+  "security_commit": "141b0c6",
+  "security_branch": "fix/claude-audit-security-2026-10-22",
+  "development_branch": "fix/claude-audit-vivant-2026-10-22",
+  "premium_app_sha256": "d75cce80cce151dc65230d9d47a4c6f41434fa64111fc7fcf13c84db6fb569f5",
+  "deployed": false,
+  "merged_to_main": false,
+  "original_claude_report_available": false
+}

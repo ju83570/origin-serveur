@@ -1,0 +1,18 @@
+✔ carnet et arbre personnel inclus, sans données fictives par défaut (1.526281ms)
+✔ restauration des deux espaces et compatibilité avec ancien carnet (1.433961ms)
+✔ échec de stockage : restauration des valeurs précédentes (0.719901ms)
+✔ format futur et contenu invalide ne remplacent aucune donnée (0.374492ms)
+✔ une restauration complète sans arbre supprime celui du compte précédent (1.194111ms)
+✔ un export ancien reste importable et conserve l’arbre local (0.469596ms)
+✔ impossibilité de créer le journal : aucune donnée remplacée (0.439172ms)
+✔ récupération après une interruption au milieu de la restauration (0.244692ms)
+✔ une restauration refusée conserve un journal récupérable si le rollback échoue (0.438599ms)
+✔ un arbre personnel corrompu est signalé plutôt qu’omis de la sauvegarde (0.372584ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93.589285

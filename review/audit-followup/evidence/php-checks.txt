@@ -1,0 +1,5 @@
+31 assertions PHP réussies.
+7 fichiers API valides en php -l.
+Migration 003 appliquée sur base locale existante : nombres de comptes et sauvegardes préservés.
+Schéma complet validé dans une base temporaire distincte puis supprimée.
+Clés/SMTP/Stripe réels non utilisés.

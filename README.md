@@ -1,5 +1,17 @@
 # ORIGIN RÉVOLUTION — serveur et démonstration locale
 
+## Correctifs après audit Claude
+
+Le dossier courant commence dans
+[review/audit-followup/LIRE_EN_PREMIER.md](review/audit-followup/LIRE_EN_PREMIER.md).
+Il détaille les correctifs de sécurité, les tests, les limites et la migration
+proposée. Aucune fusion ni mise en production n'est réalisée.
+
+Une démonstration transportable est fournie dans `demo-visual/` : Miroir,
+parcours gratuit, préparation consentie du dossier Premium et exemples PDF
+Solo/Couple fictifs. Voir `demo-visual/LIRE_AVANT.txt`. Aucun compte, paiement
+ou envoi réel dans cette page autonome.
+
 Le moteur existant reste dans `app.py`. La démonstration utilise un point d'entrée
 distinct, `demo:app`, sans clé API, sans requête externe et sans envoi d'email.
 Aucun changement sur `origin-famille.fr` n'est nécessaire.

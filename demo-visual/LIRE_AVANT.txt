@@ -1,0 +1,10 @@
+DÉMONSTRATION ORIGIN HORS LIGNE
+
+Ouvrir index.html après extraction du ZIP. Aucun compte, API, paiement ou email réel.
+Utiliser des personnages fictifs. Le navigateur peut conserver les saisies sur cet appareil.
+Miroir > Mon parcours > ORIGIN Premium : préparation consentie et exemples PDF Solo/Couple.
+Pour une origine commune avec l’arbre et un stockage navigateur prévisible, depuis ce dossier :
+  python -m http.server 8080 --bind 127.0.0.1
+  puis ouvrir http://127.0.0.1:8080
+Les textes des PDF sont des fixtures, les calculs et rendus proviennent du moteur préservé.
+La personnalisation complète nécessite la démonstration Python locale décrite dans README.md.

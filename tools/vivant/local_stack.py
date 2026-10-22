@@ -49,7 +49,9 @@ def start():
         'app_key': base64.b64encode(secrets.token_bytes(32)).decode(),
         'smtp_host': '', 'smtp_user': '', 'smtp_password': '', 'smtp_from': '',
         'stripe_secret': '', 'stripe_webhook_secret': secrets.token_hex(32),
-        'stripe_prices': {}, 'test_payments_enabled': False, 'payments_enabled': False,
+        'stripe_prices': {'individual':'price_IndividualFixture','family':'price_FamilyFixture','mirror':'price_MirrorFixture'},
+        'demo_features_enabled': True, 'product_features': {}, 'trusted_proxy_ips': [],
+        'test_payments_enabled': False, 'payments_enabled': False,
         'legal_approved': False, 'live_payments_approved': False,
         'family_ready': False, 'mirror_paid_ready': False,
     }

@@ -1,5 +1,8 @@
 # Matrice de validation pour la revue indépendante
 
+> Résultats historiques de `32d6b68`. Pour la validation des correctifs actuels,
+> lire [audit-followup/VALIDATION.md](audit-followup/VALIDATION.md).
+
 Périmètre : code de `f2b1500`, conservé sans changement fonctionnel dans la
 branche de revue. Les documents de cette mission ne constituent pas une
 implémentation de l'architecture proposée.

@@ -1,0 +1,384 @@
+{
+  "base": "32d6b68",
+  "scope": "Fichiers modifiés/ajoutés, hors inventaire lui-même.",
+  "files": [
+    {
+      "status": "M",
+      "path": "README.md",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 9671,
+      "sha256": "58c394d4dfd1b2c01debedd75be9dcca1c1cc4643b253b314920ec3d9387ac93"
+    },
+    {
+      "status": "M",
+      "path": "app.py",
+      "function": "Contrôles d’accès Premium uniquement : paiement, webhook et codes cadeaux.",
+      "bytes": 2247732,
+      "sha256": "d75cce80cce151dc65230d9d47a4c6f41434fa64111fc7fcf13c84db6fb569f5"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/LIRE_AVANT.txt",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 681,
+      "sha256": "bf7e5feae3f916b1579186cf7ca32b99f87a167d969cb35523a732dae1119a87"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/apercu-premium-mobile.png",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 747143,
+      "sha256": "12a0f3f106436f301878f8a723a375b11db2c6ef54d59a2a09c2989c3090c11b"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/arbre-vivant.html",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 915078,
+      "sha256": "1cdadcaf79f66315f2ae895f810c212563d31484fda64afb32e1bcd7aad23ea7"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/confidentialite.html",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 3178,
+      "sha256": "1b65746755feb91cc36e746c386ead9d93a3baf3050645a5fe0e2a9bd367f28f"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/couple-demonstration.html",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 974190,
+      "sha256": "73967cad61df2f784e3db51d0eebed1b6f984179bc44c14e554ad9b0d906aba7"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/couple-demonstration.pdf",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 1440783,
+      "sha256": "93fa12169c0c7745ec7f5a46924ebac6e03f8901e43536b6160ab624613bfaec"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/index.html",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 2707320,
+      "sha256": "7bb9b1dd466ed35075c25d40ae38add81ebf5d52e43d763f812809eeab3181ad"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/solo-demonstration.html",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 979745,
+      "sha256": "25669f3259b46d3c5a96b5648c13b405e08440b09aff17f76d0afbcdfb5bddfa"
+    },
+    {
+      "status": "A",
+      "path": "demo-visual/solo-demonstration.pdf",
+      "function": "Démonstration transportable ; contenu/personnes fictifs, aucun paiement réel.",
+      "bytes": 1635800,
+      "sha256": "302c52e71c74c0c5c1c9e9aefb11fabbfdc1332814f5741af45e17beeb05a8ea"
+    },
+    {
+      "status": "A",
+      "path": "fixtures/security-engine-preservation.json",
+      "function": "Preuve de préservation calculée avant modification des contrôles de sécurité.",
+      "bytes": 404,
+      "sha256": "9382f670e7dac73abf014f1cb2fd39cee7dbf0616646ada999772f5424dd918c"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/backups.php",
+      "function": "Sauvegardes révisionnées, historique et lecture sans abonnement.",
+      "bytes": 3974,
+      "sha256": "814b93ad374d4d8b9d8c824656e1d3e7f59fe6a205a610a1556e186cb2c73746"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/api/bootstrap.php",
+      "function": "Chiffrement, sessions, transport Stripe, débit et droits canoniques.",
+      "bytes": 10883,
+      "sha256": "b0cc147419676f2f62619cb38baddca9b5fb5906b31cc8563f1fa7a7645cb7ac"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/checkout.php",
+      "function": "Commande UUID, prix serveur, Checkout idempotent et reprise.",
+      "bytes": 4620,
+      "sha256": "c38bb3aeafc193fcb457c21a1b97f2ade2065e75ca5129ea53f57bd70a5d8442"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/api/index.php",
+      "function": "Routes sécurisées, export/récupération et suppression réauthentifiée.",
+      "bytes": 10697,
+      "sha256": "70a78debcd5a082f905ddf638e561ad93e327ce067d923fbe4ffe66619bc6c83"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/api/schema.sql",
+      "function": "Schéma vierge avec commandes, historique et compteurs.",
+      "bytes": 4436,
+      "sha256": "957c628d409c998f89858fedffe29be1fa6ffea816e8b6f0b69bfe3863890dd9"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/security-policy.php",
+      "function": "Politiques pures de proxy, produit, sauvegarde et paiement.",
+      "bytes": 4391,
+      "sha256": "4a4f5e143c3d049bea01cda09174430b499c149880f3390d70d4e3e6ab373a82"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/stripe-events.php",
+      "function": "Inbox Stripe, validation de commande et réconciliation des droits.",
+      "bytes": 9636,
+      "sha256": "3379ff8258efefe3b4c53f243444a8a3daee9c3ee6b2276ce1ce1dce418f354d"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/arbre-vivant.html",
+      "function": "Interface existante : sauvegarde locale, reprise, démo et parcours consenti.",
+      "bytes": 911677,
+      "sha256": "395e88546a738905cb640b4b6c84c6f3b18407b63c90fd18bd15d09ee5b035e5"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/index.html",
+      "function": "Interface existante : sauvegarde locale, reprise, démo et parcours consenti.",
+      "bytes": 31226,
+      "sha256": "ac3144dbd0946d5047fa30d658595063aa092118d11672865a71afcde16b7298"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/origin-commercial.js",
+      "function": "Interface existante : sauvegarde locale, reprise, démo et parcours consenti.",
+      "bytes": 11203,
+      "sha256": "231db42aaa5b184cf5590f359fa2677cae2aed0091a17ef759ad27096a4a7f38"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/origin-storage.js",
+      "function": "Interface existante : sauvegarde locale, reprise, démo et parcours consenti.",
+      "bytes": 3478,
+      "sha256": "f414ee3702587aa4dab20654edc9f26e3ee92520348a676dd9ce06cee8c53687"
+    },
+    {
+      "status": "M",
+      "path": "hostinger/vivant/origin-vivant.js",
+      "function": "Interface existante : sauvegarde locale, reprise, démo et parcours consenti.",
+      "bytes": 32884,
+      "sha256": "6c471d3108190982f512401b86ed45b71c8dfd249221e03626d23bdf43262b23"
+    },
+    {
+      "status": "M",
+      "path": "pack-docs/config-exemple/origin-vivant-config.php.EXEMPLE",
+      "function": "Exemple de configuration sans secret, activation commerciale désactivée.",
+      "bytes": 1945,
+      "sha256": "7e8ab9b16ed43dc0955105b6db90f2482d9e1076cf0658a5f36fdb6c02b56cf4"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/migrations/003_security_backups_orders.sql",
+      "function": "Migration additive à tester et approuver, jamais exécutée sur Hostinger.",
+      "bytes": 2271,
+      "sha256": "e7015caaf433ef110f3f95cdd668569118ad5d83f594e63202d5901077b175d0"
+    },
+    {
+      "status": "A",
+      "path": "premium_security.py",
+      "function": "Contrôles d’accès Premium uniquement : paiement, webhook et codes cadeaux.",
+      "bytes": 2660,
+      "sha256": "6260edbdbf8f3b97150b8af9dd52e11c8981c434efc42151fa709be872ff71a0"
+    },
+    {
+      "status": "M",
+      "path": "review/ARCHITECTURE_COMMUNE.md",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 15612,
+      "sha256": "5cc6002de9d837bf94d225e6a4ccefee9bd8c59ec3599c5f6bc2a85c83e9e2e4"
+    },
+    {
+      "status": "M",
+      "path": "review/COMMENCER_ICI.md",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 5380,
+      "sha256": "c94d4779d11d3d7e974b4b57b9ae5369d8ce89bb7b96219f2181dbc8c22b2937"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/ARCHITECTURE_ET_MIGRATION.md",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 5333,
+      "sha256": "eb998ef557611cc37758c46b7c757f547b27a20b91b7ab4f647af3c354f40298"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/CORRECTIONS_ET_LIMITES.md",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 9025,
+      "sha256": "331b16146e3e7abd55c938a8b02b93ff5b804769fbe246dcb8adde4da1d7445d"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/LIRE_EN_PREMIER.md",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 2197,
+      "sha256": "273a19ef4ceeaee16cff3d2bbc67df126cac394632c0df09499cf9e0605e797d"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/VALIDATION.md",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 5909,
+      "sha256": "35ef7a1620020f335d25dd112f8d72e5b51da9bafc8a5c175a00746059407286"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/evidence/api.txt",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 2669,
+      "sha256": "3888ab4fac806b33e58d3fa3383ae1446519b9890229c23fa65a593b6b784b8d"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/evidence/browser.txt",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 1703,
+      "sha256": "6c4a89108446ca74d871dd6cfd16f39ffcaaf1a0ce290b4623512e0546133e2c"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/evidence/javascript.txt",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 972,
+      "sha256": "02fd30976e3a17aa20484c6060a2ab257a17f17d903c54b2957abea94b85f477"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/evidence/php-checks.txt",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 279,
+      "sha256": "55f845042388494f0bb36235c38adef1e3ad035b5fedf6d0721a1f224ab08922"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/evidence/python.txt",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 4391,
+      "sha256": "07f401aae48d9d7e0bac01a26ba857bd97cd5081b91596df00c86df9b047a0f5"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/evidence/results.json",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 588,
+      "sha256": "a1115a3fa225a2e5130ba32e970630a783771c808a80bd7a19968048ab073ff1"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/premium-security.diff",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 5208,
+      "sha256": "80299aed0d03e596223af33990f7ebf858750799a09be159651c43c100ff68cf"
+    },
+    {
+      "status": "A",
+      "path": "review/audit-followup/source-state.json",
+      "function": "Documentation de revue, preuves, limites ou inventaire.",
+      "bytes": 411,
+      "sha256": "1bb04311d0053ea6624429a7290ab6227a7dbdd3389d92543734f00b5ec0ee00"
+    },
+    {
+      "status": "M",
+      "path": "tests/browser/test_platform_browser.py",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 10953,
+      "sha256": "0ab62379d8fd05bf2d930434c7298ac8ee8f8e399aeaa49de6aa7dd715de6451"
+    },
+    {
+      "status": "A",
+      "path": "tests/browser/test_visual_demo.py",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 3796,
+      "sha256": "79f53aa0f79d70f2369b69e0bf19684d0bbdfb3e5a486f80d21607a0ce0d0738"
+    },
+    {
+      "status": "M",
+      "path": "tests/integration/test_vivant_api.py",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 20939,
+      "sha256": "29142206fca541a8b03fef0ab2991ba06700b6e81b760dc0504d0812e85267bf"
+    },
+    {
+      "status": "M",
+      "path": "tests/js/storage.test.cjs",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 4119,
+      "sha256": "35b47e177dd8dee81ad7fa8ba97cfdc5f8607dad46cd048351e67d301086d2fd"
+    },
+    {
+      "status": "M",
+      "path": "tests/php/policy.php",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 4984,
+      "sha256": "d071f09b9ce28627b0660f0ffd335878807ccc613fdb9c2a12b2864a0dd06a95"
+    },
+    {
+      "status": "A",
+      "path": "tests/php/service.php",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 2549,
+      "sha256": "3307872602eb04ce97eb6cc46a3b400303cd92d5b5d49704efc924282476e19d"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_origin.py",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 12745,
+      "sha256": "f4810559fd55a1a5367c52e6cda835282ffb7ca1b505c606300e950e2ba64260"
+    },
+    {
+      "status": "M",
+      "path": "tests/test_platform.py",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 5485,
+      "sha256": "89f1dd92868156a976c60e083101099773dc8372646939c1981d789cf9d6a618"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_security.py",
+      "function": "Tests et fixtures exclusivement isolés, sans clé ou paiement réel.",
+      "bytes": 5283,
+      "sha256": "490fb7a1fb68ae77313b61789c5df7e78cc75e6bf9b2303d9d59e84f251df532"
+    },
+    {
+      "status": "A",
+      "path": "tools/build_visual_demo.py",
+      "function": "Outillage local : stack de test, construction visuelle ou export contrôlé.",
+      "bytes": 5307,
+      "sha256": "5fbb95e6d60a4984a50579ef74511840a9453acc45ab4831e09790ea36224fb3"
+    },
+    {
+      "status": "A",
+      "path": "tools/export_review.py",
+      "function": "Outillage local : stack de test, construction visuelle ou export contrôlé.",
+      "bytes": 3869,
+      "sha256": "6858ddef38ae8c4917f409dae9aa7448b9a28a0aef0a86d6e9fccb03dce6b554"
+    },
+    {
+      "status": "M",
+      "path": "tools/vivant/local_stack.py",
+      "function": "Outillage local : stack de test, construction visuelle ou export contrôlé.",
+      "bytes": 6176,
+      "sha256": "7973667b9d56788957b22afa118c8a11c0f4e7eca4e5c0a11cdbfffd3bf4a89c"
+    },
+    {
+      "status": "M",
+      "path": "review/VALIDATION_MATRIX.md",
+      "function": "Matrice historique conservée, avec renvoi vers les résultats actuels.",
+      "bytes": 8788,
+      "sha256": "eba38626730579ca14e69992675ca2eb06a9988521e9a2ce198df59ecf96acdd"
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # Proposition d'architecture commune — à valider avant implémentation
 
+> Proposition historique de la revue `32d6b68`. Les décisions générales ont
+> depuis été validées par le propriétaire. L'état courant et la migration
+> partielle sont décrits dans [audit-followup/ARCHITECTURE_ET_MIGRATION.md](audit-followup/ARCHITECTURE_ET_MIGRATION.md).
+
 Statut : **proposition pour revue indépendante, non implémentée dans cette
 mission**. Le moteur Premium et les services existants restent inchangés.
 
