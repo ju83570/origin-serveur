@@ -1,0 +1,12 @@
+Résultat historique de l’étape intégration premium ; non réexécuté pour ce dossier.
+Source de code : f2b1500.
+Commande : python tests/browser/test_platform_browser.py
+
+test_account_login_and_voluntary_encrypted_restore_in_browser (__main__.BrowserTests.test_account_login_and_voluntary_encrypted_restore_in_browser) ... ok
+test_demo_is_explicit_and_cannot_be_converted_to_a_personal_draft (__main__.BrowserTests.test_demo_is_explicit_and_cannot_be_converted_to_a_personal_draft) ... ok
+test_mobile_navigation_and_no_page_overflow (__main__.BrowserTests.test_mobile_navigation_and_no_page_overflow) ... ok
+test_real_mirror_journey_export_and_injection_escape (__main__.BrowserTests.test_real_mirror_journey_export_and_injection_escape) ... ok
+test_tree_creation_and_consent_handoff_to_real_demo_render (__main__.BrowserTests.test_tree_creation_and_consent_handoff_to_real_demo_render) ... ok
+
+Ran 5 tests in 9.078s
+OK

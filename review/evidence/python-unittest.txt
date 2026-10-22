@@ -1,0 +1,33 @@
+Résultat historique de l’étape intégration premium ; non réexécuté pour ce dossier.
+Source de code : f2b1500.
+Commande : python -m unittest discover -s tests -v
+
+test_brevo_rejection_is_not_reported_as_delivery (test_origin.BrevoTests.test_brevo_rejection_is_not_reported_as_delivery) ... ok
+test_bundle_has_four_attachments (test_origin.BrevoTests.test_bundle_has_four_attachments) ... ok
+test_existing_mail_builder_preserves_attachments (test_origin.BrevoTests.test_existing_mail_builder_preserves_attachments) ... ok
+test_existing_adapter_builds_and_parses_messages (test_origin.ClaudeTests.test_existing_adapter_builds_and_parses_messages) ... ok
+test_invalid_json_is_rejected (test_origin.ClaudeTests.test_invalid_json_is_rejected) ... ok
+test_rate_limit_then_success (test_origin.ClaudeTests.test_rate_limit_then_success) ... ok
+test_remote_error_propagates_after_three_attempts (test_origin.ClaudeTests.test_remote_error_propagates_after_three_attempts) ... ok
+test_timeout_propagates_without_real_wait (test_origin.ClaudeTests.test_timeout_propagates_without_real_wait) ... ok
+test_truncated_response_is_rejected (test_origin.ClaudeTests.test_truncated_response_is_rejected) ... ok
+test_demo_does_not_expose_production_routes (test_origin.DemoTests.test_demo_does_not_expose_production_routes) ... ok
+test_form_failure_does_not_disclose_internal_error (test_origin.DemoTests.test_form_failure_does_not_disclose_internal_error) ... ok
+test_form_generates_result_page (test_origin.DemoTests.test_form_generates_result_page) ... ok
+test_invalid_inputs_never_start_engine (test_origin.DemoTests.test_invalid_inputs_never_start_engine) ... ok
+test_solo_and_couple_generate_real_artifacts_without_network (test_origin.DemoTests.test_solo_and_couple_generate_real_artifacts_without_network) ... ok
+test_transports_reject_unexpected_destinations (test_origin.DemoTests.test_transports_reject_unexpected_destinations) ... ok
+test_unknown_artifact_is_not_served (test_origin.DemoTests.test_unknown_artifact_is_not_served) ... ok
+test_configuration_is_not_reported_as_remote_availability (test_origin.HealthTests.test_configuration_is_not_reported_as_remote_availability) ... ok
+test_invalid_webhook_does_not_start_generation (test_origin.HealthTests.test_invalid_webhook_does_not_start_generation) ... ok
+test_server_alive_without_credentials (test_origin.HealthTests.test_server_alive_without_credentials) ... ok
+test_existing_family_prestige_birth_and_vocation_personalized_renders (test_platform.OtherBookletRenderTests.test_existing_family_prestige_birth_and_vocation_personalized_renders) ... ok
+test_facade_cannot_connect_to_production (test_platform.PlatformTests.test_facade_cannot_connect_to_production) ... ok
+test_original_pack_is_available_with_local_demo_capability (test_platform.PlatformTests.test_original_pack_is_available_with_local_demo_capability) ... ok
+test_php_source_and_personal_files_are_never_served (test_platform.PlatformTests.test_php_source_and_personal_files_are_never_served) ... ok
+test_unconfigured_api_is_reported_without_fabricated_account (test_platform.PlatformTests.test_unconfigured_api_is_reported_without_fabricated_account) ... ok
+test_all_engine_logic_and_prompts_are_identical_to_commercial_base (test_platform.PreservationTests.test_all_engine_logic_and_prompts_are_identical_to_commercial_base) ... ok
+test_original_dependencies_and_assets_are_unchanged (test_platform.PreservationTests.test_original_dependencies_and_assets_are_unchanged) ... ok
+
+Ran 26 tests in 8.951s
+OK

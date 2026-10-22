@@ -1,0 +1,4 @@
+Exécuté pour préparer les preuves du dossier, sans appel aux services externes.
+Commande : docker exec origin-vivant-api-test php /tests/policy.php
+
+13 vérifications PHP réussies.

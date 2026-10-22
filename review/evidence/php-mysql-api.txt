@@ -1,0 +1,12 @@
+Résultat historique de l’étape intégration premium ; non réexécuté pour ce dossier.
+Source de code : f2b1500.
+Commande : python tests/integration/test_vivant_api.py
+
+test_encrypted_backup_roundtrip_and_isolation (__main__.ApiTests.test_encrypted_backup_roundtrip_and_isolation) ... ok
+test_failed_event_rolls_back_then_can_be_retried (__main__.ApiTests.test_failed_event_rolls_back_then_can_be_retried) ... ok
+test_password_reset_consumes_token_and_revokes_old_session (__main__.ApiTests.test_password_reset_consumes_token_and_revokes_old_session) ... ok
+test_sessions_csrf_and_disabled_checkout (__main__.ApiTests.test_sessions_csrf_and_disabled_checkout) ... ok
+test_signed_webhook_is_idempotent_and_rejects_live_and_expired_events (__main__.ApiTests.test_signed_webhook_is_idempotent_and_rejects_live_and_expired_events) ... ok
+
+Ran 5 tests in 5.645s
+OK

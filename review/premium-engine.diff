@@ -1,0 +1,29 @@
+diff --git a/app.py b/app.py
+index 3dda718..75ea0ba 100644
+--- a/app.py
++++ b/app.py
+@@ -6395,12 +6395,23 @@ def webhook_preflight():
+ 
+ @app.route('/health', methods=['GET'])
+ def health():
++    """Liveness : le serveur répond, indépendamment des services externes."""
++    return jsonify({'status': 'ok', 'service': 'ORIGIN Generator'}), 200
++
++@app.route('/ready', methods=['GET'])
++def readiness():
++    """Configuration des dépendances ; aucune requête payante ni aucun email."""
+     missing = [name for name, val in {
+         'ANTHROPIC_API_KEY': ANTHROPIC_API_KEY,
+         'BREVO_SMTP_KEY': BREVO_SMTP_KEY,
+         'EMAIL_DEST': EMAIL_DEST,
+     }.items() if not val]
+-    return jsonify({'status': 'ok' if not missing else 'degraded', 'service': 'ORIGIN Generator', 'missing': missing}), (200 if not missing else 503)
++    return jsonify({
++        'status': 'configured' if not missing else 'degraded',
++        'service': 'ORIGIN Generator',
++        'missing': missing,
++        'external_services_checked': False,
++    }), (200 if not missing else 503)
+ 
+ @app.route('/webhook', methods=['POST'])
+ def webhook():

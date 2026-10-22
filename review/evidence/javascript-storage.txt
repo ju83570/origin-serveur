@@ -1,0 +1,15 @@
+Exécuté pour préparer les preuves du dossier, sans appel aux services externes.
+Commande : node --test tests/js/storage.test.cjs
+
+✔ carnet et arbre personnel inclus, sans données fictives par défaut (1.427649ms)
+✔ restauration des deux espaces et compatibilité avec ancien carnet (1.023003ms)
+✔ échec de stockage : restauration des valeurs précédentes (0.720284ms)
+✔ format futur et contenu invalide ne remplacent aucune donnée (0.487943ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104.753353

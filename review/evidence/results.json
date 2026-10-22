@@ -1,0 +1,249 @@
+{
+  "source_commit": "f2b1500",
+  "prepared_at": "2026-10-22T21:34:40.839305+02:00",
+  "automated_tests": 40,
+  "additional_php_assertions": 13,
+  "suites": [
+    {
+      "suite": "python-unittest",
+      "count": 26,
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "execution": "étape précédente, code sauvegardé dans f2b1500",
+      "duration_seconds": 8.951,
+      "command": "python -m unittest discover -s tests -v",
+      "cases": [
+        {
+          "name": "test_brevo_rejection_is_not_reported_as_delivery",
+          "class": "test_origin.BrevoTests.test_brevo_rejection_is_not_reported_as_delivery",
+          "result": "ok"
+        },
+        {
+          "name": "test_bundle_has_four_attachments",
+          "class": "test_origin.BrevoTests.test_bundle_has_four_attachments",
+          "result": "ok"
+        },
+        {
+          "name": "test_existing_mail_builder_preserves_attachments",
+          "class": "test_origin.BrevoTests.test_existing_mail_builder_preserves_attachments",
+          "result": "ok"
+        },
+        {
+          "name": "test_existing_adapter_builds_and_parses_messages",
+          "class": "test_origin.ClaudeTests.test_existing_adapter_builds_and_parses_messages",
+          "result": "ok"
+        },
+        {
+          "name": "test_invalid_json_is_rejected",
+          "class": "test_origin.ClaudeTests.test_invalid_json_is_rejected",
+          "result": "ok"
+        },
+        {
+          "name": "test_rate_limit_then_success",
+          "class": "test_origin.ClaudeTests.test_rate_limit_then_success",
+          "result": "ok"
+        },
+        {
+          "name": "test_remote_error_propagates_after_three_attempts",
+          "class": "test_origin.ClaudeTests.test_remote_error_propagates_after_three_attempts",
+          "result": "ok"
+        },
+        {
+          "name": "test_timeout_propagates_without_real_wait",
+          "class": "test_origin.ClaudeTests.test_timeout_propagates_without_real_wait",
+          "result": "ok"
+        },
+        {
+          "name": "test_truncated_response_is_rejected",
+          "class": "test_origin.ClaudeTests.test_truncated_response_is_rejected",
+          "result": "ok"
+        },
+        {
+          "name": "test_demo_does_not_expose_production_routes",
+          "class": "test_origin.DemoTests.test_demo_does_not_expose_production_routes",
+          "result": "ok"
+        },
+        {
+          "name": "test_form_failure_does_not_disclose_internal_error",
+          "class": "test_origin.DemoTests.test_form_failure_does_not_disclose_internal_error",
+          "result": "ok"
+        },
+        {
+          "name": "test_form_generates_result_page",
+          "class": "test_origin.DemoTests.test_form_generates_result_page",
+          "result": "ok"
+        },
+        {
+          "name": "test_invalid_inputs_never_start_engine",
+          "class": "test_origin.DemoTests.test_invalid_inputs_never_start_engine",
+          "result": "ok"
+        },
+        {
+          "name": "test_solo_and_couple_generate_real_artifacts_without_network",
+          "class": "test_origin.DemoTests.test_solo_and_couple_generate_real_artifacts_without_network",
+          "result": "ok"
+        },
+        {
+          "name": "test_transports_reject_unexpected_destinations",
+          "class": "test_origin.DemoTests.test_transports_reject_unexpected_destinations",
+          "result": "ok"
+        },
+        {
+          "name": "test_unknown_artifact_is_not_served",
+          "class": "test_origin.DemoTests.test_unknown_artifact_is_not_served",
+          "result": "ok"
+        },
+        {
+          "name": "test_configuration_is_not_reported_as_remote_availability",
+          "class": "test_origin.HealthTests.test_configuration_is_not_reported_as_remote_availability",
+          "result": "ok"
+        },
+        {
+          "name": "test_invalid_webhook_does_not_start_generation",
+          "class": "test_origin.HealthTests.test_invalid_webhook_does_not_start_generation",
+          "result": "ok"
+        },
+        {
+          "name": "test_server_alive_without_credentials",
+          "class": "test_origin.HealthTests.test_server_alive_without_credentials",
+          "result": "ok"
+        },
+        {
+          "name": "test_existing_family_prestige_birth_and_vocation_personalized_renders",
+          "class": "test_platform.OtherBookletRenderTests.test_existing_family_prestige_birth_and_vocation_personalized_renders",
+          "result": "ok"
+        },
+        {
+          "name": "test_facade_cannot_connect_to_production",
+          "class": "test_platform.PlatformTests.test_facade_cannot_connect_to_production",
+          "result": "ok"
+        },
+        {
+          "name": "test_original_pack_is_available_with_local_demo_capability",
+          "class": "test_platform.PlatformTests.test_original_pack_is_available_with_local_demo_capability",
+          "result": "ok"
+        },
+        {
+          "name": "test_php_source_and_personal_files_are_never_served",
+          "class": "test_platform.PlatformTests.test_php_source_and_personal_files_are_never_served",
+          "result": "ok"
+        },
+        {
+          "name": "test_unconfigured_api_is_reported_without_fabricated_account",
+          "class": "test_platform.PlatformTests.test_unconfigured_api_is_reported_without_fabricated_account",
+          "result": "ok"
+        },
+        {
+          "name": "test_all_engine_logic_and_prompts_are_identical_to_commercial_base",
+          "class": "test_platform.PreservationTests.test_all_engine_logic_and_prompts_are_identical_to_commercial_base",
+          "result": "ok"
+        },
+        {
+          "name": "test_original_dependencies_and_assets_are_unchanged",
+          "class": "test_platform.PreservationTests.test_original_dependencies_and_assets_are_unchanged",
+          "result": "ok"
+        }
+      ],
+      "evidence_file": "review/evidence/python-unittest.txt"
+    },
+    {
+      "suite": "php-mysql-api",
+      "count": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "execution": "étape précédente, code sauvegardé dans f2b1500",
+      "duration_seconds": 5.645,
+      "command": "python tests/integration/test_vivant_api.py",
+      "cases": [
+        {
+          "name": "test_encrypted_backup_roundtrip_and_isolation",
+          "class": "__main__.ApiTests.test_encrypted_backup_roundtrip_and_isolation",
+          "result": "ok"
+        },
+        {
+          "name": "test_failed_event_rolls_back_then_can_be_retried",
+          "class": "__main__.ApiTests.test_failed_event_rolls_back_then_can_be_retried",
+          "result": "ok"
+        },
+        {
+          "name": "test_password_reset_consumes_token_and_revokes_old_session",
+          "class": "__main__.ApiTests.test_password_reset_consumes_token_and_revokes_old_session",
+          "result": "ok"
+        },
+        {
+          "name": "test_sessions_csrf_and_disabled_checkout",
+          "class": "__main__.ApiTests.test_sessions_csrf_and_disabled_checkout",
+          "result": "ok"
+        },
+        {
+          "name": "test_signed_webhook_is_idempotent_and_rejects_live_and_expired_events",
+          "class": "__main__.ApiTests.test_signed_webhook_is_idempotent_and_rejects_live_and_expired_events",
+          "result": "ok"
+        }
+      ],
+      "evidence_file": "review/evidence/php-mysql-api.txt"
+    },
+    {
+      "suite": "chromium-browser",
+      "count": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "execution": "étape précédente, code sauvegardé dans f2b1500",
+      "duration_seconds": 9.078,
+      "command": "python tests/browser/test_platform_browser.py",
+      "cases": [
+        {
+          "name": "test_account_login_and_voluntary_encrypted_restore_in_browser",
+          "class": "__main__.BrowserTests.test_account_login_and_voluntary_encrypted_restore_in_browser",
+          "result": "ok"
+        },
+        {
+          "name": "test_demo_is_explicit_and_cannot_be_converted_to_a_personal_draft",
+          "class": "__main__.BrowserTests.test_demo_is_explicit_and_cannot_be_converted_to_a_personal_draft",
+          "result": "ok"
+        },
+        {
+          "name": "test_mobile_navigation_and_no_page_overflow",
+          "class": "__main__.BrowserTests.test_mobile_navigation_and_no_page_overflow",
+          "result": "ok"
+        },
+        {
+          "name": "test_real_mirror_journey_export_and_injection_escape",
+          "class": "__main__.BrowserTests.test_real_mirror_journey_export_and_injection_escape",
+          "result": "ok"
+        },
+        {
+          "name": "test_tree_creation_and_consent_handoff_to_real_demo_render",
+          "class": "__main__.BrowserTests.test_tree_creation_and_consent_handoff_to_real_demo_render",
+          "result": "ok"
+        }
+      ],
+      "evidence_file": "review/evidence/chromium-browser.txt"
+    },
+    {
+      "suite": "javascript-storage",
+      "count": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "execution": "préparation du dossier de revue",
+      "command": "node --test tests/js/storage.test.cjs",
+      "kind": "tests",
+      "evidence_file": "review/evidence/javascript-storage.txt"
+    },
+    {
+      "suite": "php-policy-crypto",
+      "count": 13,
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "execution": "préparation du dossier de revue",
+      "command": "docker exec origin-vivant-api-test php /tests/policy.php",
+      "kind": "assertions dans un script unique",
+      "evidence_file": "review/evidence/php-policy-crypto.txt"
+    }
+  ]
+}

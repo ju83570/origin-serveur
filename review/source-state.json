@@ -1,0 +1,11 @@
+{
+  "source_commit": "f2b1500d1613ba1f3d112a543835520c6e244646",
+  "app_sha256": "17a502fcfc026201d837e80ad5c82a2bf8d12db81a040b5c3ec1b3f628103696",
+  "base_commit": "b6231d12838b57e18932d620f7f3c2bbd36ca317",
+  "source_branch": "feat/origin-vivant-integration-test",
+  "review_branch": "review/claude-origin-2026-10-22",
+  "tracked_source_files": 122,
+  "unchanged_source_files_in_this_mission": 122,
+  "production_deployment_in_this_mission": false,
+  "merge_to_main": false
+}

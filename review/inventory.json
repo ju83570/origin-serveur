@@ -1,0 +1,370 @@
+{
+  "base_commit": "b6231d12838b57e18932d620f7f3c2bbd36ca317",
+  "source_commit": "f2b1500d1613ba1f3d112a543835520c6e244646",
+  "changes": [
+    {
+      "status": "A",
+      "path": ".dockerignore",
+      "function": "Limite le contexte des builds Docker aux outils de test.",
+      "bytes": 28,
+      "sha256": "39abbdd8f005df9300099f7ff34556e3b6d6c21dfa0c53ed25e4d2c86d329a73"
+    },
+    {
+      "status": "A",
+      "path": ".gitignore",
+      "function": "Exclut caches, environnements locaux et configurations secrètes.",
+      "bytes": 110,
+      "sha256": "a04b95321eeac6bbe2f1e49c335e47b7686740e3c84b76c7c8a87d44df6a10a5"
+    },
+    {
+      "status": "A",
+      "path": "README.md",
+      "function": "Installation, démarrage et commandes de validation locales.",
+      "bytes": 9097,
+      "sha256": "bde77dd39a80289f528e4cdf1c51893941ffc4e121985932c06517dc88fd56ce"
+    },
+    {
+      "status": "M",
+      "path": "app.py",
+      "function": "Seules fonctions changées avant le gel : health et readiness ; aucun calcul, prompt ou générateur changé.",
+      "bytes": 2246906,
+      "sha256": "17a502fcfc026201d837e80ad5c82a2bf8d12db81a040b5c3ec1b3f628103696"
+    },
+    {
+      "status": "A",
+      "path": "demo.py",
+      "function": "Serveur de démonstration : profils, calculs/rendus réels et livraison simulée.",
+      "bytes": 7468,
+      "sha256": "fffdffa8497bba2d75df7ffa1bf7da4da36e97204b60c457f3d4d14604d76c86"
+    },
+    {
+      "status": "A",
+      "path": "demo_support.py",
+      "function": "Copie isolée du moteur, transport Claude/Brevo simulé, ressources PDF locales et mention de démo.",
+      "bytes": 5307,
+      "sha256": "54c72a320b46d580ecbeb7ffb0327d70727b7510a64eba2d23f7e1d28fa23e91"
+    },
+    {
+      "status": "A",
+      "path": "docs/ARCHITECTURE_PREMIUM.md",
+      "function": "Proposition initiale de raccordement et de commercialisation ; complétée par la revue actuelle.",
+      "bytes": 8575,
+      "sha256": "22242e5ded773c7e0debb658d40554fb4dee8d8b5503cb9438c2f7fd73dafa93"
+    },
+    {
+      "status": "A",
+      "path": "docs/AUDIT_PREMIUM.md",
+      "function": "Audit des 17 fichiers du pack et des onze fichiers initiaux.",
+      "bytes": 11165,
+      "sha256": "79d281d9ad35ceaa12fe71189942edda4c9c90a48cd6d9ba54e141e46a968eef"
+    },
+    {
+      "status": "A",
+      "path": "docs/INTEGRATION.md",
+      "function": "Index du dossier de raccordement actualisé.",
+      "bytes": 1152,
+      "sha256": "4fcc477fe46472544a3523aca3a4a8711e6db587664a1ec0fea6d9972200a57d"
+    },
+    {
+      "status": "A",
+      "path": "docs/VALIDATION.md",
+      "function": "Rapport historique de la première démonstration.",
+      "bytes": 2506,
+      "sha256": "4ba7a8819b694cf5eba3f895d9c2f31bc5894d41b73f3c71ac4b99c0bd68375d"
+    },
+    {
+      "status": "A",
+      "path": "docs/VALIDATION_PREMIUM.md",
+      "function": "Résultats historiques des 40 tests et 13 assertions PHP ; limites commerciales.",
+      "bytes": 5705,
+      "sha256": "7e3772cc6d1b211daee0336fe5355526358f77cbe987ffa729a1977f8b595530"
+    },
+    {
+      "status": "A",
+      "path": "fixtures/demo_narrative.json",
+      "function": "Textes fictifs réservés aux démos/tests.",
+      "bytes": 1813,
+      "sha256": "06a9fa44f1bf6f9cafbe5e8497855a7bb01f37852c4fb5a2198869a1fe238d08"
+    },
+    {
+      "status": "A",
+      "path": "fixtures/engine-preservation.json",
+      "function": "Empreintes de la base commerciale et comparaison syntaxique hors santé.",
+      "bytes": 8054,
+      "sha256": "4bc874add4007b7f187c0e2947838af87810a801465343183f146017546f3610"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/.htaccess",
+      "function": "En-têtes et restrictions Apache fournis dans le pack.",
+      "bytes": 293,
+      "sha256": "11d645afc3783a182126315b9854ddebfec96bbf4018b88ea12644b17f4f6831"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/CGV_A_COMPLETER_AVANT_LANCEMENT.txt",
+      "function": "Checklist contractuelle à compléter ; document non final.",
+      "bytes": 951,
+      "sha256": "d66f12cd2fe5e71edcc4487ec77e3267929b86b4610523d27ec52cc1b1997867"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/INSTALLATION_HOSTINGER.txt",
+      "function": "Notice historique renvoyant à la documentation commerciale du pack.",
+      "bytes": 144,
+      "sha256": "847912f77c2f778c50cde13addb8d99c49c0d8cdb6ce09befb1a5e71c5785ff7"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/.htaccess",
+      "function": "Protection des fichiers PHP internes et du schéma SQL.",
+      "bytes": 108,
+      "sha256": "84189f8732022b9f0c8360a0bff5293175f0af1c83f3b0331f183db7fafa6f86"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/bootstrap.php",
+      "function": "Configuration privée, PDO, sessions/CSRF, révocation, chiffrement, SMTP, Stripe et droits existants.",
+      "bytes": 9473,
+      "sha256": "fdaadf22d5c86df47f202d474fa7cfd81d0f1eff0f8d2be520c01b38e4746201"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/index.php",
+      "function": "API comptes, sauvegarde, checkout, portail et webhooks ; transaction/déduplication locales.",
+      "bytes": 14171,
+      "sha256": "2f6e13e8ac0423ff6063ef920980e1b74041aeb04ec8c1857dde76ef115f9972"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/payment-policy.php",
+      "function": "Politique pure d’activation test/live ; pas un appel Stripe.",
+      "bytes": 1165,
+      "sha256": "954eca3e4340ecbcb23c1226221d99f0581679a2e5d6061174c3407558a8bac6"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/api/schema.sql",
+      "function": "Schéma structurel de la base dédiée, sans données clients.",
+      "bytes": 2792,
+      "sha256": "4136c78653b192ee934a2f693a61eec1c1cf1a0675bcaff17154cd7b722542ae"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/arbre-vivant.html",
+      "function": "Arbre interactif réutilisé, fiches, photos, import/export, dates vérifiées et démo séparée.",
+      "bytes": 911235,
+      "sha256": "29eb312d45b50d50d4e1455d5c19ac93d031594632cc1a0f3f0cb025136cbf67"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/confidentialite.html",
+      "function": "Modèle de confidentialité du pack, à finaliser.",
+      "bytes": 3178,
+      "sha256": "1b65746755feb91cc36e746c386ead9d93a3baf3050645a5fe0e2a9bd367f28f"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/index.html",
+      "function": "Interface du pack et vue Mes livrets, consentement et sélection de profils.",
+      "bytes": 31226,
+      "sha256": "4d75bfcb099a646307412cb8d6c7ce45d6c8b9e79d2e491056f76aed4d0766ba"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/logo-origin-officiel.png",
+      "function": "Logo officiel repris sans modification.",
+      "bytes": 650997,
+      "sha256": "19cc0a4f7b32219a18c1cf489aeaea7f5385a086db34ed79986fe387f7640d47"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/origin-commercial.js",
+      "function": "Interface des comptes, récupération, cloud, facturation et mode test.",
+      "bytes": 8194,
+      "sha256": "dde97c6f23a13519f804256e3460d032e16e787904a7a42fa71d54c55749bafd"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/origin-integration.js",
+      "function": "Dossier de livret minimal et reprise locale consentie, jamais preuve de paiement.",
+      "bytes": 4037,
+      "sha256": "cd6be851b13efcd76925b821f25f80ccfab5af714d23ba9b9b7473cc8939d037"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/origin-storage.js",
+      "function": "Enveloppe carnet/arbre versionnée, restauration compatible et rollback local.",
+      "bytes": 1934,
+      "sha256": "cfca9786bda826b1d820c4b5f6f43e8e6146be1184fb7fec63b32edea2e91575"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/origin-vivant.css",
+      "function": "Charte noir/or/crème et styles responsive, ajouts ciblés.",
+      "bytes": 30702,
+      "sha256": "4b9b6f39406bf4318d5284c242b3930b39eb9f2fab3e755dbe55f00b908c8313"
+    },
+    {
+      "status": "A",
+      "path": "hostinger/vivant/origin-vivant.js",
+      "function": "Miroir, rituels, suivi, souvenirs et carnet du pack ; démo en lecture seule.",
+      "bytes": 31922,
+      "sha256": "770ebc2a7d353de30134a3bf1fe287ef5537c0fd72d18377afae63c8cc66acbf"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/CONFIGURATION_TEST.md",
+      "function": "Conditions de préproduction sans modification du site public.",
+      "bytes": 3077,
+      "sha256": "edb920968b1714f75b7c6f5ae9538cbb2012010427973452e395f4e7475615b1"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/INSTALLATION_COMMERCIALE_V2.txt",
+      "function": "Notice officielle conservée, non autorisation de déployer.",
+      "bytes": 2650,
+      "sha256": "d487213a766ae0167131fdcd122a687e437856a7b970138824afabb60fb44fc8"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/LISEZ_MOI_EN_PREMIER.txt",
+      "function": "Statut et limites officiels du pack.",
+      "bytes": 1543,
+      "sha256": "e825203ef2d54b81f23d759e93344e9d0acf9877cf84bfd7c99ecaa2106f9fb5"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/archive-manifest.json",
+      "function": "Empreintes des 17 entrées de l’archive officielle.",
+      "bytes": 2907,
+      "sha256": "9513b4f18bc6fa7b6a867869fca4043098c30ddf95930ca0f3e2d7bdca97b031"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/config-exemple/origin-vivant-config.php.EXEMPLE",
+      "function": "Modèle de configuration avec champs vides/libellés ; aucun identifiant actif.",
+      "bytes": 1390,
+      "sha256": "5dd0b5fda3c94810d516b0c9d77d6a32efc5b8e6d6cbca4bdd3caa7743e40399"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/local-delta.json",
+      "function": "Empreintes et neuf adaptations du pack, huit copies inchangées.",
+      "bytes": 5520,
+      "sha256": "78734c9a264839dbfb7747b57a326c3e31ac06950aba1cd27fdc9b1c4c9e1d90"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/migrations/002_session_version.sql",
+      "function": "Migration structurelle de test pour révoquer les anciennes sessions.",
+      "bytes": 259,
+      "sha256": "10ba078b38cb7d078ccfa795815b9f06d2b0f0ee5d72be23a0abc70e4335cd25"
+    },
+    {
+      "status": "A",
+      "path": "pack-docs/prior-files-audit.json",
+      "function": "Empreintes avant/après des onze fichiers initiaux et de leur rapport.",
+      "bytes": 2781,
+      "sha256": "128b8901e9f20f45476f07737376f63a71564d0805ef9d36a2d40fe076dd9ac4"
+    },
+    {
+      "status": "A",
+      "path": "platform_demo.py",
+      "function": "Façade locale du front PHP et de la démo Python ; refuse une API distante.",
+      "bytes": 3727,
+      "sha256": "0c0f5183e2fb9d5913e8f60813cef2cfab4d89d1944ddce937488390ccbe1221"
+    },
+    {
+      "status": "A",
+      "path": "requirements-browser.txt",
+      "function": "Dépendances optionnelles des tests Playwright.",
+      "bytes": 44,
+      "sha256": "7be535f1f1a9a84716e8aa72fe65236eeed15a1798ddca5c8a4e7208666d99e8"
+    },
+    {
+      "status": "A",
+      "path": "requirements-demo.txt",
+      "function": "Dépendances de démo ; requirements.txt commercial inchangé.",
+      "bytes": 117,
+      "sha256": "380293b9496d3fcf7360f6818e621ace23ca971259f5ed0cbe8af791e2805e61"
+    },
+    {
+      "status": "A",
+      "path": "templates/demo.html",
+      "function": "Formulaire de démo, reprise ponctuelle des prénoms/dates et champs inconnus à compléter.",
+      "bytes": 5443,
+      "sha256": "0b572a0d5f8d4a74aab3b50ac56b997fc8d4178c18e82185883d58ad12604be4"
+    },
+    {
+      "status": "A",
+      "path": "templates/demo_result.html",
+      "function": "Liens vers les artefacts de démonstration.",
+      "bytes": 826,
+      "sha256": "9894220239a701f3d6a154bfe668bd870c6c3df005676bd5de7f9010651db069"
+    },
+    {
+      "status": "A",
+      "path": "tests/browser/test_platform_browser.py",
+      "function": "Cinq parcours Chromium locaux, dont mobile et comptes PHP.",
+      "bytes": 8643,
+      "sha256": "fea05b9b1a6fd1e1e31735f69857fd6f12314d49f895a7534903d321e5a58a7f"
+    },
+    {
+      "status": "A",
+      "path": "tests/integration/test_vivant_api.py",
+      "function": "Cinq tests HTTP/PHP/MariaDB avec comptes et événements fictifs.",
+      "bytes": 7279,
+      "sha256": "fd03f8db80fb7252a3bab37764da1450bf6bb08286e6d21e2f41263cde927f29"
+    },
+    {
+      "status": "A",
+      "path": "tests/js/storage.test.cjs",
+      "function": "Quatre tests Node de snapshot/restauration locale.",
+      "bytes": 2016,
+      "sha256": "4d6eecd3cfdafc6250c019147c5ab8488490cd4921c9335a388f7e59adf254f8"
+    },
+    {
+      "status": "A",
+      "path": "tests/php/policy.php",
+      "function": "Neuf assertions de paiement et quatre de chiffrement ; sentinelles exclusivement de test.",
+      "bytes": 1931,
+      "sha256": "174882559dd750be9dc31e72edb98ba02cd1df21161e3adf466a27b07e22d9b5"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_origin.py",
+      "function": "Dix-neuf tests du serveur, des adaptateurs et de la démonstration sans réseau réel.",
+      "bytes": 12624,
+      "sha256": "deab8e85aa90d08c8eed33811ef2196137f441e4edc9f6d0fcd132c7685dbe6d"
+    },
+    {
+      "status": "A",
+      "path": "tests/test_platform.py",
+      "function": "Sept tests : façade, préservation et rendus supplémentaires avec sous-cas.",
+      "bytes": 4917,
+      "sha256": "856e798f7c7618530c0be2678d195ac26108de1d017c5fe7a70161753ec977aa"
+    },
+    {
+      "status": "A",
+      "path": "tools/vivant/Dockerfile",
+      "function": "Image PHP 8.3 de test avec PDO MySQL, base officielle fixée par empreinte.",
+      "bytes": 208,
+      "sha256": "8a783746eb8ea9983fe8bdd23c7dc49ae444d1fc325005d34b2c672aac2d8aea"
+    },
+    {
+      "status": "A",
+      "path": "tools/vivant/local_stack.py",
+      "function": "Stack jetable locale et génération de secrets éphémères hors racine web.",
+      "bytes": 5980,
+      "sha256": "6de6d9116314f2b3419f620ec4c4ef6aa4940595bb816a671690796176e2a369"
+    },
+    {
+      "status": "A",
+      "path": "tools/vivant/router.php",
+      "function": "Routeur PHP local, protège les sources et fichiers privés pendant les tests.",
+      "bytes": 433,
+      "sha256": "2bf31e70d41ee1abb435b00352a189300e090e9f7779a42dada8cabe6168e834"
+    }
+  ]
+}
