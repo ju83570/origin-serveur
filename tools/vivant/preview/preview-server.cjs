@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const root=process.env.ORIGIN_PREVIEW_ROOT||__dirname;
 const base=(process.env.ORIGIN_PREVIEW_BASE||'').replace(/\/$/,'');
-const files=new Set(['index.html','arbre-vivant.html','origin-vivant.js','origin-profiles.js','origin-storage.js','origin-integration.js','origin-vivant.css','logo-origin-officiel.png','preview-fixtures.js','preview.css','manifest.json']);
+const files=new Set(['index.html','arbre-vivant.html','ORIGIN_DEMO.html','origin-vivant.js','origin-profiles.js','origin-storage.js','origin-integration.js','origin-vivant.css','logo-origin-officiel.png','preview-fixtures.js','preview.css','manifest.json']);
 const types={'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.json':'application/json; charset=utf-8'};
 const server=http.createServer((request,response)=>{
   response.setHeader('Cache-Control','no-store');

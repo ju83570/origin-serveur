@@ -1,9 +1,11 @@
 # ORIGIN RÉVOLUTION — serveur et démonstration locale
 
-[**▶ Aperçu web — démonstration fictive**](https://stackblitz.com/github/ju83570/origin-serveur/tree/origin-preview-demo?view=preview&startScript=start)
+[**▶ Aperçu web — démonstration fictive**](https://htmlpreview.github.io/?https://raw.githubusercontent.com/ju83570/origin-serveur/origin-preview-demo/ORIGIN_DEMO.html)
 
-Ouverture dans StackBlitz avec démarrage automatique : Miroir, Arbre, Carnet et
-Constellation préremplis. Aucun compte, clé API ou paiement réel. Voir
+Page HTML autonome : Miroir, Arbre, Carnet et Constellation préremplis, sans
+clonage GitHub ou environnement Node dans le téléphone. Aucun compte, clé API
+ou paiement réel. Le lecteur web est un service tiers ; son accessibilité depuis
+le cloud est bloquée et n'est pas annoncée comme vérifiée. Voir
 [le périmètre et les tests de l’aperçu](review/web-preview/README.md).
 
 ## Carnet et Constellation — issue #3

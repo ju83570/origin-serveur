@@ -1,0 +1,10 @@
+test_all_four_experiences_without_network_or_external_assets (__main__.PortablePreviewTests.test_all_four_experiences_without_network_or_external_assets) ... ok
+test_carnet_persistence_and_reset_from_tree_preserve_other_keys (__main__.PortablePreviewTests.test_carnet_persistence_and_reset_from_tree_preserve_other_keys) ... ok
+test_html_reader_distant_base_cannot_break_history_navigation (__main__.PortablePreviewTests.test_html_reader_distant_base_cannot_break_history_navigation) ... ok
+test_mobile_navigation_has_no_overflow (__main__.PortablePreviewTests.test_mobile_navigation_has_no_overflow) ... ok
+test_tree_constellation_mirror_round_trip (__main__.PortablePreviewTests.test_tree_constellation_mirror_round_trip) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 14.621s
+
+OK

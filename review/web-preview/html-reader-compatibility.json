@@ -1,0 +1,11 @@
+{
+  "compatible_htmlpreview_loader": true,
+  "page_errors": [],
+  "unexpected_requests": [],
+  "console_errors": [],
+  "document_sha256": "12d7700206b8d6ebf21115afb474201daf0b30cd45bb57e2f573f1cacf355ca4",
+  "loader_revision": "787b673198b8f13ac16384325cd380c5c68cf219",
+  "loader_sha256": "68636cf5930de24848122bb2f2650a20bc160d9e99377454ca084861c05f8842",
+  "transport": "local-browser-fixtures",
+  "live_service_availability_verified": false
+}

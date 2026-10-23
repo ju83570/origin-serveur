@@ -10,6 +10,11 @@ import re
 import shutil
 import subprocess
 
+try:
+    from .build_portable_preview import build as build_portable
+except ImportError:
+    from build_portable_preview import build as build_portable
+
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'hostinger/vivant'
 OUTPUT = ROOT / 'web-preview'
@@ -35,7 +40,7 @@ BANNER = '''<aside class="preview-banner" aria-label="Démonstration fictive">
 
 def build(output=OUTPUT):
     output.mkdir(parents=True, exist_ok=True)
-    expected = set(FILES) | {'preview-fixtures.js', 'preview.css', 'preview-server.cjs', 'package.json', '.nojekyll', 'manifest.json'}
+    expected = set(FILES) | {'preview-fixtures.js', 'preview.css', 'preview-server.cjs', 'package.json', '.nojekyll', 'manifest.json', 'ORIGIN_DEMO.html'}
     if any(p.name not in expected or not p.is_file() for p in output.iterdir()):
         raise RuntimeError('La sortie contient des fichiers inconnus : les préserver avant de reconstruire.')
     provenance = {}
@@ -63,6 +68,7 @@ def build(output=OUTPUT):
     for name in ['preview-fixtures.js', 'preview.css', 'preview-server.cjs', 'package.json']:
         shutil.copyfile(ROOT / 'tools/vivant/preview' / name, output / name)
     (output / '.nojekyll').write_text('')
+    build_portable(output)
     manifest = {
         'kind': 'origin-fictional-web-preview', 'source_branch': 'preview/origin-revolution',
         'source_commit_at_build': subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
