@@ -58,4 +58,35 @@ def configured_payment_matches(session, offer):
         catalog = json.loads(os.environ.get("STRIPE_PRICE_CATALOG", "{}"))
     except (TypeError, ValueError):
         return False
-    return payment_matches(session, offer, catalog, os.environ.get("STRIPE_MODE", ""))
+    return valid_catalog(catalog) and payment_matches(session, offer, catalog, os.environ.get("STRIPE_MODE", ""))
+
+
+def valid_catalog(catalog):
+    if not isinstance(catalog, dict) or not catalog:
+        return False
+    seen=set()
+    for offer, value in catalog.items():
+        if offer not in {'solo','couple','famille','prestige','naissance','vocation','bundle'} or not isinstance(value,dict):
+            return False
+        price=value.get('price_id');amount=value.get('amount');currency=value.get('currency')
+        if (not isinstance(price,str) or not price.startswith('price_') or price in seen
+                or type(amount) is not int or amount<=0
+                or not isinstance(currency,str) or len(currency)!=3 or not currency.isalpha() or currency!=currency.lower()):
+            return False
+        seen.add(price)
+    return True
+
+
+def security_missing(webhook_secret, codes_secret, enforce_access, stripe_key):
+    missing=[]
+    if not strong_secret(webhook_secret):missing.append('WEBHOOK_SECRET')
+    if not strong_secret(codes_secret):missing.append('CODES_SECRET')
+    if not enforce_access:missing.append('ENFORCE_ACCESS')
+    mode=os.environ.get('STRIPE_MODE','')
+    if mode not in ('test','production'):missing.append('STRIPE_MODE')
+    prefix=('sk_test_','rk_test_') if mode=='test' else ('sk_live_','rk_live_')
+    if not isinstance(stripe_key,str) or not stripe_key.startswith(prefix):missing.append('STRIPE_KEY')
+    try:catalog=json.loads(os.environ.get('STRIPE_PRICE_CATALOG','{}'))
+    except (TypeError,ValueError):catalog=None
+    if not valid_catalog(catalog):missing.append('STRIPE_PRICE_CATALOG')
+    return missing

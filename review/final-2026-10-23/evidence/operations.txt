@@ -1,0 +1,30 @@
+Contrôles locaux du 23 octobre 2026 ; aucune recette Hostinger ou production.
+
+Versions observées :
+  Python 3.12.14
+  PHP 8.3.36
+  MariaDB 11.4.13-MariaDB-ubu2404
+  Node v24.19.0
+
+pip check : No broken requirements found.
+php -l : 11 fichiers sans erreur (les 10 fichiers API et le script CLI).
+php /tests/policy.php : 42 vérifications PHP réussies.
+Installation schema.sql sur une base vide, nom aléatoire dédiée au test : OK, 20 tables.
+Base temporaire supprimée après contrôle ; label Docker origin.scope=test vérifié.
+Migration 004 et registry.sql : contenu identique.
+
+Worker CLI réel, chargé depuis une arborescence privée dans le conteneur :
+  Configuration privée temporaire, chmod 600, mêmes paramètres de test sauf HTTPS requis.
+  --status : succès, JSON de compteurs seulement.
+  --retry sur un événement fictif inexistant : succès, rescheduled=0.
+  Aucun appel Stripe ; configuration temporaire supprimée après le contrôle.
+  Aucun secret copié dans le dépôt ni affiché dans les sorties.
+
+Référence AST recalculée depuis le blob original 32d6b68 : conforme à la fixture.
+Travailleur Premium imbriqué : inchangé.
+70 ressources/dépendances d'origine : empreintes identiques.
+git diff --check (CRLF autorisé pour app.py, fichiers de diff exclus) : succès.
+Remote main observé avant partage : b6231d12838b57e18932d620f7f3c2bbd36ca317.
+Aucun workflow de déploiement .github suivi dans cette branche.
+
+Ce sont des contrôles par commande, pas une recette manuelle métier ou visuelle.

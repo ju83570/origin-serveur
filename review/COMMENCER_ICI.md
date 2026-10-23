@@ -1,7 +1,7 @@
 # Dossier de revue indépendante — ORIGIN RÉVOLUTION
 
-> Dossier initial conservé pour l'historique. Pour les correctifs postérieurs à
-> la revue Claude, commencer par [audit-followup/LIRE_EN_PREMIER.md](audit-followup/LIRE_EN_PREMIER.md).
+> Dossier initial conservé pour l'historique. Pour le code corrigé le 23 octobre,
+> commencer par [final-2026-10-23/LIRE_EN_PREMIER.md](final-2026-10-23/LIRE_EN_PREMIER.md).
 
 Préparé le 22 octobre 2026 pour transmission à Claude par le propriétaire du
 projet. **Aucune approbation d'architecture, mise en production ou fusion n'est

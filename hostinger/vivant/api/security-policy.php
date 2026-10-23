@@ -22,6 +22,8 @@ function productFromPrice(string $price, array $prices): ?string {
 }
 
 function accessPolicy(array $subscriptions, array $purchases, array $config, int $now): array {
+    // Compatibilité des tests/politiques historiques uniquement. L'API courante
+    // lit registryEntitlement() : purchases ne constitue plus une autorité.
     $plans=[];$products=[];
     foreach($subscriptions as $s){
         $end=isset($s['current_period_end'])?strtotime($s['current_period_end'].' UTC'):false;

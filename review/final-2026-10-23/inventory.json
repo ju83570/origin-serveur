@@ -1,0 +1,305 @@
+{
+  "phase_base": "dddceecfc7ae77115968c87c2f3f4ce8c5feda86",
+  "branch": "fix/audit-final-2026-10-23",
+  "scope": "Cette phase seulement. Les changements antérieurs restent dans leurs dossiers de revue.",
+  "self_exclusions": [
+    "INVENTAIRE.md",
+    "inventory.json"
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "status": "modified",
+      "purpose": "Accès au dossier final, readiness sécurité, suites et branche courante.",
+      "bytes": 10841,
+      "sha256": "40883d53a2c7447ea73d303201b54f79a61341394e84b5d62b4a9361ae28d35b"
+    },
+    {
+      "path": "app.py",
+      "status": "modified",
+      "purpose": "Sécurité d’accès, défaut fermé et readiness ; aucun calcul/prompt/rendu modifié.",
+      "bytes": 2247870,
+      "sha256": "eed08853e9197eca2c57932d63d8fd60d82649abaf4f44646417b73fafc7836c"
+    },
+    {
+      "path": "docs/FINANCIAL_RULES.md",
+      "status": "added",
+      "purpose": "Règles conservatrices de remboursement, litige et suppression écrites pour la recette.",
+      "bytes": 2927,
+      "sha256": "44f1637744559a786d52a30f946e7b5f6949081953ca3c4611285ae4c9031674"
+    },
+    {
+      "path": "fixtures/security-engine-preservation.json",
+      "status": "modified",
+      "purpose": "Empreintes recalculées depuis la base figée, exceptions d’accès explicites.",
+      "bytes": 507,
+      "sha256": "1adcaf3fef86dbf4f3657ef4b9791c8a0b5f483b799fa7c4d02774bca601f000"
+    },
+    {
+      "path": "hostinger/vivant/api/accounts.php",
+      "status": "added",
+      "purpose": "Réauthentification, rapprochement Stripe et suppression avec conservation comptable.",
+      "bytes": 2556,
+      "sha256": "38ce9052069190593b1543112a69d160c5a631198e68d5000b74660564b25b5d"
+    },
+    {
+      "path": "hostinger/vivant/api/bootstrap.php",
+      "status": "modified",
+      "purpose": "HKDF, AEAD/AAD version 2, lecture historique, droits du registre et CLI HTTPS.",
+      "bytes": 11912,
+      "sha256": "5b27d0d895f9476ebfa7f23909aa3a6adee7a4b6d2af87ed8eb35651c619b793"
+    },
+    {
+      "path": "hostinger/vivant/api/checkout.php",
+      "status": "modified",
+      "purpose": "Commande et tentative préalables ; clients/sessions idempotents avec baux et jetons.",
+      "bytes": 7952,
+      "sha256": "69825a524aeb470097b5b97b876dff221dc97c6927a785054c5d7f88f192e6fb"
+    },
+    {
+      "path": "hostinger/vivant/api/index.php",
+      "status": "modified",
+      "purpose": "Réception durable asynchrone des webhooks et appel à la suppression sécurisée.",
+      "bytes": 9203,
+      "sha256": "804a052bf3e76f1cdc151a0d77b14818a99dbc8f7cbbe52f05bb766d4fd9efc4"
+    },
+    {
+      "path": "hostinger/vivant/api/registry.php",
+      "status": "added",
+      "purpose": "Lecture canonique, lignes/tentatives, droits par produit et garde de futur job.",
+      "bytes": 5108,
+      "sha256": "90f7b3deb17623005905c9530458b4de4e98b19c8e0212b4092133608bd3b13a"
+    },
+    {
+      "path": "hostinger/vivant/api/registry.sql",
+      "status": "added",
+      "purpose": "Schéma additif 004 sans conversion automatique de droits.",
+      "bytes": 5521,
+      "sha256": "23f716aad027f052f449d8010360cf68cb1e9131e3a57aaa912179252e63eca4"
+    },
+    {
+      "path": "hostinger/vivant/api/schema.sql",
+      "status": "modified",
+      "purpose": "Installation vierge incluant le registre normalisé.",
+      "bytes": 9958,
+      "sha256": "61f3f31859860bd6ba14f56944edf8fd2b73c9fb7f429503567217993c152981"
+    },
+    {
+      "path": "hostinger/vivant/api/security-policy.php",
+      "status": "modified",
+      "purpose": "Commentaire de compatibilité : ancien helper sans autorité dans le runtime.",
+      "bytes": 4551,
+      "sha256": "b73b2510ce2a8d91f52135ac46e797fa34c193a9cff8b109590e3240e2496f9c"
+    },
+    {
+      "path": "hostinger/vivant/api/stripe-events.php",
+      "status": "modified",
+      "purpose": "Rapprochement des ressources courantes, événements financiers et effets SQL.",
+      "bytes": 16351,
+      "sha256": "a405aa72f5388893e6d73218b88f591054f35f2609df815babe8446b6745ffc0"
+    },
+    {
+      "path": "hostinger/vivant/api/stripe-inbox.php",
+      "status": "added",
+      "purpose": "Minimisation, chiffrement et unicité de réception, claim/retry/commit sous bail.",
+      "bytes": 6822,
+      "sha256": "866d621c391e5cd654332cba9e59530c8c35dd6cd0ec4cd16f3826e0b389ad1d"
+    },
+    {
+      "path": "pack-docs/CONFIGURATION_TEST.md",
+      "status": "modified",
+      "purpose": "Lien vers migration 004 et exploitation du worker en préproduction.",
+      "bytes": 3676,
+      "sha256": "76520e1bd55eee3f26957018eaec870ac847d02665f3d2c9ac700530d16db64f"
+    },
+    {
+      "path": "pack-docs/migrations/004_registry_inbox.sql",
+      "status": "added",
+      "purpose": "Copie identique de la migration additive 004.",
+      "bytes": 5521,
+      "sha256": "23f716aad027f052f449d8010360cf68cb1e9131e3a57aaa912179252e63eca4"
+    },
+    {
+      "path": "premium_security.py",
+      "status": "modified",
+      "purpose": "Catalogue Stripe approuvé non ambigu et présence/validité de la configuration de sécurité.",
+      "bytes": 4236,
+      "sha256": "64e9170636ad1e4184148f95e70a54657062bbe2ef20e1ae1fe511278a8cabbc"
+    },
+    {
+      "path": "review/COMMENCER_ICI.md",
+      "status": "modified",
+      "purpose": "Renvoi explicite du dossier historique vers les corrections finales.",
+      "bytes": 5368,
+      "sha256": "e40d71fbc7237aac12a4f580ea037d9508c3fe9596c78581b3cc8479c64afca0"
+    },
+    {
+      "path": "review/audit-followup/CROISEMENT_CLAUDE.md",
+      "status": "modified",
+      "purpose": "Statuts historiques conservés avec renvoi à la nouvelle phase.",
+      "bytes": 9511,
+      "sha256": "eb0f3369a11191b3291a230b2ea08e9fca7d255562a13d6366d017bae5bf5895"
+    },
+    {
+      "path": "review/audit-followup/LIRE_EN_PREMIER.md",
+      "status": "modified",
+      "purpose": "Notice historique ; lien vers les correctifs finaux.",
+      "bytes": 2608,
+      "sha256": "35f3552338f650993aa1d7261cdb8f7589177c2b489d9b56acb990b2bc878b19"
+    },
+    {
+      "path": "review/final-2026-10-23/CORRECTIONS.md",
+      "status": "added",
+      "purpose": "Dossier final : corrections, validation, limites ou exploitation de test.",
+      "bytes": 10414,
+      "sha256": "ebe53a9398d7fc3e964bcf4656395b4c5d5ddd60cbcf5a28f1e5bec1e1b51dd2"
+    },
+    {
+      "path": "review/final-2026-10-23/EXPLOITATION_TEST.md",
+      "status": "added",
+      "purpose": "Dossier final : corrections, validation, limites ou exploitation de test.",
+      "bytes": 9054,
+      "sha256": "18b8aa59fea8480b547b24080f141904eb2394abc68e7f4015d5f3fded2eb4c9"
+    },
+    {
+      "path": "review/final-2026-10-23/LIRE_EN_PREMIER.md",
+      "status": "added",
+      "purpose": "Dossier final : corrections, validation, limites ou exploitation de test.",
+      "bytes": 4266,
+      "sha256": "cb6897a66c3a83d387cce9bd6845f98339b1a1217caca00fdb1b5327e56c5e62"
+    },
+    {
+      "path": "review/final-2026-10-23/VALIDATION.md",
+      "status": "added",
+      "purpose": "Dossier final : corrections, validation, limites ou exploitation de test.",
+      "bytes": 5851,
+      "sha256": "4e83bae551517f05196491d8df15789010e43f888066ec12210e927bc2ffe42b"
+    },
+    {
+      "path": "review/final-2026-10-23/evidence/browser.txt",
+      "status": "added",
+      "purpose": "Preuve locale normalisée, sans journal client ni valeur de secret.",
+      "bytes": 1768,
+      "sha256": "3e11b5d41c5a2acf04f0f9b48992ceae923d6f3a7b99fb88e44af09bafd43e15"
+    },
+    {
+      "path": "review/final-2026-10-23/evidence/environment-presence.json",
+      "status": "added",
+      "purpose": "Preuve locale normalisée, sans journal client ni valeur de secret.",
+      "bytes": 432,
+      "sha256": "631ed70799d89edf1e953f3b9175d2a17c13e085fa76291b20417037ff4762ee"
+    },
+    {
+      "path": "review/final-2026-10-23/evidence/integration.txt",
+      "status": "added",
+      "purpose": "Preuve locale normalisée, sans journal client ni valeur de secret.",
+      "bytes": 6176,
+      "sha256": "e04fd6a456f23deee3b326355b2858a215aff3da1b0a85682aec4267b243962f"
+    },
+    {
+      "path": "review/final-2026-10-23/evidence/javascript.txt",
+      "status": "added",
+      "purpose": "Preuve locale normalisée, sans journal client ni valeur de secret.",
+      "bytes": 997,
+      "sha256": "5ded3bee564f2a6a225f823d865cb5470c073bf14a9f26931282998aeb55fb56"
+    },
+    {
+      "path": "review/final-2026-10-23/evidence/operations.txt",
+      "status": "added",
+      "purpose": "Preuve locale normalisée, sans journal client ni valeur de secret.",
+      "bytes": 1532,
+      "sha256": "a5f54d4c9314a0ded90de2390cf8a5d19eddf5c507acc386054306c9d6edd411"
+    },
+    {
+      "path": "review/final-2026-10-23/evidence/python.txt",
+      "status": "added",
+      "purpose": "Preuve locale normalisée, sans journal client ni valeur de secret.",
+      "bytes": 5332,
+      "sha256": "3bbb061dcd75b397eb54454572afdf450622f7a7811dadf2473c71632c44c9dd"
+    },
+    {
+      "path": "review/final-2026-10-23/evidence/validation.json",
+      "status": "added",
+      "purpose": "Preuve locale normalisée, sans journal client ni valeur de secret.",
+      "bytes": 1104,
+      "sha256": "33b2f79c83dfe7496df3b388044883d0f8d87df03ac5ede5cc952f212846ed2b"
+    },
+    {
+      "path": "review/final-2026-10-23/premium-security.diff",
+      "status": "added",
+      "purpose": "Diff minimal app.py depuis la base de cette phase ; document de revue.",
+      "bytes": 2156,
+      "sha256": "ca3944a73905b561676c6ab077051a8cf2943b1cc4012aa8d96fc471c981786f"
+    },
+    {
+      "path": "tests/fixtures/schema-before-final.sql",
+      "status": "added",
+      "purpose": "Schéma figé précédent sans données, fixture de migration.",
+      "bytes": 4436,
+      "sha256": "957c628d409c998f89858fedffe29be1fa6ffea816e8b6f0b69bfe3863890dd9"
+    },
+    {
+      "path": "tests/integration/test_registry_migration.py",
+      "status": "added",
+      "purpose": "Migration sur base fictive dédiée : données conservées, aucun droit inventé.",
+      "bytes": 2119,
+      "sha256": "bb4c27ef6322e73c6ad1e0f38972fa8f2dad7637f6372eb45a13d5f7da77b964"
+    },
+    {
+      "path": "tests/integration/test_vivant_api.py",
+      "status": "modified",
+      "purpose": "39 tests API/services réels PHP/MySQL, fournisseurs simulés et processus concurrents.",
+      "bytes": 41066,
+      "sha256": "6c71b4379576310a57bac8fb6f8756c89742bc4ddcf17f6d356e6a003c5f6b25"
+    },
+    {
+      "path": "tests/php/policy.php",
+      "status": "modified",
+      "purpose": "42 assertions de politiques, chiffrement/rotation/AAD et minimisation.",
+      "bytes": 6885,
+      "sha256": "ba4669075e256a49ed3c09383d9f9fc7da06db862876caafae7a71d4f65758d6"
+    },
+    {
+      "path": "tests/php/service.php",
+      "status": "modified",
+      "purpose": "Adaptateur CLI strictement réservé aux fixtures de test localhost.",
+      "bytes": 5684,
+      "sha256": "119ff5924ceca24c09e078f500a53196b7425288e953f85d6a5b4e6cc874f65a"
+    },
+    {
+      "path": "tests/test_origin.py",
+      "status": "modified",
+      "purpose": "Tests santé/readiness et webhook adaptés au mode fermé.",
+      "bytes": 13286,
+      "sha256": "ca162781749950e267a0a1d838fe0dcd960b145ffd91c2e4f9d87253a5b97d99"
+    },
+    {
+      "path": "tests/test_platform.py",
+      "status": "modified",
+      "purpose": "Préservation du moteur et génération via la façade avec réseau interdit.",
+      "bytes": 7052,
+      "sha256": "bfd03c15d242bb951500f7572cff76c90dbe4a12be0742310f0325fc26bf1732"
+    },
+    {
+      "path": "tests/test_security.py",
+      "status": "modified",
+      "purpose": "11 tests des contrôles Premium, configuration, défaut fermé et catalogue.",
+      "bytes": 7067,
+      "sha256": "25202b2eede55c2fef67df79cef58397dca038949dd417334b9f8ee6ae4ba084"
+    },
+    {
+      "path": "tools/export_review.py",
+      "status": "modified",
+      "purpose": "Export des seuls blobs du commit ; métadonnées dans le dossier final.",
+      "bytes": 3871,
+      "sha256": "28815a7fcd1292d1c183e52f18e2a1a219be7e1142e3f2dafdd962ef6755abf6"
+    },
+    {
+      "path": "tools/vivant/stripe_worker.php",
+      "status": "added",
+      "purpose": "Worker CLI financier privé, status et reprise ciblée ; aucune livraison.",
+      "bytes": 1102,
+      "sha256": "2a2272a504d84f0ef1b2501242b245473c97174d9c4ba6e6c78b1d97bc814fc8"
+    }
+  ]
+}

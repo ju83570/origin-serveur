@@ -1,0 +1,20 @@
+Preuve normalisée Node.
+
+✔ carnet et arbre personnel inclus, sans données fictives par défaut (1.331312ms)
+✔ restauration des deux espaces et compatibilité avec ancien carnet (1.156311ms)
+✔ échec de stockage : restauration des valeurs précédentes (0.662569ms)
+✔ format futur et contenu invalide ne remplacent aucune donnée (0.255477ms)
+✔ une restauration complète sans arbre supprime celui du compte précédent (4.48051ms)
+✔ un export ancien reste importable et conserve l’arbre local (0.37373ms)
+✔ impossibilité de créer le journal : aucune donnée remplacée (0.347841ms)
+✔ récupération après une interruption au milieu de la restauration (0.267599ms)
+✔ une restauration refusée conserve un journal récupérable si le rollback échoue (0.356224ms)
+✔ un arbre personnel corrompu est signalé plutôt qu’omis de la sauvegarde (0.444431ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.593554

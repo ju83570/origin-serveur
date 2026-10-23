@@ -3,9 +3,10 @@
 ## Correctifs après audit Claude
 
 Le dossier courant commence dans
-[review/audit-followup/LIRE_EN_PREMIER.md](review/audit-followup/LIRE_EN_PREMIER.md).
-Il détaille les correctifs de sécurité, les tests, les limites et la migration
-proposée. Aucune fusion ni mise en production n'est réalisée.
+[review/final-2026-10-23/LIRE_EN_PREMIER.md](review/final-2026-10-23/LIRE_EN_PREMIER.md).
+Il détaille le registre des droits, les correctifs Stripe, le worker privé,
+les tests, les limites et la migration 004. Les dossiers antérieurs restent
+conservés pour l'historique. Aucune fusion ni mise en production n'est réalisée.
 
 Une démonstration transportable est fournie dans `demo-visual/` : Miroir,
 parcours gratuit, préparation consentie du dossier Premium et exemples PDF
@@ -98,13 +99,23 @@ automatique en simulation lorsqu'une clé manque, ni de fausse clé enregistrée
 | Route | Réponse | Signification |
 | --- | --- | --- |
 | `GET /health` | 200, `status: ok` | Flask répond ; aucun service externe nécessaire |
-| `GET /ready` | 503, `status: degraded`, `missing` | Configuration externe incomplète |
-| `GET /ready` | 200, `status: configured` | Les trois paramètres sont présents ; leur validité distante n'est pas testée |
+| `GET /ready` | 503, `status: degraded`, `missing` | Configuration des services ou de sécurité incomplète |
+| `GET /ready` | 200, `status: configured` | Paramètres des services et politique de sécurité configurés ; validité distante non testée |
 
 `external_services_checked: false` rappelle que `/ready` n'appelle pas les API.
 Un contrôle de supervision qui doit vérifier la configuration externe doit
 maintenant utiliser `/ready`. Le serveur de démo annonce explicitement `mode: demo`
 et des services simulés sur ses propres routes de santé.
+
+Le moteur exige un `WEBHOOK_SECRET` et un `CODES_SECRET` dédiés d'au moins
+32 caractères, `ENFORCE_ACCESS=1` (valeur par défaut), un `STRIPE_MODE` explicite,
+une clé Stripe du même environnement et un `STRIPE_PRICE_CATALOG` approuvé.
+Ce catalogue JSON associe chaque offre existante à son Price ID unique, son
+montant entier en centimes et sa devise. Aucun prix nouveau n'est inventé.
+Les valeurs doivent être fournies par un gestionnaire de secrets, jamais dans
+le dépôt. L'absence de configuration bloque le webhook ; elle n'active aucune
+simulation. Les consommations de paiement en mémoire et de codes dans `/tmp`
+restent des limites historiques à résoudre dans le contrat PHP → Python.
 
 Le point d'entrée de production reste `app:app` et son webhook est conservé.
 Le webhook confirme le lancement d'un thread, pas la livraison du livret.
@@ -183,6 +194,7 @@ PHP natif, une base dédiée et une configuration privée : voir
 node --test tests/js/storage.test.cjs
 docker exec origin-vivant-api-test php /tests/policy.php
 /workspace/.venvs/origin-serveur/bin/python tests/integration/test_vivant_api.py
+/workspace/.venvs/origin-serveur/bin/python -m unittest discover -s tests/integration -v
 ```
 
 Pour les tests navigateur, installer `requirements-browser.txt`. Les commandes
@@ -193,6 +205,7 @@ machine. La façade et la stack PHP de test doivent être démarrées.
 /workspace/.venvs/origin-serveur/bin/pip install -r requirements-browser.txt
 XDG_CACHE_HOME=/workspace/.cache PYTHONDONTWRITEBYTECODE=1 \
   /workspace/.venvs/origin-serveur/bin/python tests/browser/test_platform_browser.py
+/workspace/.venvs/origin-serveur/bin/python -m unittest discover -s tests/browser -v
 ```
 
 Les tests de comptes utilisent des utilisateurs fictifs vérifiés dans la base
@@ -203,5 +216,7 @@ Pour arrêter et supprimer uniquement cette stack jetable :
 python3 tools/vivant/local_stack.py stop
 ```
 
-La branche `feat/origin-vivant-integration-test` contient les modifications de
-travail, sans merge, push ni déploiement.
+La branche `fix/audit-final-2026-10-23` contient les corrections finales pour
+revue. Son partage Git ne constitue pas une fusion ou un déploiement.
+Les procédures de migration et du worker CLI sont dans
+[EXPLOITATION_TEST.md](review/final-2026-10-23/EXPLOITATION_TEST.md).

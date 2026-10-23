@@ -31,6 +31,7 @@ class ApiTests(unittest.TestCase):
         if docker('inspect','-f','{{index .Config.Labels "origin.scope"}}',PHP) != 'test':
             raise RuntimeError('Ces tests nécessitent la stack locale dédiée')
         sql('DELETE FROM rate_limits; DELETE FROM rate_limit_counters;')
+        sql('CREATE TABLE IF NOT EXISTS test_provider_calls(id BIGINT AUTO_INCREMENT PRIMARY KEY,scope VARCHAR(64),method VARCHAR(10),route VARCHAR(200),idempotency_key VARCHAR(150));')
 
     def setUp(self):
         self.email=f'test-{secrets.token_hex(6)}@example.invalid'
@@ -56,7 +57,7 @@ class ApiTests(unittest.TestCase):
         return self.session.post(BASE,params={'op':op},json=data,headers={'X-CSRF-Token':self.csrf} if csrf else {},timeout=10)
 
     def event(self,event_id,uid=None,customer=None):
-        return {'id':event_id,'type':'checkout.session.completed','livemode':False,'data':{'object':{
+        return {'id':event_id,'created':int(time.time()),'type':'checkout.session.completed','livemode':False,'data':{'object':{
             'id':'cs_test_fixture_'+secrets.token_hex(6),'client_reference_id':str(uid or self.uid),
             'customer':customer,'mode':'payment','payment_status':'paid','metadata':{'plan':'mirror'}}}}
 
@@ -115,19 +116,19 @@ class ApiTests(unittest.TestCase):
         order,session,items=self.order()
         event=self.fixture_event('checkout.session.completed',session)
         # Vrai endpoint signé, Stripe déconnecté : aucun faux succès.
-        self.assertEqual(self.webhook(event).status_code,503)
-        self.assertEqual(sql(f"SELECT status FROM stripe_events WHERE event_id='{event['id']}';"),'received')
+        self.assertEqual(self.webhook(event).status_code,200)
+        self.assertEqual(sql(f"SELECT status FROM stripe_inbox WHERE event_id='{event['id']}';"),'received')
         responses=self.checkout_responses(session,items)
         wrong=deepcopy(responses);wrong[f"checkout/sessions/{session['id']}/line_items"]['data'][0]['price']['id']='price_WrongFixture'
         self.assertFalse(self.service('event',event=event,responses=wrong)['ok'])
-        self.assertEqual(sql(f"SELECT status FROM stripe_events WHERE event_id='{event['id']}';"),'received')
+        self.assertEqual(sql(f"SELECT status FROM stripe_inbox WHERE event_id='{event['id']}';"),'retry')
         self.assertEqual(sql(f"SELECT status FROM orders WHERE order_id='{order}';"),'pending')
         self.assertEqual(self.service('event',event=event,responses=responses)['status'],'processed')
         self.assertTrue(self.service('event',event=event,responses=responses)['duplicate'])
 
     def test_webhook_before_checkout_response_can_bind_the_canonical_order(self):
         oid,session,items=self.order()
-        sql(f"UPDATE orders SET stripe_session_id=NULL WHERE order_id='{oid}';")
+        sql(f"UPDATE orders SET stripe_session_id=NULL WHERE order_id='{oid}'; UPDATE payment_attempts SET stripe_session_id=NULL WHERE order_id='{oid}';")
         result=self.service('event',event=self.fixture_event('checkout.session.completed',session),responses=self.checkout_responses(session,items))
         self.assertEqual(result['status'],'processed')
         self.assertEqual(sql(f"SELECT stripe_session_id FROM orders WHERE order_id='{oid}';"),session['id'])
@@ -143,7 +144,7 @@ class ApiTests(unittest.TestCase):
         return json.loads(docker('exec','-i',PHP,'php','/tests/service.php',input=json.dumps(data)))
 
     def fixture_event(self,kind,obj):
-        return {'id':'evt_fixture_'+secrets.token_hex(8),'type':kind,'livemode':False,'data':{'object':obj}}
+        return {'id':'evt_fixture_'+secrets.token_hex(8),'created':int(time.time()),'type':kind,'livemode':False,'data':{'object':obj}}
 
     def order(self,product='mirror',status='pending'):
         oid=str(uuid4());sid='cs_test_fixture_'+secrets.token_hex(8);customer='cus_fixture_'+secrets.token_hex(8)
@@ -151,12 +152,20 @@ class ApiTests(unittest.TestCase):
         price={'mirror':'price_MirrorFixture','individual':'price_IndividualFixture','family':'price_FamilyFixture'}[product]
         # Centimes de fixture UNIQUEMENT, ne définissent aucun tarif commercial.
         sql(f"INSERT INTO orders(order_id,user_id,product,environment,price_id,amount,currency,status,stripe_customer_id,stripe_session_id,created_at,expires_at) VALUES('{oid}',{self.uid},'{product}','test','{price}',1000,'eur','{status}','{customer}','{sid}',UTC_TIMESTAMP(),DATE_ADD(UTC_TIMESTAMP(),INTERVAL 1 DAY));")
+        item=str(uuid4());attempt=str(uuid4())
+        sql(f"INSERT INTO order_items(order_item_id,order_id,environment,sku,price_id,unit_amount,quantity,currency) VALUES('{item}','{oid}','test','{product}','{price}',1000,1,'eur'); INSERT INTO payment_attempts(attempt_id,order_id,environment,idempotency_key,stripe_customer_id,stripe_session_id,created_at) VALUES('{attempt}','{oid}','test','origin-checkout-{oid}','{customer}','{sid}',UTC_TIMESTAMP());")
         session={'id':sid,'livemode':False,'client_reference_id':oid,'customer':customer,'metadata':{'origin_order_id':oid,'plan':product},'mode':'payment' if product=='mirror' else 'subscription','payment_status':'paid','status':'complete','amount_total':1000,'currency':'eur','payment_intent':'pi_fixture_'+secrets.token_hex(8)}
         items={'has_more':False,'data':[{'quantity':1,'amount_total':1000,'price':{'id':price,'currency':'eur','unit_amount':1000}}]}
         return oid,session,items
 
     def checkout_responses(self,session,items):
-        return {'checkout/sessions/'+session['id']:session,'checkout/sessions/'+session['id']+'/line_items':items}
+        charge=self.charge(session)
+        return {'checkout/sessions/'+session['id']:session,'checkout/sessions/'+session['id']+'/line_items':items,
+                'payment_intents/'+session['payment_intent']:{'id':session['payment_intent'],'livemode':False,'customer':session['customer'],'currency':'eur','amount':1000,'status':'succeeded','latest_charge':charge['id']},'charges/'+charge['id']:charge}
+
+    def charge(self,session,refund=0,disputed=False):
+        return {'id':session['payment_intent'].replace('pi_','ch_',1),'livemode':False,'payment_intent':session['payment_intent'],'customer':session['customer'],'currency':'eur','amount':1000,'amount_refunded':refund,'paid':True,'disputed':disputed}
+
 
     def test_revision_conflicts_and_recovery_versions(self):
         first=self.backup('première')
@@ -201,8 +210,9 @@ class ApiTests(unittest.TestCase):
         event=self.fixture_event('checkout.session.async_payment_succeeded',session)
         self.assertEqual(self.service('event',event=event,responses=self.checkout_responses(session,items))['status'],'processed')
         rights=self.service('rights');self.assertTrue(rights['mirror_paid']);self.assertEqual(rights['features'],['mirror_deep'])
-        refund=self.fixture_event('charge.refunded',{'payment_intent':session['payment_intent'],'amount_refunded':1})
-        self.assertEqual(self.service('event',event=refund,responses={})['status'],'processed')
+        charge=self.charge(session,refund=1)
+        refund=self.fixture_event('charge.refunded',charge)
+        self.assertEqual(self.service('event',event=refund,responses={'charges/'+charge['id']:charge})['status'],'processed')
         self.assertFalse(self.service('rights')['mirror_paid'])
         late=self.fixture_event('checkout.session.completed',session)
         self.assertEqual(self.service('event',event=late,responses={})['status'],'processed')
@@ -290,6 +300,238 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(second['order_id'],oid)
         post=next(c for c in second['fixture_calls'] if c['method']=='POST')
         self.assertEqual(post['idempotency'],'origin-checkout-'+oid)
+
+    def pay(self,product='mirror'):
+        oid,session,items=self.order(product)
+        result=self.service('event',event=self.fixture_event('checkout.session.completed',session),responses=self.checkout_responses(session,items))
+        self.assertEqual(result.get('status'),'processed',result)
+        return oid,session,items
+
+    def test_mirror_order_never_grants_a_solo_job_or_cloud_right(self):
+        oid,session,items=self.pay()
+        item=sql(f"SELECT order_item_id FROM order_items WHERE order_id='{oid}';")
+        self.assertFalse(self.service('job_auth',item=item,offer='solo')['allowed'])
+        self.assertEqual(self.service('rights')['features'],['mirror_deep'])
+        self.assertEqual(int(sql(f'SELECT COUNT(*) FROM purchases WHERE user_id={self.uid};')),0)
+
+    def test_legacy_purchase_and_order_columns_have_no_authority(self):
+        oid,session,items=self.order()
+        sql(f"INSERT INTO purchases(user_id,order_id,product,stripe_session_id,status,created_at) VALUES({self.uid},'{oid}','mirror','cs_fixture_legacy_{secrets.token_hex(5)}','paid',UTC_TIMESTAMP()); UPDATE orders SET product='family',amount=1 WHERE order_id='{oid}';")
+        self.assertEqual(self.service('rights')['features'],[])
+        result=self.service('event',event=self.fixture_event('checkout.session.completed',session),responses=self.checkout_responses(session,items))
+        self.assertEqual(result['status'],'processed')
+        self.assertEqual(self.service('rights')['features'],['mirror_deep'])
+
+    def test_async_failure_and_expiry_cannot_override_a_later_paid_session(self):
+        for kind in ['checkout.session.async_payment_failed','checkout.session.expired']:
+            oid,session,items=self.order();unpaid={**session,'payment_status':'unpaid','status':'expired' if kind.endswith('expired') else 'complete'}
+            result=self.service('event',event=self.fixture_event(kind,unpaid),responses=self.checkout_responses(unpaid,items))
+            self.assertEqual(result['status'],'processed');self.assertFalse(self.service('rights')['mirror_paid'])
+            paid=self.service('event',event=self.fixture_event('checkout.session.async_payment_succeeded',session),responses=self.checkout_responses(session,items))
+            self.assertEqual(paid['status'],'processed');self.assertTrue(self.service('rights')['mirror_paid'])
+            # Ancien contenu signé ; relecture courante payée, aucun retrait.
+            self.assertEqual(self.service('event',event=self.fixture_event(kind,unpaid),responses=self.checkout_responses(session,items))['status'],'processed')
+            self.assertEqual(sql(f"SELECT status FROM orders WHERE order_id='{oid}';"),'paid')
+            # Isoler l'itération suivante : cet achat-ci n'est plus un droit actif.
+            sql(f"UPDATE orders SET status='revoked' WHERE order_id='{oid}';")
+
+    def test_refund_received_before_checkout_never_grants_access(self):
+        oid,session,items=self.order();charge=self.charge(session,refund=1000)
+        refund=self.fixture_event('charge.refunded',charge)
+        self.assertEqual(self.service('event',event=refund,responses={'charges/'+charge['id']:charge})['status'],'ignored')
+        resources=self.checkout_responses(session,items);resources['charges/'+charge['id']]=charge
+        self.assertEqual(self.service('event',event=self.fixture_event('checkout.session.completed',session),responses=resources)['status'],'processed')
+        self.assertEqual(sql(f"SELECT status FROM orders WHERE order_id='{oid}';"),'refunded')
+        self.assertFalse(self.service('rights')['mirror_paid'])
+
+    def test_partial_refund_is_monotonic_and_never_reactivated(self):
+        oid,session,items=self.pay();charge=self.charge(session,refund=500)
+        for amount in [500,100]:
+            current={**charge,'amount_refunded':amount}
+            self.assertEqual(self.service('event',event=self.fixture_event('charge.refunded',current),responses={'charges/'+charge['id']:current})['status'],'processed')
+        self.assertEqual(int(sql(f"SELECT refunded_amount FROM payment_attempts WHERE order_id='{oid}';")),500)
+        self.assertFalse(self.service('rights')['mirror_paid'])
+
+    def dispute(self,session,dispute_id,status):
+        charge=self.charge(session,disputed=status not in ['won','warning_closed'])
+        dispute={'id':dispute_id,'charge':charge['id'],'livemode':False,'status':status}
+        return dispute,{'disputes/'+dispute_id:dispute,'charges/'+charge['id']:charge}
+
+    def test_dispute_events_use_current_state_and_won_can_restore(self):
+        oid,session,items=self.pay();did='dp_fixture_'+secrets.token_hex(8)
+        for kind,status,allowed in [('charge.dispute.created','needs_response',False),('charge.dispute.updated','under_review',False),('charge.dispute.funds_withdrawn','under_review',False),('charge.dispute.funds_reinstated','under_review',False),('charge.dispute.closed','won',True)]:
+            with self.subTest(event=kind):
+                dispute,responses=self.dispute(session,did,status)
+                self.assertEqual(self.service('event',event=self.fixture_event(kind,dispute),responses=responses)['status'],'processed')
+                self.assertEqual(self.service('rights')['mirror_paid'],allowed)
+        old,_=self.dispute(session,did,'needs_response');current,responses=self.dispute(session,did,'won')
+        self.service('event',event=self.fixture_event('charge.dispute.created',old),responses=responses)
+        self.assertTrue(self.service('rights')['mirror_paid'])
+
+    def test_lost_dispute_and_refund_prevent_reactivation(self):
+        oid,session,items=self.pay();did='dp_fixture_'+secrets.token_hex(8)
+        lost,responses=self.dispute(session,did,'lost')
+        self.service('event',event=self.fixture_event('charge.dispute.closed',lost),responses=responses)
+        old,responses=self.dispute(session,did,'under_review')
+        self.service('event',event=self.fixture_event('charge.dispute.updated',old),responses=responses)
+        self.assertFalse(self.service('rights')['mirror_paid'])
+        self.assertEqual(sql(f"SELECT status FROM payment_disputes WHERE dispute_id='{did}';"),'lost')
+
+    def test_inbox_receipt_is_durable_encrypted_minimized_and_has_no_right_effect(self):
+        oid,session,items=self.order();event=self.fixture_event('checkout.session.completed',{**session,'customer_email':'private@example.invalid','family_note':'do not persist'})
+        self.assertEqual(self.webhook(event).status_code,200)
+        sealed=sql(f"SELECT sealed_payload FROM stripe_inbox WHERE event_id='{event['id']}';")
+        self.assertTrue(sealed.startswith('ov2:'));self.assertNotIn('private@example.invalid',sealed)
+        self.assertEqual(sql(f"SELECT status FROM stripe_inbox WHERE event_id='{event['id']}';"),'received')
+        self.assertFalse(self.service('rights')['mirror_paid'])
+        # Ajout de données non métier ne change pas l'identité minimisée.
+        self.assertTrue(self.webhook(event).json()['duplicate'])
+        changed=deepcopy(event);changed['data']['object']['id']='cs_test_fixture_changed'
+        self.assertEqual(self.webhook(changed).status_code,400)
+
+    def test_two_workers_process_one_inbox_event_once_without_network_lock(self):
+        oid,session,items=self.order();event=self.fixture_event('checkout.session.completed',session)
+        self.service('receive',event=event);scope=secrets.token_hex(12)
+        def run():return self.service('work',event=event,responses=self.checkout_responses(session,items),scope=scope,delay_ms=150)
+        with ThreadPoolExecutor(max_workers=2) as pool:results=list(pool.map(lambda _:run(),range(2)))
+        self.assertEqual(sum(r['worked'] for r in results),1,results)
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM test_provider_calls WHERE scope='{scope}';")),4)
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM outbox WHERE aggregate_id='{oid}';")),1)
+        self.assertTrue(self.service('rights')['mirror_paid'])
+
+    def test_crashed_claim_can_be_recovered_after_lease_expiry(self):
+        oid,session,items=self.order();event=self.fixture_event('checkout.session.completed',session)
+        self.service('receive',event=event);self.assertTrue(self.service('claim',event=event)['claim'])
+        self.assertFalse(self.service('work',event=event,responses={})['worked'])
+        sql(f"UPDATE stripe_inbox SET lease_until=DATE_SUB(UTC_TIMESTAMP(),INTERVAL 1 SECOND) WHERE event_id='{event['id']}';")
+        self.assertEqual(self.service('work',event=event,responses=self.checkout_responses(session,items))['status'],'processed')
+        self.assertEqual(int(sql(f"SELECT attempts FROM stripe_inbox WHERE event_id='{event['id']}';")),2)
+
+    def test_expired_worker_token_cannot_commit_rights(self):
+        oid,session,items=self.order();event=self.fixture_event('checkout.session.completed',session)
+        self.service('receive',event=event)
+        result=self.service('work',event=event,responses=self.checkout_responses(session,items),steal_lease=True)
+        self.assertFalse(result['ok']);self.assertFalse(self.service('rights')['mirror_paid'])
+        self.assertEqual(sql(f"SELECT status FROM orders WHERE order_id='{oid}';"),'pending')
+        self.assertEqual(sql(f"SELECT status FROM stripe_inbox WHERE event_id='{event['id']}';"),'processing')
+
+    def test_worker_failure_is_retriable_and_respects_backoff(self):
+        oid,session,items=self.order();event=self.fixture_event('checkout.session.completed',session)
+        self.service('receive',event=event)
+        failed=self.service('work',event=event,responses={});self.assertFalse(failed['ok'])
+        self.assertEqual(sql(f"SELECT status FROM stripe_inbox WHERE event_id='{event['id']}';"),'retry')
+        self.assertFalse(self.service('work',event=event,responses=self.checkout_responses(session,items))['worked'])
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM outbox WHERE aggregate_id='{oid}';")),0)
+
+    def test_parallel_checkout_preparation_creates_one_customer_and_session(self):
+        responses=self.checkout_fixture();sql(f'UPDATE users SET stripe_customer_id=NULL WHERE id={self.uid};')
+        responses['customers']={'id':'cus_fixture_'+secrets.token_hex(8)}
+        scope=secrets.token_hex(12)
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            first=pool.submit(self.service,'checkout',responses=responses,scope=scope,delay_ms=500)
+            for _ in range(40):
+                if int(sql(f"SELECT COUNT(*) FROM test_provider_calls WHERE scope='{scope}' AND route='customers';")):break
+                time.sleep(.025)
+            second=pool.submit(self.service,'checkout',responses=responses,scope=scope,delay_ms=500)
+            a,b=first.result(),second.result()
+        self.assertTrue(a['ok'],a);self.assertEqual(b['code'],'checkout_busy',b)
+        retry=self.service('checkout',responses=responses,scope=scope)
+        self.assertEqual(retry['order_id'],a['order_id'])
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM test_provider_calls WHERE scope='{scope}' AND method='POST' AND route='customers';")),1)
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM test_provider_calls WHERE scope='{scope}' AND method='POST' AND route='checkout/sessions';")),1)
+
+    def test_parallel_checkout_with_existing_customer_creates_one_session(self):
+        responses=self.checkout_fixture();scope=secrets.token_hex(12)
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            first=pool.submit(self.service,'checkout',responses=responses,scope=scope,delay_ms=500)
+            for _ in range(40):
+                if int(sql(f"SELECT COUNT(*) FROM test_provider_calls WHERE scope='{scope}' AND route='checkout/sessions';")):break
+                time.sleep(.025)
+            second=self.service('checkout',responses=responses,scope=scope)
+            a=first.result()
+        self.assertTrue(a['ok']);self.assertEqual(second['code'],'checkout_busy')
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM test_provider_calls WHERE scope='{scope}' AND route='checkout/sessions' AND method='POST';")),1)
+
+    def test_copying_backup_to_another_account_is_rejected(self):
+        self.call('save',{'state':self.backup(),'base_revision':0})
+        other='other-'+secrets.token_hex(8)+'@example.invalid'
+        sql(f"INSERT INTO users(email,password_hash,privacy_version,privacy_accepted_at,created_at) VALUES('{other}','unused','test',UTC_TIMESTAMP(),UTC_TIMESTAMP());")
+        uid=int(sql(f"SELECT id FROM users WHERE email='{other}';"))
+        sql(f'INSERT INTO user_state(user_id,sealed_payload,revision,updated_at) SELECT {uid},sealed_payload,revision,updated_at FROM user_state WHERE user_id={self.uid};')
+        self.assertEqual(self.service('load',uid=uid)['code'],'backup_unreadable')
+        self.assertIsNotNone(self.service('load')['state'])
+
+    def test_account_deletion_keeps_accounting_and_removes_personal_data(self):
+        oid,session,items=self.pay();self.call('save',{'state':self.backup(),'base_revision':0})
+        result=self.service('delete',password=self.password,billing={'has_more':False,'data':[]})
+        self.assertTrue(result['ok'])
+        self.assertEqual(sql(f"SELECT user_id IS NULL FROM orders WHERE order_id='{oid}';"),'1')
+        for table in ['order_items','payment_attempts']:
+            self.assertEqual(int(sql(f"SELECT COUNT(*) FROM {table} WHERE order_id='{oid}';")),1)
+        for table in ['entitlements','user_state','user_state_history','customer_bindings']:
+            self.assertEqual(int(sql(f'SELECT COUNT(*) FROM {table} WHERE user_id={self.uid};')),0)
+        row=sql(f"SELECT product,amount,currency,status FROM orders WHERE order_id='{oid}';")
+        self.assertNotIn(self.email,row);self.assertIn('paid',row)
+        # Les événements comptables restent traitables après suppression,
+        # sans recréer le compte ni ses droits.
+        charge=self.charge(session,refund=1000)
+        result=self.service('event',uid=0,event=self.fixture_event('charge.refunded',charge),responses={'charges/'+charge['id']:charge})
+        self.assertEqual(result['status'],'processed')
+        self.assertEqual(sql(f"SELECT status FROM orders WHERE order_id='{oid}';"),'refunded')
+        self.assertEqual(int(sql(f'SELECT COUNT(*) FROM users WHERE id={self.uid};')),0)
+        self.assertEqual(int(sql(f'SELECT COUNT(*) FROM entitlements WHERE user_id={self.uid};')),0)
+
+    def test_remote_active_billing_and_unknown_page_prevent_deletion(self):
+        self.checkout_fixture()
+        for remote in [{'has_more':True,'data':[]},{'has_more':False,'data':[{'status':'active'}]}]:
+            denied=self.service('delete',password=self.password,billing=remote)
+            self.assertFalse(denied['ok'])
+            self.assertEqual(int(sql(f'SELECT COUNT(*) FROM users WHERE id={self.uid};')),1)
+
+    def test_dispute_won_cannot_restore_a_partially_refunded_order(self):
+        oid,session,items=self.pay();did='dp_fixture_'+secrets.token_hex(8)
+        opened,responses=self.dispute(session,did,'needs_response')
+        self.service('event',event=self.fixture_event('charge.dispute.created',opened),responses=responses)
+        charge=self.charge(session,refund=200,disputed=True)
+        self.service('event',event=self.fixture_event('charge.refunded',charge),responses={'charges/'+charge['id']:charge})
+        won,responses=self.dispute(session,did,'won')
+        self.service('event',event=self.fixture_event('charge.dispute.closed',won),responses=responses)
+        self.assertFalse(self.service('rights')['mirror_paid'])
+        self.assertEqual(sql(f"SELECT status FROM orders WHERE order_id='{oid}';"),'refunded')
+
+    def test_same_event_id_is_separate_in_each_environment(self):
+        oid,session,items=self.order();event=self.fixture_event('checkout.session.completed',session)
+        self.assertTrue(self.service('receive',event=event)['queued'])
+        live=deepcopy(event);live['livemode']=True;live['data']['object']['livemode']=True
+        self.assertTrue(self.service('receive',event=live,environment='production')['queued'])
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM stripe_inbox WHERE event_id='{event['id']}';")),2)
+        self.assertEqual(self.webhook(live).status_code,400)
+        self.assertEqual(self.service('work',event=event,responses=self.checkout_responses(session,items))['status'],'processed')
+        self.assertEqual(sql(f"SELECT status FROM stripe_inbox WHERE event_id='{event['id']}' AND environment='production';"),'received')
+
+    def test_job_schema_prevents_duplicate_revision_and_preserves_financial_records(self):
+        oid,session,items=self.order();item=sql(f"SELECT order_item_id FROM order_items WHERE order_id='{oid}';")
+        job=str(uuid4())
+        sql(f"INSERT INTO jobs(job_id,order_item_id,revision,environment,created_at) VALUES('{job}','{item}',1,'test',UTC_TIMESTAMP());")
+        with self.assertRaises(RuntimeError):
+            sql(f"INSERT INTO jobs(job_id,order_item_id,revision,environment,created_at) VALUES('{uuid4()}','{item}',1,'test',UTC_TIMESTAMP());")
+        with self.assertRaises(RuntimeError):sql(f"DELETE FROM orders WHERE order_id='{oid}';")
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM jobs WHERE order_item_id='{item}';")),1)
+
+    def test_refunded_subscription_invoice_is_linked_even_with_an_unknown_intent(self):
+        oid,session,items=self.order('individual');sid='sub_fixture_'+secrets.token_hex(8);session['subscription']=sid
+        sub={'id':sid,'livemode':False,'customer':session['customer'],'metadata':{'origin_order_id':oid},'status':'active',
+             'items':{'has_more':False,'data':[{'quantity':1,'price':{'id':'price_IndividualFixture'},'current_period_end':int(time.time())+3600}]}}
+        resources={**self.checkout_responses(session,items),'subscriptions/'+sid:sub}
+        self.service('event',event=self.fixture_event('checkout.session.completed',session),responses=resources)
+        self.assertEqual(self.service('rights')['plans'],['individual'])
+        invoice='in_fixture_'+secrets.token_hex(8)
+        charge={**self.charge(session,refund=250),'id':'ch_renewal_'+secrets.token_hex(8),'payment_intent':'pi_renewal_'+secrets.token_hex(8),'invoice':invoice}
+        refund=self.fixture_event('charge.refunded',charge)
+        responses={'charges/'+charge['id']:charge,'invoices/'+invoice:{'id':invoice,'subscription':sid},'subscriptions/'+sid:sub}
+        self.assertEqual(self.service('event',event=refund,responses=responses)['status'],'processed')
+        self.assertEqual(self.service('rights')['features'],[])
+        self.assertEqual(int(sql(f"SELECT COUNT(*) FROM payment_adjustments WHERE order_id='{oid}';")),1)
 
 
 if __name__=='__main__':

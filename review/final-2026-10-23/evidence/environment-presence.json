@@ -1,0 +1,15 @@
+{
+  "scope": "Shell cloud uniquement ; pas la configuration déployée. Valeurs jamais affichées.",
+  "present_and_nonempty": {
+    "WEBHOOK_SECRET": false,
+    "CODES_SECRET": false,
+    "STRIPE_KEY": false,
+    "STRIPE_PRICE_CATALOG": false,
+    "STRIPE_MODE": false,
+    "ENFORCE_ACCESS": false,
+    "ANTHROPIC_API_KEY": false,
+    "BREVO_SMTP_KEY": false,
+    "EMAIL_DEST": false
+  },
+  "deployed_environment_checked": false
+}

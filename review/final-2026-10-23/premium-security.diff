@@ -1,0 +1,35 @@
+diff --git a/app.py b/app.py
+index d27a30a..bbeaec3 100644
+--- a/app.py
++++ b/app.py
+@@ -6260,11 +6260,11 @@ def add_cors(response):
+ #  + petit fichier ; remis à zéro si le serveur est réinstallé : le code figure aussi dans chaque mail).
+ # ─────────────────────────────────────────────────────────────
+ import hmac, hashlib, secrets, html as _html_codes
+-from premium_security import strong_secret, configured_payment_matches
++from premium_security import strong_secret, configured_payment_matches, security_missing
+ ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
+ OWNER_CODE = os.environ.get("OWNER_CODE", "")          # accès libre réservé à Julien (illimité, toutes offres)
+ STRIPE_KEY = os.environ.get("STRIPE_KEY", "")          # clé restreinte en lecture seule (Checkout Sessions)
+-ENFORCE_ACCESS = os.environ.get("ENFORCE_ACCESS", "") == "1"   # 1 = formulaire fermé sans code ni paiement vérifié
++ENFORCE_ACCESS = os.environ.get("ENFORCE_ACCESS", "1") == "1"   # 1 = formulaire fermé sans code ni paiement vérifié
+ _stripe_usages = {}
+ 
+ def _est_code_proprietaire(code):
+@@ -6415,6 +6415,7 @@ def readiness():
+         'BREVO_SMTP_KEY': BREVO_SMTP_KEY,
+         'EMAIL_DEST': EMAIL_DEST,
+     }.items() if not val]
++    missing.extend(security_missing(WEBHOOK_SECRET, _CODES_SECRET, ENFORCE_ACCESS, STRIPE_KEY))
+     return jsonify({
+         'status': 'configured' if not missing else 'degraded',
+         'service': 'ORIGIN Generator',
+@@ -6425,7 +6426,7 @@ def readiness():
+ @app.route('/webhook', methods=['POST'])
+ def webhook():
+     try:
+-        if not strong_secret(WEBHOOK_SECRET):
++        if not strong_secret(WEBHOOK_SECRET) or not ENFORCE_ACCESS:
+             return jsonify({'status': 'error', 'message': 'Authentification du moteur non configurée'}), 503
+         if not hmac.compare_digest(request.headers.get('X-ORIGIN-SECRET', '').encode(), WEBHOOK_SECRET.encode()):
+             return jsonify({'status': 'error', 'message': 'Signature webhook invalide'}), 401

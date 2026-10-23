@@ -50,7 +50,7 @@ def export(destination):
             info=zipfile.ZipInfo('origin-serveur/'+name,now.timetuple()[:6]);info.external_attr=mode<<16;info.compress_type=zipfile.ZIP_DEFLATED
             z.writestr(info,data)
         for name,payload in [('EXPORT_MANIFEST.json',manifest),('EXPORT_SECURITY.json',security)]:
-            z.writestr('origin-serveur/review/audit-followup/'+name,json.dumps(payload,ensure_ascii=False,indent=2)+'\n')
+            z.writestr('origin-serveur/review/final-2026-10-23/'+name,json.dumps(payload,ensure_ascii=False,indent=2)+'\n')
     digest=hashlib.sha256(path.read_bytes()).hexdigest()
     with zipfile.ZipFile(path) as z:
         assert z.testzip() is None

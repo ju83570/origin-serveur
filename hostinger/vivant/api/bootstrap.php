@@ -5,6 +5,7 @@ ini_set('display_errors', '0');
 error_reporting(E_ALL);
 require_once __DIR__.'/payment-policy.php';
 require_once __DIR__.'/security-policy.php';
+require_once __DIR__.'/registry.php';
 $configFile = getenv('ORIGIN_VIVANT_CONFIG') ?: dirname((string)($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__,3))) . '/origin-vivant-config.php';
 if (!is_file($configFile)) {
     http_response_code(503);
@@ -15,7 +16,7 @@ if (!is_file($configFile)) {
 $cfg = require $configFile;
 $originDatabase = null;
 if (!is_array($cfg)) { http_response_code(503); exit; }
-if (!empty($cfg['https_required']) && (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') && (!in_array((string)($_SERVER['REMOTE_ADDR'] ?? ''), (array)($cfg['trusted_proxy_ips'] ?? []), true) || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') !== 'https'))) {
+if (PHP_SAPI !== 'cli' && !empty($cfg['https_required']) && (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') && (!in_array((string)($_SERVER['REMOTE_ADDR'] ?? ''), (array)($cfg['trusted_proxy_ips'] ?? []), true) || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') !== 'https'))) {
     http_response_code(403); header('Content-Type: application/json'); echo '{"error":"HTTPS requis"}'; exit;
 }
 header('X-Content-Type-Options: nosniff');
@@ -31,7 +32,7 @@ function rollbackOpenTransaction():void { global $originDatabase; if($originData
 function query(string $sql, array $params=[]):PDOStatement { $st=db()->prepare($sql);$st->execute($params);return $st; }
 function input():array { $raw=file_get_contents('php://input'); if (strlen($raw)>1048576) fail('Contenu trop volumineux',413); $v=json_decode($raw?:'{}',true); if (!is_array($v)) fail('JSON invalide');return $v; }
 function rate(string $bucket, string $key, int $limit, int $minutes):void {
-    $hash=hash_hmac('sha256',$bucket.'|'.$key,keyBytes());$window=intdiv(time(),$minutes*60)*($minutes*60);
+    $hash=hash_hmac('sha256',$bucket.'|'.$key,purposeKey('rate-limit'));$window=intdiv(time(),$minutes*60)*($minutes*60);
     query('INSERT INTO rate_limit_counters(bucket,fingerprint,window_start,attempts) VALUES(?,?,?,1) ON DUPLICATE KEY UPDATE attempts=attempts+1',[$bucket,$hash,$window]);
     $n=(int)query('SELECT attempts FROM rate_limit_counters WHERE bucket=? AND fingerprint=? AND window_start=?',[$bucket,$hash,$window])->fetch()['attempts'];
     if(random_int(1,100)===1)query('DELETE FROM rate_limit_counters WHERE window_start<?',[time()-172800]);
@@ -50,14 +51,32 @@ function keyBytes(?string $id=null):string {
     if($b===false || strlen($b)!==32 || base64_encode($b)!==$k)throw new RuntimeException('Encryption configuration invalid');
     return $b;
 }
-function encryptState(string $json,int $uid=0):string {
+function purposeKey(string $purpose,?string $id=null):string {
+    return hash_hkdf('sha256',keyBytes($id),32,'origin-vivant/'.$purpose.'/v2','origin-vivant-hkdf-v2');
+}
+function payloadAad(string $id,string $purpose,string $subject):string {
+    return json_encode(['v'=>2,'kid'=>$id,'environment'=>(string)conf('mode'),'purpose'=>$purpose,'subject'=>$subject],JSON_THROW_ON_ERROR);
+}
+function sealPayload(string $clear,string $purpose,string $subject):string {
     $id=(string)conf('encryption_key_id','legacy');
     if(!preg_match('/^[a-zA-Z0-9_-]{1,40}$/',$id))throw new RuntimeException('Encryption key id invalid');
-    $clear=json_encode(['owner'=>$uid,'json'=>$json],JSON_THROW_ON_ERROR);
-    $nonce=random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-    return 'ov1:'.$id.':'.base64_encode($nonce.sodium_crypto_secretbox($clear,$nonce,keyBytes($id)));
+    $nonce=random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES);
+    return 'ov2:'.$id.':'.base64_encode($nonce.sodium_crypto_aead_xchacha20poly1305_ietf_encrypt($clear,payloadAad($id,$purpose,$subject),$nonce,purposeKey($purpose,$id)));
 }
+function openPayload(string $blob,string $purpose,string $subject):?string {
+    $p=explode(':',$blob);if(count($p)!==3 || $p[0]!=='ov2')return null;
+    $v=base64_decode($p[2],true);
+    if($v===false || strlen($v)<SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES+SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_ABYTES)return null;
+    try{
+        $nonce=substr($v,0,SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES);
+        $clear=sodium_crypto_aead_xchacha20poly1305_ietf_decrypt(substr($v,SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES),payloadAad($p[1],$purpose,$subject),$nonce,purposeKey($purpose,$p[1]));
+        return $clear===false?null:$clear;
+    }catch(Throwable $e){return null;}
+}
+function encryptState(string $json,int $uid=0):string {return sealPayload($json,'family-backup','user:'.$uid);}
 function decryptState(string $blob,int $uid=0):?string {
+    if(str_starts_with($blob,'ov2:'))return openPayload($blob,'family-backup','user:'.$uid);
+    // Lecture des formats historiques uniquement ; aucune nouvelle écriture.
     $parts=explode(':',$blob);$versioned=count($parts)===3 && $parts[0]==='ov1';
     if(count($parts)!==1 && !$versioned)return null;
     $id=$versioned?$parts[1]:null;$encoded=$versioned?$parts[2]:$blob;
@@ -66,8 +85,7 @@ function decryptState(string $blob,int $uid=0):?string {
     try{$key=keyBytes($id);}catch(Throwable $e){return null;}
     $nonce=substr($v,0,SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
     $clear=sodium_crypto_secretbox_open(substr($v,SODIUM_CRYPTO_SECRETBOX_NONCEBYTES),$nonce,$key);
-    if($clear===false)return null;
-    if(!$versioned)return $clear; // lecture seule des sauvegardes historiques
+    if($clear===false)return null;if(!$versioned)return $clear;
     $decoded=json_decode($clear,true);
     return is_array($decoded) && ($decoded['owner']??null)===$uid && is_string($decoded['json']??null)?$decoded['json']:null;
 }
@@ -84,6 +102,7 @@ function smtpSend(string $to,string $subject,string $body):void { // SMTP TLS re
 function emailVerify(array $u):void {$token=bin2hex(random_bytes(32));query('DELETE FROM email_tokens WHERE user_id=?',[$u['id']]);query('INSERT INTO email_tokens(user_id,token_hash,expires_at) VALUES(?,?,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 DAY))',[$u['id'],hash('sha256',$token)]);$link=rtrim((string)conf('site_url'),'/' ).'/api/?op=verify&token='.$token;smtpSend((string)$u['email'],'Confirme ton adresse ORIGIN',"Bienvenue sur ORIGIN VIVANT !\n\nConfirme ton adresse en ouvrant ce lien :\n{$link}\n\nCe lien expire dans 24 heures. Si tu n'es pas à l'origine de cette demande, ignore ce message.");}
 function stripe(string $method,string $route,array $params=[],?string $idempotency=null):array {
     global $cfg;
+    if(db()->inTransaction())throw new LogicException('Stripe network transaction forbidden');
     if(!stripeKeyAllowed($cfg))throw new RuntimeException('Stripe environment not configured');
     $headers=['Authorization: Bearer '.(string)conf('stripe_secret'),'Stripe-Version: 2025-08-27.basil'];
     if($idempotency!==null)$headers[]='Idempotency-Key: '.$idempotency;
@@ -95,9 +114,4 @@ function stripe(string $method,string $route,array $params=[],?string $idempoten
     if(!is_array($obj)||$status<200||$status>=300)throw new RuntimeException('Stripe transport failure HTTP '.(int)$status);
     return $obj;
 }
-function entitlement(int $id):array {
-    global $cfg;
-    $subs=query("SELECT s.plan,s.status,s.current_period_end FROM subscriptions s JOIN orders o ON o.order_id=s.order_id AND o.user_id=s.user_id WHERE s.user_id=? AND o.environment=? AND o.status='paid'",[$id,conf('mode')])->fetchAll();
-    $purchases=query("SELECT p.product,p.status FROM purchases p JOIN orders o ON o.order_id=p.order_id AND o.user_id=p.user_id WHERE p.user_id=? AND o.environment=? AND o.status='paid'",[$id,conf('mode')])->fetchAll();
-    return accessPolicy($subs,$purchases,$cfg,time());
-}
+function entitlement(int $id):array {return registryEntitlement($id);}

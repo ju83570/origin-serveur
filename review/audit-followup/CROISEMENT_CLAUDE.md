@@ -1,5 +1,9 @@
 # Rapprochement du rapport original de Claude avec les correctifs
 
+> Rapprochement historique, avant la phase de correction finale du code.
+> Lire [../final-2026-10-23/CORRECTIONS.md](../final-2026-10-23/CORRECTIONS.md)
+> pour les statuts actuels, leurs tests et leurs limites.
+
 Rapport lu intégralement : [REVUE_CLAUDE_ORIGIN_2026-10-22.md](REVUE_CLAUDE_ORIGIN_2026-10-22.md).
 Les deux pièces jointes sont identiques, SHA-256 :
 `a964464b01a8afd2f26428c6ff576cb1dac2abd1e5574b42d8602230998cdb5a`.

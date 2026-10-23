@@ -5,8 +5,13 @@
     "_code_signature",
     "code_verifier",
     "admin_codes",
-    "webhook"
+    "webhook",
+    "readiness"
   ],
-  "protected_module_sha256": "d20cac123170f0605477b9c26d2d9a832f82ceb1230beb2d7e176153d6385246",
-  "generation_worker_sha256": "ab5eaf334792c25e0874a339b7d2e267df672f670246c09e1f37e76e7f3442ff"
+  "protected_module_sha256": "1c55e16aa52bcc731a355d9c9178d5f74715e90508170d894d943116419d3683",
+  "generation_worker_sha256": "ab5eaf334792c25e0874a339b7d2e267df672f670246c09e1f37e76e7f3442ff",
+  "authorized_security_assignments": [
+    "_CODES_SECRET",
+    "ENFORCE_ACCESS"
+  ]
 }

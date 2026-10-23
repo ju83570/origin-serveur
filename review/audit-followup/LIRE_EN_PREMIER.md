@@ -1,5 +1,9 @@
 # ORIGIN — correctifs après la revue Claude
 
+> État historique du 22 octobre. La correction finale du code est décrite dans
+> [../final-2026-10-23/LIRE_EN_PREMIER.md](../final-2026-10-23/LIRE_EN_PREMIER.md).
+> Ses nouveaux tests et limites remplacent les statuts de ce dossier.
+
 Ce dossier décrit les changements **postérieurs** à l'archive `32d6b68`.
 Les anciens documents de `review/` et leur patch décrivent la revue initiale,
 pas le code courant. Aucun déploiement ni fusion dans `main` n'est réalisé.

@@ -47,12 +47,12 @@ class HealthTests(OfflineTest):
         self.assertEqual(client.get("/health").status_code, 200)
         result = client.get("/ready")
         self.assertEqual(result.status_code, 503)
-        self.assertEqual(set(result.json["missing"]), {"ANTHROPIC_API_KEY", "BREVO_SMTP_KEY", "EMAIL_DEST"})
+        self.assertTrue({"ANTHROPIC_API_KEY", "BREVO_SMTP_KEY", "EMAIL_DEST", "WEBHOOK_SECRET", "CODES_SECRET", "ENFORCE_ACCESS", "STRIPE_KEY", "STRIPE_MODE", "STRIPE_PRICE_CATALOG"}.issubset(set(result.json["missing"])))
         self.assertFalse(result.json["external_services_checked"])
 
     def test_configuration_is_not_reported_as_remote_availability(self):
         # Sentinelles en mémoire : aucune chaîne de clé fictive injectée.
-        with patch.object(origin, "ANTHROPIC_API_KEY", object()), patch.object(origin, "BREVO_SMTP_KEY", object()), patch.object(origin, "EMAIL_DEST", object()):
+        with patch.object(origin, "ANTHROPIC_API_KEY", object()), patch.object(origin, "BREVO_SMTP_KEY", object()), patch.object(origin, "EMAIL_DEST", object()), patch.object(origin,"WEBHOOK_SECRET","unit-fixture-only-"*3), patch.object(origin,"_CODES_SECRET",b"unit-fixture-only-"*3), patch.object(origin,"ENFORCE_ACCESS",True), patch.object(origin,"STRIPE_KEY","sk_test_unit_fixture"), patch.dict("os.environ", {"STRIPE_MODE":"test","STRIPE_PRICE_CATALOG":json.dumps({"solo":{"price_id":"price_SoloFixture","amount":1000,"currency":"eur"}})}):
             result = origin.app.test_client().get("/ready")
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json["status"], "configured")
@@ -60,11 +60,11 @@ class HealthTests(OfflineTest):
         self.assertFalse(result.json["external_services_checked"])
 
     def test_invalid_webhook_does_not_start_generation(self):
-        with patch.object(origin.threading, "Thread") as thread, patch.object(origin, "WEBHOOK_SECRET", "unit-fixture-only-" * 3):
+        with patch.object(origin.threading, "Thread") as thread, patch.object(origin, "WEBHOOK_SECRET", "unit-fixture-only-" * 3), patch.object(origin,"ENFORCE_ACCESS",True):
             client = origin.app.test_client()
             for data in ({}, {"email": "invalid"}, {"email": "client@example.invalid"}):
                 with self.subTest(data=data):
-                    self.assertEqual(client.post("/webhook", json=data, headers={"X-ORIGIN-SECRET": "unit-fixture-only-" * 3}).status_code, 400)
+                    self.assertEqual(client.post("/webhook", json=data, headers={"X-ORIGIN-SECRET": "unit-fixture-only-" * 3}).status_code, 403)
             thread.assert_not_called()
 
 

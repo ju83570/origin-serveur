@@ -46,6 +46,15 @@ branche. Si une base de TEST utilise déjà le schéma du ZIP initial, la migrat
 des sessions. Ne pas l'exécuter une deuxième fois ni sur une base existante
 inconnue ; aucune migration distante n'a été exécutée dans cette mission.
 
+Pour une base déjà passée aux correctifs du 22 octobre (migration 003), la
+migration additive `migrations/004_registry_inbox.sql` installe le registre
+normalisé. Elle ne convertit pas automatiquement les anciens achats en droits.
+Faire d'abord une sauvegarde et un essai de restauration sur une copie dédiée,
+puis rapprocher les commandes historiques avec Stripe. Le nouveau code et ce
+schéma doivent être recettés ensemble. Voir
+[la procédure détaillée](../review/final-2026-10-23/EXPLOITATION_TEST.md), notamment
+pour le worker CLI obligatoire et la conservation des anciennes clés.
+
 Vérifier ensuite inscription, email de confirmation, connexion, récupération,
 restauration carnet/arbre, suppression, paiement test, portail et cycle complet
 d'abonnement. Les tests locaux ne prouvent pas le fonctionnement du SMTP,

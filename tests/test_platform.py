@@ -2,13 +2,14 @@ import ast
 import hashlib
 import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 from copy import deepcopy
 
 from platform_demo import create_app
 from demo_support import OfflineHTML
 from unittest.mock import patch
-from test_origin import OfflineTest
+from test_origin import OfflineTest, CLIENT, SECOND
 import app as engine
 
 
@@ -24,7 +25,7 @@ class PreservationTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(ast.dump(worker, include_attributes=False).encode()).hexdigest(), proof['generation_worker_sha256'])
         module.body = [n for n in module.body
             if not (isinstance(n, ast.FunctionDef) and n.name in proof['authorized_security_functions'])
-            and not (isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == '_CODES_SECRET' for t in n.targets))
+            and not (isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id in proof['authorized_security_assignments'] for t in n.targets))
             and not (isinstance(n, ast.ImportFrom) and n.module == 'premium_security')]
         digest = hashlib.sha256(ast.dump(module, include_attributes=False).encode()).hexdigest()
         self.assertEqual(digest, proof['protected_module_sha256'])
@@ -87,6 +88,29 @@ class OtherBookletRenderTests(OfflineTest):
                     pdf=engine.generer_pdf_imprimable(offer,clients[:count],narrative,astros[:count],kind)
                 self.assertTrue(pdf.startswith(b'%PDF-'))
                 self.assertGreater(len(pdf),10000)
+
+
+class FacadeOfflineJourneyTests(OfflineTest):
+    def test_mounted_solo_and_couple_generation_cannot_use_server_network(self):
+        # Même garde sockets/DNS/HTTP que la démo directe, à travers le dispatcher.
+        with TemporaryDirectory() as output, patch.dict('os.environ', {'ORIGIN_DEMO_OUTPUT_DIR': output}):
+            client = create_app().test_client()
+            for offer, profiles in [('solo', [CLIENT]), ('couple', [CLIENT, SECOND])]:
+                with self.subTest(offer=offer):
+                    result = client.post('/premium-demo/demo/generate', json={'offre': offer, 'clients': profiles})
+                    self.assertEqual(result.status_code, 201, result.json)
+                    self.assertFalse(result.json['delivered'])
+                    self.assertEqual(result.json['claude_calls'], 2)
+                    for kind in ['html', 'pdf', 'email']:
+                        path = result.json['artifacts'][kind]
+                        self.assertTrue(path.startswith('/premium-demo/'))
+                        with client.get(path) as artifact:
+                            self.assertEqual(artifact.status_code, 200)
+                            if kind == 'pdf':
+                                self.assertTrue(artifact.data.startswith(b'%PDF-'))
+                            if kind == 'email':
+                                self.assertTrue(artifact.json['simulated'])
+                                self.assertFalse(artifact.json['delivered'])
 
 
 if __name__ == '__main__':

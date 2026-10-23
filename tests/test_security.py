@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import app as engine
-from premium_security import payment_matches
+from premium_security import payment_matches, valid_catalog
 from test_origin import OfflineTest
 from demo_support import response
 
@@ -58,14 +58,14 @@ class PaymentSecurityTests(OfflineTest):
             for secret in ('','weak'):
                 with patch.object(engine,'WEBHOOK_SECRET',secret):
                     self.assertEqual(client.post('/webhook',json={}).status_code,503)
-            with patch.object(engine,'WEBHOOK_SECRET',secrets.token_urlsafe(32)):
+            with patch.object(engine,'WEBHOOK_SECRET',secrets.token_urlsafe(32)),patch.object(engine,'ENFORCE_ACCESS',True):
                 self.assertEqual(client.post('/webhook',json={}).status_code,401)
                 self.assertEqual(client.post('/webhook',json={},headers={'X-ORIGIN-SECRET':'wrong'}).status_code,401)
             thread.assert_not_called();post.assert_not_called()
 
     def test_webhook_verifies_birth_offer_before_normalizing_to_solo(self):
         secret=secrets.token_urlsafe(32)
-        with patch.object(engine,'WEBHOOK_SECRET',secret),patch.object(engine,'STRIPE_KEY',object()),patch.object(engine,'_stripe_verifier',return_value=(False,'refus')) as verify,patch.object(engine.threading,'Thread') as thread:
+        with patch.object(engine,'WEBHOOK_SECRET',secret),patch.object(engine,'ENFORCE_ACCESS',True),patch.object(engine,'STRIPE_KEY',object()),patch.object(engine,'_stripe_verifier',return_value=(False,'refus')) as verify,patch.object(engine.threading,'Thread') as thread:
             result=engine.app.test_client().post('/webhook',json={'offre':'solo','type_analyse':'naissance','stripe_session':paid()['id']},headers={'X-ORIGIN-SECRET':secret})
             self.assertEqual(result.status_code,403)
             verify.assert_called_once_with(paid()['id'],'naissance');thread.assert_not_called()
@@ -80,6 +80,33 @@ class PaymentSecurityTests(OfflineTest):
             self.assertEqual(engine.code_verifier(code),(True,'solo',''))
         with patch.object(engine,'_CODES_SECRET',secrets.token_bytes(32)):
             self.assertFalse(engine.code_verifier(code)[0])
+
+    def test_readiness_cannot_be_green_with_missing_security_configuration(self):
+        with patch.object(engine,'ANTHROPIC_API_KEY',object()),patch.object(engine,'BREVO_SMTP_KEY',object()),patch.object(engine,'EMAIL_DEST',object()):
+            result=engine.app.test_client().get('/ready')
+        self.assertEqual(result.status_code,503)
+        self.assertIn('WEBHOOK_SECRET',result.json['missing'])
+        self.assertIn('ENFORCE_ACCESS',result.json['missing'])
+        self.assertIn('STRIPE_KEY',result.json['missing'])
+        self.assertFalse(result.json['external_services_checked'])
+
+    def test_disabled_access_guard_fails_closed_even_with_valid_webhook_secret(self):
+        secret=secrets.token_urlsafe(32)
+        with patch.object(engine,'WEBHOOK_SECRET',secret),patch.object(engine,'ENFORCE_ACCESS',False),patch.object(engine.threading,'Thread') as thread:
+            result=engine.app.test_client().post('/webhook',json={},headers={'X-ORIGIN-SECRET':secret})
+            self.assertEqual(result.status_code,503);thread.assert_not_called()
+
+    def test_access_guard_is_enabled_by_default_on_a_fresh_import(self):
+        from demo_support import load_engine
+        with patch.dict('os.environ',{},clear=True):
+            isolated=load_engine()
+        self.assertTrue(isolated.ENFORCE_ACCESS)
+
+    def test_catalog_rejects_ambiguous_prices_and_non_booklet_products(self):
+        self.assertFalse(valid_catalog({**CATALOG,'famille':dict(CATALOG['solo'])}))
+        self.assertFalse(valid_catalog({'mirror':dict(CATALOG['solo'])}))
+        self.assertFalse(valid_catalog({'solo':{**CATALOG['solo'],'amount':True}}))
+        self.assertFalse(valid_catalog({}))
 
 
 if __name__=='__main__':unittest.main()

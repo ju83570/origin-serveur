@@ -2,7 +2,8 @@
 declare(strict_types=1);
 require __DIR__.'/bootstrap.php';
 require __DIR__.'/backups.php';
-require __DIR__.'/stripe-events.php';
+require __DIR__.'/stripe-inbox.php';
+require __DIR__.'/accounts.php';
 require __DIR__.'/checkout.php';
 $op=(string)($_GET['op']??'status');
 $method=(string)($_SERVER['REQUEST_METHOD']??'GET');
@@ -23,7 +24,7 @@ try {
    $t=$parts['t'][0]??'';if(!ctype_digit($t)||abs(time()-(int)$t)>300)fail('Signature expirée',400);
    $expected=hash_hmac('sha256',$t.'.'.$raw,$secret);$valid=false;foreach(($parts['v1']??[])as $sig)if(hash_equals($expected,$sig)){$valid=true;break;}if(!$valid)fail('Signature incorrecte',400);
    $event=json_decode($raw,true);if(!is_array($event)||empty($event['id'])||empty($event['type']))fail('Événement invalide');if(conf('mode','staging')==='production' && ($event['livemode']??null)!==true)fail('Événement Stripe de test reçu en production',400);if(conf('mode','staging')!=='production' && ($event['livemode']??null)!==false)fail('Événement Stripe réel rejeté en préproduction',400);
-   respond(processStripeEvent($event,fn(string $route):array=>stripe('GET',$route)));
+   try {respond(receiveStripeEvent($event));}catch(InvalidArgumentException $e){fail('Événement Stripe invalide',400);}
  }
  if($method!=='POST')fail('Méthode non autorisée',405);
  csrf();$data=input();
@@ -96,22 +97,8 @@ try {
  }
  if($op==='delete'){
    $u=verified();rate('delete_account',(string)$u['id'],5,60);
-   if(($data['confirm']??'')!=='SUPPRIMER')fail('Confirmation de suppression requise');
-   $stored=query('SELECT password_hash FROM users WHERE id=?',[$u['id']])->fetch();
-   if(!$stored || !password_verify((string)($data['password']??''),$stored['password_hash']))fail('Confirme ton mot de passe actuel pour supprimer ce compte.',403,'reauth_required');
-   if(query("SELECT id FROM subscriptions WHERE user_id=? AND status NOT IN ('canceled','incomplete_expired') LIMIT 1",[$u['id']])->fetch())fail('Résilie d’abord tous les abonnements depuis le portail Stripe.',409,'billing_active');
-   if($u['stripe_customer_id']){
-     $remote=stripe('GET','subscriptions',['customer'=>$u['stripe_customer_id'],'status'=>'all','limit'=>100]);
-     if(($remote['has_more']??true)!==false)throw new RuntimeException('Billing reconciliation incomplete');
-     foreach(($remote['data']??[]) as $sub)if(!in_array($sub['status']??'',['canceled','incomplete_expired'],true))fail('Un abonnement Stripe nécessite encore une résiliation.',409,'billing_active');
-   }
-   db()->beginTransaction();query('SELECT id FROM users WHERE id=? FOR UPDATE',[$u['id']]);
-   if(query("SELECT order_id FROM orders WHERE user_id=? AND status='pending' AND expires_at>UTC_TIMESTAMP() LIMIT 1 FOR UPDATE",[$u['id']])->fetch()){
-     db()->rollBack();fail('Un paiement est encore ouvert : termine-le ou attends son expiration avant la suppression.',409,'checkout_pending');
-   }
-   query('DELETE FROM users WHERE id=?',[$u['id']]);db()->commit();
-   $_SESSION=[];session_regenerate_id(true);$_SESSION['csrf']=bin2hex(random_bytes(24));
-   respond(['ok'=>true,'message'=>'Compte, sauvegardes et historique personnel supprimés. Les écritures comptables sans données familiales sont conservées.']);
+   $result=deleteOriginAccount($u,(string)($data['password']??''),(string)($data['confirm']??''));
+   $_SESSION=[];session_regenerate_id(true);$_SESSION['csrf']=bin2hex(random_bytes(24));respond($result);
  }
  fail('Action inconnue',404);
 } catch(PDOException $e){rollbackOpenTransaction();error_log('ORIGIN database error code '.(string)$e->getCode());fail('Service temporairement indisponible',503);} catch(RuntimeException $e){rollbackOpenTransaction();error_log('ORIGIN service unavailable '.get_class($e));fail('Service temporairement indisponible',503);} catch(Throwable $e){rollbackOpenTransaction();error_log('ORIGIN technical failure '.get_class($e));fail('Une erreur technique est survenue',500);}

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-23",
+  "branch": "fix/audit-final-2026-10-23",
+  "phase_base": "dddceecfc7ae77115968c87c2f3f4ce8c5feda86",
+  "original_source_commit": "32d6b68b3106828dbdea58c00a620e3698c03632",
+  "app_sha256": "eed08853e9197eca2c57932d63d8fd60d82649abaf4f44646417b73fafc7836c",
+  "reference_original_app_sha256": "17a502fcfc026201d837e80ad5c82a2bf8d12db81a040b5c3ec1b3f628103696",
+  "protected_ast_matches_original": true,
+  "protected_ast_sha256": "1c55e16aa52bcc731a355d9c9178d5f74715e90508170d894d943116419d3683",
+  "generation_worker_matches_original": true,
+  "generation_worker_sha256": "ab5eaf334792c25e0874a339b7d2e267df672f670246c09e1f37e76e7f3442ff",
+  "original_files_unchanged": 70,
+  "test_cases": {
+    "python": 38,
+    "integration": 40,
+    "browser": 10,
+    "javascript": 10
+  },
+  "test_cases_total": 98,
+  "failed": 0,
+  "skipped": 0,
+  "php_assertions": 42,
+  "php_syntax_files": 11,
+  "pip_check": "No broken requirements found.",
+  "fresh_schema_tables": 20,
+  "deployed_configuration_accessible": false,
+  "production_deployment_performed": false,
+  "main_merged": false
+}
