@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<link rel="stylesheet" href="preview.css">
+<script src="preview-fixtures.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<meta name="description" content="ORIGIN VIVANT — Le Miroir des Liens. Une expérience intime pour se comprendre, se parler et transmettre son histoire.">
+<title>ORIGIN VIVANT — Le Miroir des Liens</title>
+<link rel="icon" type="image/png" href="logo-origin-officiel.png">
+<link rel="stylesheet" href="origin-vivant.css">
+</head>
+<body>
+<aside class="preview-banner" aria-label="Démonstration fictive">
+<div><strong>ORIGIN RÉVOLUTION · APERÇU WEB</strong>
+<span>Personnages fictifs · Aucun compte, paiement ou envoi réel. Utilise uniquement des exemples inventés.</span></div>
+<button type="button" id="previewReset">Recommencer la démonstration</button>
+</aside>
+<div class="ambient ambient-one" aria-hidden="true"></div><div class="ambient ambient-two" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
+<div class="site-wrap">
+<header class="site-header">
+  <a class="brand" href="./#accueil" target="_blank" rel="noopener" aria-label="Accueil de la démonstration ORIGIN">
+    <img src="logo-origin-officiel.png" alt="Emblème officiel ORIGIN : main dorée" class="brand-emblem">
+    <span class="brand-words"><span class="brand-name">ORIGIN <i>VIVANT</i></span><span class="brand-sub">Comprends ta vie, éclaire ton chemin</span></span>
+  </a>
+  <div class="header-right"><span class="private-status"><span class="status-dot"></span> DÉMONSTRATION · DONNÉES FICTIVES</span><button class="header-info" id="privacyBtn" aria-label="Informations sur les données" title="Confidentialité">ⓘ</button></div>
+</header>
+<nav class="nav" aria-label="Navigation principale">
+  <button class="nav-item active" data-go="accueil" aria-current="page">✦ <span>Découvrir</span></button>
+  <button class="nav-item" data-go="miroir">◈ <span>Le Miroir</span></button>
+  <button class="nav-item" data-go="arbre">♧ <span>Mon Arbre</span></button>
+  <button class="nav-item" data-go="constellation">✧ <span>Constellation</span></button>
+  <button class="nav-item" data-go="parcours">◎ <span>Mon Parcours</span></button>
+  <button class="nav-item" data-go="carnet">▤ <span>Mon Carnet</span></button>
+  <button class="nav-item" data-go="premium">✧ <span>Mes livrets</span></button>
+</nav>
+
+<main id="mainContent">
+<!-- LANDING -->
+<section class="view active" id="view-accueil" aria-label="Découvrir ORIGIN VIVANT">
+  <div class="hero">
+    <div class="hero-copy">
+      <p class="overline"><span class="overline-rule"></span> UNE NOUVELLE EXPÉRIENCE ORIGIN <span class="overline-rule"></span></p>
+      <p class="kicker">LÀ OÙ LES HISTOIRES DEVIENNENT DES LIENS</p>
+      <h1>Et si comprendre<br>l'autre commençait<br><em>par changer<br>de regard ?</em></h1>
+      <p class="hero-intro">Deux personnes. Deux vérités intérieures. Une rencontre à réinventer. Explore ce qui vous sépare, révèle ce qui vous rapproche, et fais le premier pas vers une relation plus consciente.</p>
+      <div class="hero-actions"><button class="btn btn-gold btn-lg" data-go="miroir">Entrer dans le Miroir <span aria-hidden="true">↗</span></button><button class="btn btn-quiet" id="demoBtn">Vivre la démonstration <span aria-hidden="true">▶</span></button></div>
+      <div class="hero-trust"><span>✧ Approche bienveillante</span><span>✧ Sans jugement</span><span>✧ Expérience privée locale</span></div>
+    </div>
+    <div class="hero-art" aria-label="Visualisation symbolique de deux personnes reliées">
+      <div class="orbital-star star-1">✦</div><div class="orbital-star star-2">✧</div><div class="orbital-star star-3">✦</div>
+      <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="orbit orbit-c"></div>
+      <svg class="bridge-svg" viewBox="0 0 520 520" fill="none" aria-hidden="true"><defs><linearGradient id="bridgeGold" x1="0" x2="1"><stop stop-color="#8a6034" stop-opacity=".2"/><stop offset=".52" stop-color="#f9deaa"/><stop offset="1" stop-color="#8a6034" stop-opacity=".2"/></linearGradient></defs><path d="M114 258 C205 143 318 143 408 258" stroke="url(#bridgeGold)" stroke-width="1.3" stroke-dasharray="3 7"/><path d="M114 258 C210 377 314 377 408 258" stroke="url(#bridgeGold)" stroke-width="1.3" stroke-dasharray="3 7"/><path d="M114 258 Q260 258 408 258" stroke="url(#bridgeGold)" stroke-width=".8"/><circle cx="260" cy="258" r="55" stroke="#d3ac79" stroke-opacity=".4"/><circle cx="260" cy="258" r="67" stroke="#d3ac79" stroke-opacity=".13"/></svg>
+      <div class="portrait portrait-left"><span id="heroInitialA">A</span><small id="heroNameA">MOI</small></div>
+      <div class="portrait portrait-right"><span id="heroInitialB">B</span><small id="heroNameB">L'AUTRE</small></div>
+      <div class="heart-center"><span>∞</span><small>LE LIEN</small></div>
+      <div class="hero-art-bottom">LE MIROIR DES LIENS <span>·</span> ÉDITION ORIGIN</div>
+    </div>
+  </div>
+  <div class="manifesto"><span class="manifesto-symbol">“</span><p>Il arrive que deux personnes s'aiment,<br>sans parler le même langage intérieur.</p><span class="manifesto-end">ORIGIN révèle un espace pour se rencontrer.</span></div>
+  <div class="section-heading"><span class="eyebrow">01 — TROIS PORTES, UNE EXPÉRIENCE</span><h2>Il ne s'agit plus seulement<br>de découvrir qui tu es.</h2><p>Il s'agit d'ouvrir un nouveau dialogue entre toi, les autres et ton histoire.</p></div>
+  <div class="features-grid">
+    <button class="feature-card" data-go="miroir"><span class="feature-icon">◈</span><span class="feature-no">EXPÉRIENCE 01</span><strong>Le Miroir<br>des Liens</strong><span>Exprime ce que tu vis, accueille un autre regard et découvre une piste pour renouer le dialogue.</span><b>Explorer <span>↗</span></b></button>
+    <button class="feature-card" data-go="arbre"><span class="feature-icon">♧</span><span class="feature-no">EXPÉRIENCE 02</span><strong>L'Arbre<br>des Héritages</strong><span>Relie les visages, les récits et les souvenirs qui constituent ton histoire familiale.</span><b>Explorer <span>↗</span></b></button>
+    <button class="feature-card" data-go="parcours"><span class="feature-icon">◎</span><span class="feature-no">EXPÉRIENCE 03</span><strong>Le Chemin<br>des 90 Jours</strong><span>Transforme une prise de conscience en petits gestes et observe ton évolution, à ton rythme.</span><b>Explorer <span>↗</span></b></button>
+  </div>
+  <div class="belief"><div class="belief-mark">✧</div><p>« Nous ne choisissons pas toutes les histoires qui nous précèdent. Mais nous pouvons choisir la façon dont nous écrivons la suite. »</p><span>ORIGIN · L'ART DE SE RENCONTRER</span></div>
+</section>
+
+<!-- MIROIR -->
+<section class="view" id="view-miroir" aria-label="Le Miroir des Liens">
+  <div class="page-heading"><span class="eyebrow">L'EXPÉRIENCE SIGNATURE</span><h1>Le Miroir <em>des Liens.</em></h1><p>Un espace pour voir la relation autrement. Un pas après l'autre, sans culpabilité, sans jugement.</p></div>
+  <div class="stepper" aria-label="Progression du Miroir"><button class="step-pill active" data-step-jump="0"><i>01</i><span>La rencontre</span></button><span class="step-line"></span><button class="step-pill" data-step-jump="1"><i>02</i><span>Le vécu</span></button><span class="step-line"></span><button class="step-pill" data-step-jump="2"><i>03</i><span>Les regards</span></button><span class="step-line"></span><button class="step-pill" data-step-jump="3"><i>04</i><span>Le miroir</span></button><span class="step-line"></span><button class="step-pill" data-step-jump="4"><i>05</i><span>Le pont</span></button></div>
+  <div class="experience-shell">
+  <div class="experience-stage active" data-step="0">
+    <div class="step-title"><span class="small-orb">01</span><p>TOUT COMMENCE PAR UN LIEN</p><h2>Qui aimerais-tu<br><em>mieux comprendre ?</em></h2></div>
+    <p class="stage-description">Choisis la relation que tu souhaites éclairer. Aucune réponse n'est bonne ou mauvaise.</p>
+    <div class="relationship-grid">
+      <button class="choice-card" data-relationship="couple"><span>♡</span><strong>Mon couple</strong><small>Retrouver un langage commun</small></button>
+      <button class="choice-card" data-relationship="enfant"><span>✿</span><strong>Mon enfant</strong><small>Comprendre au lieu de réagir</small></button>
+      <button class="choice-card" data-relationship="parent"><span>♧</span><strong>Un parent</strong><small>Éclairer notre histoire</small></button>
+      <button class="choice-card" data-relationship="fratrie"><span>✦</span><strong>Ma fratrie</strong><small>Frère, sœur ou lien fraternel</small></button>
+      <button class="choice-card selected" data-relationship="proche"><span>✧</span><strong>Autre lien</strong><small>Prendre soin de notre lien</small></button>
+    </div>
+    <div class="dual-fields"><label><span>Comment t'appelles-tu ?</span><input id="nameA" maxlength="46" placeholder="Ton prénom" autocomplete="given-name"></label><label><span>Comment s'appelle cette personne ?</span><input id="nameB" maxlength="46" placeholder="Son prénom"></label></div>
+    <div class="optional-toggle"><button id="symbolicToggle" class="text-btn" aria-expanded="false">✧ Ajouter nos dates de naissance <span>facultatif</span> <b>⌄</b></button></div>
+    <div class="symbolic-fields hidden" id="symbolicFields"><div class="dual-fields"><label><span>Ta date de naissance</span><input id="birthA" type="date" min="1850-01-01" max="2100-12-31"></label><label><span>Sa date de naissance</span><input id="birthB" type="date" min="1850-01-01" max="2100-12-31"></label></div><p class="microcopy">Les correspondances numérologiques et astrologiques sont des lectures symboliques, non des diagnostics ou des prédictions. Pour les enfants, utilise les informations uniquement avec l'autorisation du responsable légal.</p></div>
+    <div class="tree-prefill" id="treePrefill" hidden><label for="treePersonA">Personnes de mon Arbre Vivant</label><div class="tree-prefill-options"><select id="treePersonA" aria-label="Choisir la première personne"></select><select id="treePersonB" aria-label="Choisir la seconde personne"></select><button class="btn btn-outline btn-sm" id="useTreePersons">Utiliser</button></div><small>Les informations proviennent du même navigateur sur ce domaine. Rien n'est transmis à un serveur par cette page.</small></div>
+    <div class="step-actions"><span>✧ Une expérience à ton rythme</span><button class="btn btn-gold" data-next="1">Continuer <span>→</span></button></div>
+  </div>
+  <div class="experience-stage" data-step="1">
+    <div class="step-title"><span class="small-orb">02</span><p>LES MOTS CACHENT PARFOIS UN BESOIN</p><h2>Qu'est-ce qui<br><em>se joue entre vous ?</em></h2></div>
+    <p class="stage-description">Choisis le sujet qui te touche le plus en ce moment. Tu pourras préciser ton ressenti ensuite.</p>
+    <div class="issue-grid">
+      <button class="issue-card selected" data-issue="incompris"><span>◌</span><b>Je ne me sens pas compris(e)</b></button>
+      <button class="issue-card" data-issue="tensions"><span>⚡</span><b>Nous nous disputons souvent</b></button>
+      <button class="issue-card" data-issue="distance"><span>☾</span><b>Nous nous sommes éloignés</b></button>
+      <button class="issue-card" data-issue="communication"><span>✦</span><b>Nous avons du mal à parler</b></button>
+    </div>
+    <label class="field-block"><span>Quand cela se produit, qu'est-ce que tu ressens ?</span><select id="feelingA"><option value="tristesse">De la tristesse</option><option value="frustration">De la frustration</option><option value="solitude">De la solitude</option><option value="peur">De la peur</option><option value="colere">De la colère</option><option value="fatigue">De la fatigue</option><option value="inquietude">De l'inquiétude</option></select></label>
+    <label class="field-block"><span>Raconte une situation, si tu en as envie</span><textarea id="scene" maxlength="1100" rows="3" placeholder="Par exemple : hier soir, je voulais parler, mais nous étions tous les deux épuisés..."></textarea><small>Tu peux rester général(e). Évite d'ajouter des informations trop intimes dans cette démonstration.</small></label>
+    <div class="step-actions"><button class="btn btn-quiet" data-prev="0">← Retour</button><button class="btn btn-gold" data-next="2">Continuer <span>→</span></button></div>
+  </div>
+  <div class="experience-stage" data-step="2">
+    <div class="step-title"><span class="small-orb">03</span><p>DEUX REGARDS SUR UNE MÊME HISTOIRE</p><h2>Derrière nos réactions,<br><em>nos besoins.</em></h2></div>
+    <p class="stage-description">Ce que tu peux exprimer ici est précieux. Pour l'autre personne, seul son propre témoignage peut refléter son vécu.</p>
+    <div class="voices-form">
+      <div class="voice-panel"><div class="voice-head"><span class="voice-avatar" id="avatarA">M</span><div><small>MON REGARD</small><strong id="voiceNameA">Moi</strong></div></div><label class="field-block"><span>Ce dont j'aurais besoin</span><select id="needA"><option value="ecoute">D'être écouté(e)</option><option value="respect">De me sentir respecté(e)</option><option value="temps">De partager du temps ensemble</option><option value="securite">De me sentir rassuré(e)</option><option value="reconnaissance">Que mes efforts soient reconnus</option><option value="espace">D'avoir de l'espace et du calme</option><option value="tendresse">De davantage de tendresse</option></select></label><label class="field-block"><span>Ce que j'aimerais pouvoir dire</span><textarea id="messageA" rows="3" maxlength="800" placeholder="J'aimerais que tu comprennes que..."></textarea></label></div>
+      <div class="voice-divider"><span>∞</span></div>
+      <div class="voice-panel voice-panel-b"><div class="voice-head"><span class="voice-avatar" id="avatarB">A</span><div><small>SON REGARD</small><strong id="voiceNameB">L'autre</strong></div></div><div id="voiceBLocked"><p class="locked-note">Tu ne peux pas savoir ce que ressent cette personne à sa place. Si elle le souhaite, elle peut participer librement sur ce même appareil.</p><button class="btn btn-outline btn-sm" id="participateB">Inviter à s'exprimer ici ↗</button></div><div id="voiceBFields" class="hidden"><label class="field-block"><span>Son ressenti, exprimé par elle-même</span><select id="feelingB"><option value="fatigue">De la fatigue</option><option value="tristesse">De la tristesse</option><option value="frustration">De la frustration</option><option value="peur">De la peur</option><option value="colere">De la colère</option><option value="solitude">De la solitude</option><option value="inquietude">De l'inquiétude</option></select></label><label class="field-block"><span>Son besoin, choisi par elle-même</span><select id="needB"><option value="espace">D'avoir de l'espace et du calme</option><option value="ecoute">D'être écouté(e)</option><option value="respect">De me sentir respecté(e)</option><option value="temps">De partager du temps ensemble</option><option value="securite">De me sentir rassuré(e)</option><option value="reconnaissance">Que mes efforts soient reconnus</option><option value="tendresse">De davantage de tendresse</option></select></label><label class="field-block"><span>Ses propres mots</span><textarea id="messageB" rows="3" maxlength="800" placeholder="J'aimerais que tu comprennes que..."></textarea></label><button class="text-btn" id="removeB">Retirer sa participation</button></div></div>
+    </div>
+    <div class="step-actions"><button class="btn btn-quiet" data-prev="1">← Retour</button><button class="btn btn-gold" id="revealBtn">Révéler le Miroir <span>✦</span></button></div>
+  </div>
+  <div class="experience-stage" data-step="3">
+    <div class="reveal-header"><span class="eyebrow">04 — UNE AUTRE FAÇON DE VOIR</span><div class="reveal-emblem"><span>∞</span></div><h2>Ce qui vous sépare<br>n'est pas <em>tout ce qui vous définit.</em></h2><p>Voici une lecture construite à partir de ce que vous avez choisi d'exprimer.</p></div>
+    <div id="mirrorResult" aria-live="polite"></div>
+    <div class="reflection-note">✧ Ces propositions sont des pistes de dialogue, pas une analyse psychologique ni une vérité sur l'autre. Les informations symboliques ne déterminent pas votre relation.</div>
+    <div class="step-actions"><button class="btn btn-quiet" data-prev="2">← Modifier mes réponses</button><button class="btn btn-gold" data-next="4">Construire notre pont <span>→</span></button></div>
+  </div>
+  <div class="experience-stage" data-step="4">
+    <div class="step-title"><span class="small-orb">05</span><p>LE VRAI CHANGEMENT COMMENCE PAR UN GESTE</p><h2>Un premier pas,<br><em>à deux ou pour toi.</em></h2></div>
+    <p class="stage-description">Tu n'as pas besoin de tout résoudre aujourd'hui. Choisis un petit geste que tu peux accomplir sans imposer de réponse à l'autre.</p>
+    <div class="bridge-plan" id="bridgePlan"></div>
+    <div class="commitment"><label for="commitText">Mon engagement personnel</label><textarea id="commitText" rows="2" maxlength="350" placeholder="Cette semaine, je choisis de..."></textarea><div class="commit-actions"><button class="btn btn-outline" id="saveMirror">✧ Conserver cette prise de conscience</button><button class="btn btn-gold" id="launchJourney">Commencer mon parcours de 90 jours <span>↗</span></button></div></div>
+    <div class="step-actions"><button class="btn btn-quiet" data-prev="3">← Relire mon Miroir</button><button class="btn btn-quiet" id="restartMirror">Nouvelle relation ↺</button></div>
+  </div>
+  </div>
+</section>
+
+<!-- ARBRE -->
+<section class="view" id="view-arbre" aria-label="L'Arbre des Héritages">
+  <div class="page-heading"><span class="eyebrow">LES HISTOIRES QUI NOUS RELIENT</span><h1>L'Arbre <em>des Héritages.</em></h1><p>La famille n'est pas seulement une suite de dates. Ce sont des récits, des regards, des gestes et des souvenirs.</p></div>
+  <div class="tree-area">
+    <div class="tree-viz"><span class="tree-halo"></span><svg viewBox="0 0 540 390" aria-hidden="true"><defs><linearGradient id="treeLine" x1="0" x2="1"><stop stop-color="#88603a"/><stop offset=".5" stop-color="#e9c78b"/><stop offset="1" stop-color="#88603a"/></linearGradient></defs><path d="M270 330V220 M270 260 C270 211 184 224 184 167 M270 250 C270 199 354 229 354 167 M184 167V111 M354 167V111 M184 142H107V85 M184 142H235V85 M354 142H303V85 M354 142H431V85" stroke="url(#treeLine)" stroke-width="1.5"/><g fill="#11100d" stroke="#c4a06b" stroke-width="1.5"><circle cx="107" cy="78" r="25"/><circle cx="235" cy="78" r="25"/><circle cx="303" cy="78" r="25"/><circle cx="431" cy="78" r="25"/><circle cx="184" cy="164" r="31"/><circle cx="354" cy="164" r="31"/><circle cx="270" cy="319" r="37"/></g><g fill="#edce9b" text-anchor="middle" font-family="Georgia,serif" font-size="19"><text x="107" y="85">✧</text><text x="235" y="85">✧</text><text x="303" y="85">✧</text><text x="431" y="85">✧</text><text x="184" y="171">♡</text><text x="354" y="171">♡</text><text x="270" y="327">✦</text></g></svg><div class="tree-caption">CHAQUE BRANCHE GARDE UNE HISTOIRE</div></div>
+    <div class="tree-side"><span class="eyebrow">MON ESPACE FAMILIAL</span><h2>Ton arbre existe déjà.<br><em>Fais-le vivre.</em></h2><p>Retrouve ton Arbre Vivant, explore les proches, ajoute des souvenirs, et invite-toi à regarder ce qui traverse les générations.</p><div id="treeConnection" class="connection-status"><span class="status-dot"></span> Aucun arbre personnel détecté sur ce navigateur.</div><div class="tree-buttons"><a class="btn btn-gold" href="arbre-vivant.html">Ouvrir mon Arbre Vivant <span>↗</span></a><button class="btn btn-outline" id="refreshTree">Actualiser le lien</button></div><p class="microcopy">L'Arbre Vivant est inclus dans ce pack. Pour retrouver les données existantes, les deux pages doivent être ouvertes depuis le même domaine et le même navigateur.</p></div>
+  </div>
+  <div class="memory-zone"><div class="section-heading left"><span class="eyebrow">LES TRACES QUI COMPTENT</span><h2>La mémoire des petits instants.</h2><p>Ajoute les souvenirs dont tu es certain(e), ou indique clairement qu'il s'agit d'un récit entendu. Aucun héritage n'est supposé par ORIGIN.</p></div><div class="memory-layout"><form id="memoryForm" class="panel-card"><h3>✧ Déposer un souvenir</h3><div class="dual-fields"><label><span>Personne ou branche familiale</span><input id="memoryPerson" maxlength="80" placeholder="Ex. Ma grand-mère"></label><label><span>Année (facultatif)</span><input id="memoryYear" type="number" min="1800" max="2100" placeholder="Ex. 1998"></label></div><label class="field-block"><span>Quel est ce souvenir ?</span><textarea id="memoryText" required maxlength="1400" rows="3" placeholder="Une phrase qu'elle répétait, un rituel du dimanche, une leçon reçue..."></textarea></label><label class="field-block"><span>Nature de l'information</span><select id="memoryKind"><option value="souvenir">Souvenir vécu</option><option value="recit">Récit transmis</option><option value="hypothese">Piste personnelle à vérifier</option></select></label><button class="btn btn-gold" type="submit">Ajouter à mon héritage ＋</button></form><div class="memories-panel"><h3>Mes éclats de mémoire <span id="memoryCount">0</span></h3><div id="memoryList" class="memory-list"><p class="empty-note">Ton premier souvenir trouvera sa place ici.</p></div></div></div></div>
+</section>
+
+<!-- CONSTELLATION : profils issus de l'Arbre, sans nouvelle base de personnes -->
+<section class="view" id="view-constellation" aria-label="La Constellation des liens">
+  <nav class="journey-links" aria-label="Parcours des liens"><a href="arbre-vivant.html" id="constellationBack">← Retour à mon Arbre</a><button class="text-btn" data-go="carnet">Mon Carnet →</button></nav>
+  <div class="page-heading"><span class="eyebrow">DEUX PERSONNES, UN LIEN À EXPLORER</span><h1>Ma <em>Constellation.</em></h1><p>Choisis deux personnes de ton Arbre, sans ressaisir leurs informations. Leurs dates restent facultatives.</p></div>
+  <div class="panel-card constellation-panel">
+    <p id="constellationSourceStatus" role="status"></p>
+    <div class="commit-actions"><a class="btn btn-outline" href="arbre-vivant.html">Créer ou importer mon Arbre</a><button class="btn btn-quiet" id="constellationDemo">Essayer une démonstration fictive</button></div>
+    <label class="field-block"><span>Choisir les personnes depuis</span><select id="constellationSource"><option value="tree">Mon Arbre personnel</option><option value="manual">Une saisie manuelle</option></select></label>
+    <div class="dual-fields" id="constellationTreeFields">
+      <label><span>Première personne</span><select id="constellationPersonA"></select></label>
+      <label><span>Deuxième personne</span><select id="constellationPersonB"></select></label>
+    </div>
+    <div class="dual-fields" id="constellationManualFields" hidden>
+      <label><span>Prénom de la première personne</span><input id="constellationNameA" maxlength="46" autocomplete="off"></label>
+      <label><span>Prénom de la deuxième personne</span><input id="constellationNameB" maxlength="46" autocomplete="off"></label>
+      <label><span>Première date de naissance (facultative)</span><input id="constellationBirthA" type="date" min="1850-01-01" max="2100-12-31"></label>
+      <label><span>Deuxième date de naissance (facultative)</span><input id="constellationBirthB" type="date" min="1850-01-01" max="2100-12-31"></label>
+    </div>
+    <label class="field-block"><span>Votre lien — tu peux le corriger pour cette exploration</span><select id="constellationRelation"><option value="auto">Selon les liens renseignés dans l’Arbre</option><option value="parent_child">Parent / enfant</option><option value="siblings">Fratrie</option><option value="partners">Partenaires</option><option value="other">Autre lien</option></select></label>
+    <div id="constellationResult" class="constellation-result" aria-live="polite"></div>
+    <div class="commit-actions"><button class="btn btn-gold" id="constellationMirror">Continuer dans le Miroir →</button><button class="btn btn-outline" id="constellationWrite">Écrire dans mon Carnet</button></div>
+    <p class="microcopy">Les lectures numérologiques sont symboliques : elles ne révèlent ni les pensées ni les sentiments de quelqu’un et ne mesurent pas la compatibilité. Pour les mineurs, utilise les données uniquement avec l’autorisation du responsable légal.</p>
+  </div>
+</section>
+
+<!-- PARCOURS -->
+<section class="view" id="view-parcours" aria-label="Mon Parcours de 90 jours">
+  <div class="page-heading"><span class="eyebrow">UNE TRANSFORMATION À TON RYTHME</span><h1>Le Chemin <em>des 90 Jours.</em></h1><p>Ni miracle, ni promesse de transformation automatique. Seulement l'espace de pratiquer ce que tu souhaites faire évoluer.</p></div>
+  <div class="journey-layout"><div class="journey-main"><div class="journey-header"><span class="eyebrow">MON TEMPS POUR MOI</span><span id="journeyStartedLabel">PRÊT POUR LE PREMIER JOUR</span></div><div class="journey-counter"><div><small>JOUR</small><strong id="journeyDay">01</strong><small>SUR 90</small></div><div class="journey-ring" id="journeyRing"><span id="journeyPct">0%</span></div></div><div class="progress-track"><span id="journeyProgress"></span></div><h2 id="journeyTitle">Le premier pas change déjà le chemin.</h2><p id="journeyDescription">Prends un moment pour reconnaître ce qui compte pour toi. Les grands changements commencent souvent très doucement.</p><div class="journey-prompt"><span>LA QUESTION DU JOUR</span><p id="dailyQuestion">Quel lien aimerais-tu nourrir aujourd'hui, même par un tout petit geste ?</p></div><div class="journey-start"><button id="startJourney" class="btn btn-gold">✧ Commencer mon parcours</button></div></div><div class="journey-checkin panel-card"><span class="eyebrow">MON BILAN INTÉRIEUR</span><h3>Comment te sens-tu aujourd'hui ?</h3><div class="moods" role="group" aria-label="Choix de l'humeur"><button class="mood" data-mood="1" aria-label="Très difficile">◔</button><button class="mood" data-mood="2" aria-label="Difficile">☁</button><button class="mood" data-mood="3" aria-label="Neutre">◐</button><button class="mood" data-mood="4" aria-label="Bien">☀</button><button class="mood" data-mood="5" aria-label="Très bien">✦</button></div><label class="field-block"><span>Un geste que j'ai posé ou que je souhaite poser</span><textarea id="dailyNote" rows="4" maxlength="1200" placeholder="Aujourd'hui, j'ai essayé d'écouter sans interrompre..."></textarea></label><button id="saveCheckin" class="btn btn-gold btn-full">Enregistrer mon moment ✧</button><p class="microcopy" id="checkinStatus">Ton parcours reste sur cet appareil.</p></div></div>
+  <div class="ritual-section"><div class="section-heading left"><span class="eyebrow">UN DÉBUT EN SEPT GESTES</span><h2>La première semaine,<br><em>sans pression.</em></h2></div><div id="rituals" class="rituals"></div></div>
+</section>
+
+<!-- CARNET -->
+<section class="view" id="view-carnet" aria-label="Mon Carnet">
+  <div class="page-heading"><span class="eyebrow">TON HISTOIRE T'APPARTIENT</span><h1>Mon Carnet <em>d'Évolution.</em></h1><p>Quelques traces de ton chemin. Tu choisis ce que tu gardes et ce que tu effaces.</p></div>
+  <nav class="journey-links" aria-label="Retour à mes liens"><a href="arbre-vivant.html">← Retour à mon Arbre</a><button class="text-btn" data-go="constellation">Ma Constellation →</button></nav>
+  <div class="carnet-intro"><button class="btn btn-gold btn-lg" id="writePage">✎ Écrire dans mon Carnet</button><p>Un ressenti, un merci, une question : quelques mots suffisent. Seul le bouton d’enregistrement conserve ta page.</p></div>
+  <form class="panel-card page-editor" id="pageForm" hidden aria-labelledby="pageEditorTitle">
+    <h2 id="pageEditorTitle">Une nouvelle page pour moi</h2>
+    <label class="field-block"><span>Le sujet de ma page</span><select id="pageSubject"><option value="ressenti">Ressenti</option><option value="souvenir">Souvenir</option><option value="gratitude">Gratitude</option><option value="question">Question</option><option value="libre">Réflexion libre</option></select></label>
+    <label class="field-block"><span>Ce que j’ai envie d’écrire</span><textarea id="pageText" required maxlength="4000" rows="6" aria-describedby="pageHelp" placeholder="Aujourd’hui, j’aimerais garder une trace de…"></textarea></label>
+    <p class="microcopy" id="pageHelp">4 000 caractères maximum. Évite les informations très sensibles sur un appareil partagé.</p>
+    <div class="commit-actions"><button class="btn btn-gold" type="submit" id="savePage">Enregistrer ma page</button><button class="btn btn-quiet" type="button" id="cancelPage">Annuler</button></div>
+  </form>
+  <p id="pageStatus" role="status" aria-live="polite"></p>
+  <div class="carnet-stats"><div><strong id="statPages">0</strong><span>Pages rédigées</span></div><div><strong id="statMirrors">0</strong><span>Miroirs conservés</span></div><div><strong id="statCheckins">0</strong><span>Jours de réflexion</span></div><div><strong id="statMemories">0</strong><span>Souvenirs déposés</span></div></div>
+  <div class="carnet-layout"><div><section class="carnet-history"><h2>Mes pages rédigées</h2><div id="pageList" class="history-list"><p class="empty-note">Ta première page peut commencer par une phrase. Appuie sur « Écrire dans mon Carnet ».</p></div></section><section class="carnet-history automatic-history"><h2>Mes explorations conservées</h2><p class="microcopy">Retrouve ici les Miroirs, souvenirs et bilans enregistrés dans les autres espaces.</p><div id="historyList" class="history-list"></div></section></div><aside class="carnet-actions panel-card"><span class="eyebrow">TU GARDES LE CONTRÔLE</span><h3>Ta mémoire,<br>tes choix.</h3><p>Le stockage local ne synchronise pas tes téléphones et ordinateurs. Exporte une sauvegarde avant de changer d’appareil. Avec un compte, la sauvegarde en ligne reste volontaire.</p><button class="btn btn-outline btn-full" id="exportJson">↓ Sauvegarder mes données (.json)</button><button class="btn btn-outline btn-full" id="exportText">↓ Exporter un carnet lisible (.txt)</button><label class="btn btn-outline btn-full import-label" for="importJson">↑ Réimporter mes données (.json)</label><input type="file" accept=".json,application/json" id="importJson" hidden><button class="btn btn-danger btn-full" id="clearData">Effacer mes données ORIGIN VIVANT</button><div class="microcopy">Conserve ton fichier dans un emplacement personnel sécurisé. Le stockage local n’est pas un coffre-fort chiffré.</div></aside></div>
+</section>
+<section class="view" id="view-premium" aria-label="Mes livrets ORIGIN PREMIUM">
+  <div class="page-heading"><span class="eyebrow">UNE EXPÉRIENCE, PLUSIEURS FAÇONS D'AVANCER</span><h1>Un regard neuf.<br><em>Un chemin à toi.</em></h1><p>Explore librement, prépare une lecture personnelle et fais vivre ce qui compte.</p></div>
+  <div class="features-grid ecosystem-levels">
+    <article class="panel-card"><span class="eyebrow">ORIGIN RÉVOLUTION · GRATUIT</span><h2>Ouvrir le dialogue</h2><p>Le Miroir, les souvenirs et les exercices t'aident à mettre des mots et à choisir un premier geste.</p><button class="btn btn-outline" data-go="miroir">Explorer mon Miroir</button></article>
+    <article class="panel-card"><span class="eyebrow">ORIGIN PREMIUM · PERSONNALISÉ</span><h2>Approfondir ta lecture</h2><p>Prépare les informations de ton livret Solo ou Couple. Les générateurs commerciaux conservent leurs calculs, textes et rendus.</p><p class="microcopy">La vente et la livraison réelles ne sont pas activées dans cet environnement de test.</p></article>
+    <article class="panel-card"><span class="eyebrow">ORIGIN VIVANT · DANS LE TEMPS</span><h2>Faire grandir tes liens</h2><p>Ton arbre, ton carnet et ton parcours peuvent évoluer à ton rythme. La sauvegarde en ligne reste un choix explicite.</p><button class="btn btn-outline" data-go="carnet">Retrouver mon carnet</button></article>
+  </div>
+  <div class="panel-card premium-draft">
+    <span class="eyebrow">PRÉPARER MON LIVRET</span><h2>Garder le fil de ton exploration</h2>
+    <p>Choisis les personnes à reprendre. Tu pourras compléter et vérifier leurs informations avant toute génération.</p>
+    <div class="dual-fields">
+      <label class="field-block"><span>Livret</span><select id="premiumOffer"><option value="solo">Solo</option><option value="couple">Couple</option></select></label>
+      <label class="field-block"><span>Reprendre depuis</span><select id="premiumSource"><option value="tree">Mon arbre personnel</option><option value="mirror">Mon Miroir personnel</option></select></label>
+      <label class="field-block"><span>Première personne</span><select id="premiumPersonA"></select></label>
+      <label class="field-block" id="premiumSecond" hidden><span>Deuxième personne</span><select id="premiumPersonB"></select></label>
+    </div>
+    <label class="premium-consent"><input type="checkbox" id="premiumConsent"> Je choisis de reprendre ces prénoms et dates et dispose de l'autorisation nécessaire pour les personnes concernées.</label>
+    <p id="premiumStatus" role="status" aria-live="polite"></p>
+    <div class="commit-actions"><button class="btn btn-quiet" id="premiumRefresh">Actualiser les profils</button><button class="btn btn-outline" id="premiumExport">Exporter mon dossier</button><button class="btn btn-gold" id="premiumDemo" hidden>Essayer le livret de démonstration</button></div>
+    <p class="microcopy">Aucun souvenir, photo, ressenti ou récit familial n'est transféré. L'export reste sur ton appareil. Les autres offres existantes restent disponibles dans le moteur ORIGIN ; leur raccordement viendra séparément.</p>
+  </div>
+</section>
+</main>
+<footer class="footer"><div class="footer-brand"><img src="logo-origin-officiel.png" alt=""/><span><b>ORIGIN</b><small>Comprends ta vie, éclaire ton chemin.</small></span></div><p>Une invitation à explorer, jamais à te définir.</p><div><a href="./#accueil" target="_blank" rel="noopener">Retour à la démonstration</a><button id="footerPrivacy">Confidentialité</button></div><small class="footer-disclaimer">Prototype de démonstration. Les lectures symboliques ne constituent ni diagnostic, ni conseil médical ou psychologique.</small></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog class="modal" id="privacyDialog" aria-labelledby="privacyTitle"><div class="modal-body"><button class="modal-close" id="privacyClose" aria-label="Fermer">×</button><span class="eyebrow">LA CONFIANCE AVANT TOUT</span><h2 id="privacyTitle">Ton intimité mérite<br><em>du respect.</em></h2><p>Tes réponses, notes et souvenirs restent dans ce navigateur tant que tu ne demandes pas de sauvegarde en ligne. Avec un compte vérifié, tu peux choisir de sauvegarder ton carnet et ton arbre personnel : leur contenu est alors transmis au serveur et chiffré au repos. Cette protection n'est pas un chiffrement de bout en bout.</p><p><strong>Attention :</strong> le stockage du navigateur n'est pas chiffré. Une personne utilisant le même appareil ou du code exécuté sous le même domaine pourrait potentiellement y accéder. Évite d'y enregistrer des informations très sensibles, surtout sur un appareil partagé.</p><p>La participation de l'autre personne fonctionne ici <strong>sur le même appareil</strong> et avec son accord. Les invitations et le partage entre comptes à distance ne sont pas encore disponibles. Un compte personnel permet seulement les fonctions installées et activées sur cet hébergement. La lecture astrologique affichée se limite au signe solaire approximatif ; la numérologie est présentée comme un support symbolique.</p><p>Si une relation te met en danger ou implique de la violence, cet outil n'est pas adapté pour régler la situation : privilégie un soutien professionnel et les ressources de protection.</p><button class="btn btn-gold btn-full" id="privacyAccept">J'ai compris</button></div></dialog>
+<script src="origin-storage.js" defer></script>
+<script src="origin-profiles.js" defer></script>
+<script src="origin-vivant.js" defer></script>
+<script src="origin-integration.js" defer></script>
+</body>
+</html>

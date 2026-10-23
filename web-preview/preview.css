@@ -1,0 +1,6 @@
+.preview-banner{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:16px max(20px,5vw);background:#20170b;border-bottom:1px solid #be9657;color:#f5e6cb;font:14px/1.6 system-ui,sans-serif}
+.preview-banner strong{display:block;font-size:12px;letter-spacing:.12em;color:#f2cd8b}
+.preview-banner span{display:block;max-width:78ch;font-size:12px}
+.preview-banner button{padding:10px 14px;min-height:44px;border:1px solid #c6a16c;border-radius:4px;background:#100d08;color:#f3d5a4;cursor:pointer;white-space:normal}
+.preview-banner button:focus-visible{outline:2px solid #ffe2ac;outline-offset:3px}
+@media(max-width:520px){.preview-banner{padding:14px 18px}.preview-banner button{width:100%}}

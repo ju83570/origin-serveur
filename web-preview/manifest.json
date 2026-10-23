@@ -1,0 +1,39 @@
+{
+  "kind": "origin-fictional-web-preview",
+  "source_branch": "preview/origin-revolution",
+  "source_commit_at_build": "5453878d0398f3557796ad0f3be0c6f342d47480",
+  "source_sha256": {
+    "index.html": "20d83d716fdc54c0dd6336fc59167db4d56f90980e43d5bb03294b73d3a5c663",
+    "arbre-vivant.html": "aea02837a71c8f7f4edafab6ebb3bf8a42c400472ba2e4a7a898d54b499e3e53",
+    "origin-vivant.js": "b9ac1ceabd3bfab5d0dbd64a70ffa352eab9ff597bd7062847243025c641d93f",
+    "origin-profiles.js": "28ae75575143ee92d545c275fb560e3aea1837f619b79bc40a146e8623100297",
+    "origin-storage.js": "f95a21ebfa6db1e324ffc55c078ac0ea97dd151c81b3d6dc2062dcf5b225e857",
+    "origin-integration.js": "cd6be851b13efcd76925b821f25f80ccfab5af714d23ba9b9b7473cc8939d037",
+    "origin-vivant.css": "94677b3d2ba078d2ab3879fef2577700e0f980c68fb8f1e4369fc7b1f14136d6",
+    "logo-origin-officiel.png": "19cc0a4f7b32219a18c1cf489aeaea7f5385a086db34ed79986fe387f7640d47"
+  },
+  "storage_keys": {
+    "origin_vivant_local_v1": "origin_web_preview_carnet_v1",
+    "origin_arbre_vivant_v1": "origin_web_preview_tree_v1",
+    "origin_restore_recovery_v1": "origin_web_preview_recovery_v1",
+    "origin_premium_handoff_v1": "origin_web_preview_handoff_v1"
+  },
+  "payments": false,
+  "accounts": false,
+  "external_api_calls": false,
+  "personal_client_data": false,
+  "server_sources_included": false,
+  "files": {
+    ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "arbre-vivant.html": "e469fa8ee757ba340cb229ff65cf26005638d96b7977d50e273bbbb9a9635de3",
+    "index.html": "73cd604451118f1993bd615c970e8fc29626d2b8fa89c42aa948e77ea0733f69",
+    "logo-origin-officiel.png": "19cc0a4f7b32219a18c1cf489aeaea7f5385a086db34ed79986fe387f7640d47",
+    "origin-integration.js": "2fe7d267ebab8ca5016a47573a01e1d88fd046e85e210363b597f1ff8676183c",
+    "origin-profiles.js": "0bb447344f45271e4ab1f228276b4d082d44a41fb6263eb8a58bfaa0068a3631",
+    "origin-storage.js": "7ee400d4355f0a630e311dd2941dff360a5e327cd4bbd0013c5ace58128e7f2a",
+    "origin-vivant.css": "94677b3d2ba078d2ab3879fef2577700e0f980c68fb8f1e4369fc7b1f14136d6",
+    "origin-vivant.js": "5ba804a94e7b954b81a8f75ebb83fef94baad73914d49c45377900e2c9de1e5a",
+    "preview-fixtures.js": "338d1bd26cba8fded649668e7a2b2b7d761cead1b922b8500aa60c757fd9e374",
+    "preview.css": "e10a49e6e2a084e5a3ebbbed3c851fc61edc60392f5c1d933b13ed2e9fd4cb21"
+  }
+}
