@@ -8,6 +8,14 @@ La PR cible cette branche d’audit, car `main` ne contient pas encore les sourc
 VIVANT. Cela permet une revue UX ciblée, sans y mélanger les correctifs de sécurité
 précédents. Aucune fusion ni publication du site public n’est effectuée.
 
+La branche et la description `PULL_REQUEST.md` sont publiées pour revue. La
+création automatique du brouillon PR reste bloquée par le proxy cloud :
+`api.github.com` renvoie `403 Forbidden` avant l’accès à GitHub. Le domaine a été
+ajouté au brouillon de configuration réseau, en préservant les autres domaines ;
+ce brouillon doit être enregistré/appliqué puis l’environnement de développement
+publié dans les réglages pour activer la règle. Cela ne publie pas le site.
+Aucune PR créée n’est annoncée tant qu’un lien de PR confirmé n’a pas été obtenu.
+
 ## Changements concrets
 
 - **Carnet** : CTA « Écrire dans mon Carnet » avant l’historique ; sujet et texte,
