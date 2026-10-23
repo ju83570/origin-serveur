@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-23",
+  "branch": "feat/issue-3-carnet-constellation",
+  "base_commit": "f13a3459b41d6be643103d2d998f7abd127dece6",
+  "pr_base": "fix/audit-final-2026-10-23",
+  "tests": {
+    "javascript": 24,
+    "browser": 24,
+    "python": 38,
+    "integration": 40
+  },
+  "total": 126,
+  "failed": 0,
+  "skipped": 0,
+  "php_assertions": 42,
+  "javascript_syntax_files": 4,
+  "premium_and_payment_files_unchanged": [
+    "app.py",
+    "premium_security.py",
+    "hostinger/vivant/origin-commercial.js",
+    "hostinger/vivant/origin-integration.js",
+    "hostinger/vivant/api/.htaccess",
+    "hostinger/vivant/api/accounts.php",
+    "hostinger/vivant/api/backups.php",
+    "hostinger/vivant/api/bootstrap.php",
+    "hostinger/vivant/api/checkout.php",
+    "hostinger/vivant/api/index.php",
+    "hostinger/vivant/api/payment-policy.php",
+    "hostinger/vivant/api/registry.php",
+    "hostinger/vivant/api/registry.sql",
+    "hostinger/vivant/api/schema.sql",
+    "hostinger/vivant/api/security-policy.php",
+    "hostinger/vivant/api/stripe-events.php",
+    "hostinger/vivant/api/stripe-inbox.php"
+  ],
+  "screenshots": "Profils, dates adultes et texte entièrement fictifs. Aucun portrait client.",
+  "deployed": false,
+  "merged": false
+}

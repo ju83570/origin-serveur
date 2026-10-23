@@ -60,3 +60,19 @@ test('un arbre personnel corrompu est signalé plutôt qu’omis de la sauvegard
  const s=store({[C]:JSON.stringify(notebook()),[T]:JSON.stringify({demo:false,people:'corrompu'})});
  assert.throws(()=>snapshot(s));
 });
+
+test('les pages rédigées survivent à un export et une restauration sans changer les archives',()=>{
+ const original={...notebook(),mirrors:[{id:'old-mirror'}],pages:[{id:'page-1',subject:'gratitude',text:'Un merci fictif.',at:'2026-10-23T08:00:00Z',updatedAt:'2026-10-23T09:00:00Z'}]};
+ const first=store({[C]:JSON.stringify(original)}),second=store();
+ restore(snapshot(first),second);assert.deepEqual(JSON.parse(second.getItem(C)),original);
+});
+test('une page invalide ou un format futur bloque la restauration avant toute écriture',()=>{
+ const page={id:'p',subject:'libre',text:'Une page fictive.',at:'2026-10-23T08:00:00Z'};
+ for(const pages of [[{...page,subject:'future'}],[{...page,text:''}],[{...page,text:'a'.repeat(4001)}],[page,page],[{...page,updatedAt:'invalid'}],'future']){
+  const s=store({[C]:'copie à préserver'});assert.throws(()=>restore({...notebook(),pages},s));assert.equal(s.getItem(C),'copie à préserver');assert.equal(s.getItem('origin_restore_recovery_v1'),null);
+ }
+});
+test('une sauvegarde antérieure sans pages reste identique et conserve ses champs',()=>{
+ const original={...notebook(),journeyStart:'2026-01-01',ritualDone:[1],legacyMetadata:'conserver'};const s=store();
+ restore(original,s);assert.deepEqual(JSON.parse(s.getItem(C)),original);assert.equal(snapshot(s).carnet.pages,undefined);
+});

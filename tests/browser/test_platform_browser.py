@@ -161,7 +161,7 @@ class BrowserTests(unittest.TestCase):
         hashed=docker('exec','-i',PHP,'php','-r','echo password_hash(stream_get_contents(STDIN), PASSWORD_DEFAULT);',input=password)
         sql(f"INSERT INTO users(email,password_hash,verified_at,privacy_version,privacy_accepted_at,created_at) VALUES('{email}','{hashed}',UTC_TIMESTAMP(),'test',UTC_TIMESTAMP(),UTC_TIMESTAMP());")
         self.page.on('dialog',lambda dialog:dialog.accept())
-        original={'draft':{'nameA':'Lina'},'mirrors':[],'memories':[{'text':'Un souvenir de test'}],'checkins':[]}
+        original={'draft':{'nameA':'Lina'},'mirrors':[],'memories':[{'text':'Un souvenir de test'}],'checkins':[], 'pages':[{'id':'page-fiction','subject':'gratitude','text':'Page entièrement fictive pour la sauvegarde de test.','at':'2026-10-23T08:00:00Z'}]}
         family={'demo':False,'people':[{'id':'a','name':'Lina','parents':[],'partners':[]}], 'selected':'a','anchor':'a'}
         self.page.evaluate("data => {localStorage.setItem('origin_vivant_local_v1',JSON.stringify(data[0]));localStorage.setItem('origin_arbre_vivant_v1',JSON.stringify(data[1]));}",[original,family])
         self.page.reload()
@@ -179,6 +179,7 @@ class BrowserTests(unittest.TestCase):
             self.page.locator('[data-account=load]').click()
         restored=self.page.evaluate("JSON.parse(localStorage.getItem('origin_vivant_local_v1'))")
         self.assertEqual(restored['memories'][0]['text'],'Un souvenir de test')
+        self.assertEqual(restored['pages'],original['pages'])
         self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('origin_arbre_vivant_v1')).people[0].name"),'Lina')
         with self.page.expect_response(lambda r:'op=logout' in r.url) as logout:
             self.page.locator('[data-account=logout]').click()

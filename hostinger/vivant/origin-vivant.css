@@ -40,3 +40,23 @@
 .premium-draft{margin-top:25px}.premium-consent{display:flex;align-items:flex-start;gap:12px;line-height:1.6}.premium-consent input{margin-top:6px;flex:none;width:20px;height:20px;accent-color:var(--gold)}
 #premiumStatus{color:var(--gold-bright);min-height:3em;overflow-wrap:anywhere}
 @media(max-width:520px){.nav{gap:20px}.ecosystem-levels .panel-card{padding:24px 18px}.premium-draft .commit-actions{align-items:stretch}.premium-draft .btn{white-space:normal;text-align:center}}
+
+/* Carnet et Constellation : mêmes composants, commandes accessibles au clavier. */
+[hidden]{display:none!important}
+.journey-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;margin:28px 0;color:var(--gold-bright);font-size:13px}
+.journey-links a{color:inherit;text-underline-offset:5px}
+.carnet-intro{margin:20px 0 28px}.carnet-intro p{max-width:65ch;line-height:1.8;color:var(--muted)}
+.page-editor{margin-bottom:22px}.page-editor h2{font:normal 30px var(--serif);margin-top:0}
+.carnet-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.automatic-history{margin-top:24px}.page-record p{white-space:pre-wrap;overflow-wrap:anywhere}
+.page-record:focus{outline:2px solid var(--gold)}
+.page-record .commit-actions{margin-top:16px;gap:12px}
+#pageStatus{min-height:1.5em;color:var(--gold-bright);overflow-wrap:anywhere}
+#pageStatus[data-error=true]{color:#ffd1bd}
+.constellation-panel{max-width:920px;margin:0 auto 40px;padding:32px}
+.constellation-panel .field-block{margin-top:24px}.constellation-result{margin:24px 0;border-top:1px solid var(--line);padding-top:22px}
+.constellation-result h2{font:normal 30px var(--serif);overflow-wrap:anywhere}
+.constellation-result p{line-height:1.8}.constellation-result .symbolic-bar{margin-top:18px}
+.commit-actions{flex-wrap:wrap}.page-editor .btn,.constellation-panel .btn{white-space:normal}
+button:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold-bright);outline-offset:4px}
+@media(max-width:600px){.carnet-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.constellation-panel{padding:22px 18px}.tree-prefill-options{flex-direction:column}.page-record .btn{min-height:44px}.carnet-intro .btn{width:100%;white-space:normal}.constellation-panel .commit-actions{align-items:stretch;flex-direction:column}}
