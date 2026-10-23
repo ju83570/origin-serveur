@@ -1,5 +1,11 @@
 # ORIGIN RÉVOLUTION — serveur et démonstration locale
 
+[**▶ Aperçu web — démonstration fictive**](https://stackblitz.com/github/ju83570/origin-serveur/tree/origin-preview-demo?view=preview&startScript=start)
+
+Ouverture dans StackBlitz avec démarrage automatique : Miroir, Arbre, Carnet et
+Constellation préremplis. Aucun compte, clé API ou paiement réel. Voir
+[le périmètre et les tests de l’aperçu](review/web-preview/README.md).
+
 ## Carnet et Constellation — issue #3
 
 La branche `feat/issue-3-carnet-constellation` ajoute l’écriture directe dans le

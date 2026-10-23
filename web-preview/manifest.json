@@ -1,7 +1,7 @@
 {
   "kind": "origin-fictional-web-preview",
   "source_branch": "preview/origin-revolution",
-  "source_commit_at_build": "5453878d0398f3557796ad0f3be0c6f342d47480",
+  "source_commit_at_build": "a260bf760da50524262ec6b4f86a9151282fc73a",
   "source_sha256": {
     "index.html": "20d83d716fdc54c0dd6336fc59167db4d56f90980e43d5bb03294b73d3a5c663",
     "arbre-vivant.html": "aea02837a71c8f7f4edafab6ebb3bf8a42c400472ba2e4a7a898d54b499e3e53",
@@ -22,7 +22,8 @@
   "accounts": false,
   "external_api_calls": false,
   "personal_client_data": false,
-  "server_sources_included": false,
+  "commercial_server_sources_included": false,
+  "static_preview_server_included": true,
   "files": {
     ".nojekyll": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "arbre-vivant.html": "e469fa8ee757ba340cb229ff65cf26005638d96b7977d50e273bbbb9a9635de3",
@@ -33,7 +34,9 @@
     "origin-storage.js": "7ee400d4355f0a630e311dd2941dff360a5e327cd4bbd0013c5ace58128e7f2a",
     "origin-vivant.css": "94677b3d2ba078d2ab3879fef2577700e0f980c68fb8f1e4369fc7b1f14136d6",
     "origin-vivant.js": "5ba804a94e7b954b81a8f75ebb83fef94baad73914d49c45377900e2c9de1e5a",
+    "package.json": "d6ad57e1fb06ea3643bb8304164965de98fae988fd89ee268b4ca202ccb40bd0",
     "preview-fixtures.js": "338d1bd26cba8fded649668e7a2b2b7d761cead1b922b8500aa60c757fd9e374",
+    "preview-server.cjs": "08d5f9c16f86e181b454fa012e71e12459f797136e40abc1ce67e0499faf543c",
     "preview.css": "e10a49e6e2a084e5a3ebbbed3c851fc61edc60392f5c1d933b13ed2e9fd4cb21"
   }
 }

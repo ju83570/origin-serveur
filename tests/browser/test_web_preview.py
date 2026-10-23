@@ -1,12 +1,11 @@
 """Aperçu public statique : uniquement des fixtures, aucun backend accessible."""
 import hashlib
-from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import shutil
+import subprocess
 from tempfile import TemporaryDirectory
-import threading
 import unittest
 from urllib.parse import urlparse
 
@@ -16,24 +15,20 @@ ROOT=Path(__file__).resolve().parents[2]
 DIRECTORY=ROOT/'web-preview'
 
 
-class QuietHandler(SimpleHTTPRequestHandler):
-    def log_message(self,*args):pass
-
-
 class WebPreviewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.output=TemporaryDirectory(prefix='origin-web-preview-test-')
         shutil.copytree(DIRECTORY,Path(cls.output.name)/'origin-serveur')
-        cls.server=ThreadingHTTPServer(('127.0.0.1',0),partial(QuietHandler,directory=cls.output.name))
-        cls.thread=threading.Thread(target=cls.server.serve_forever,daemon=True);cls.thread.start()
-        cls.base='http://127.0.0.1:'+str(cls.server.server_port)+'/origin-serveur'
+        cls.server=subprocess.Popen(['node',str(DIRECTORY/'preview-server.cjs')],env={**os.environ,'ORIGIN_PREVIEW_ROOT':str(Path(cls.output.name)/'origin-serveur'),'ORIGIN_PREVIEW_PORT':'0','ORIGIN_PREVIEW_HOST':'127.0.0.1','ORIGIN_PREVIEW_BASE':'/origin-serveur'},stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+        ready=json.loads(cls.server.stdout.readline());assert ready['event']=='origin_preview_ready'
+        cls.base='http://127.0.0.1:'+str(ready['port'])+'/origin-serveur'
         cls.playwright=sync_playwright().start()
         cls.browser=cls.playwright.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
 
     @classmethod
     def tearDownClass(cls):
-        cls.browser.close();cls.playwright.stop();cls.server.shutdown();cls.server.server_close();cls.thread.join();cls.output.cleanup()
+        cls.browser.close();cls.playwright.stop();cls.server.terminate();cls.server.communicate(timeout=10);cls.output.cleanup()
 
     def setUp(self):
         self.context=self.browser.new_context(viewport={'width':390,'height':844},reduced_motion='reduce')
@@ -90,7 +85,8 @@ class WebPreviewTests(unittest.TestCase):
         self.assertIn("connect-src 'none'",policy)
         for path in ['/api/?op=checkout','/api/bootstrap.php','/app.py','/.env','/origin-commercial.js']:
             self.assertEqual(self.context.request.get(self.base+path).status,404)
-        self.assertEqual(self.context.request.post(self.base+'/api/?op=checkout',data='{}').status,501)
+        self.assertEqual(self.context.request.post(self.base+'/api/?op=checkout',data='{}').status,405)
+        health=self.context.request.get(self.base+'/health').json();self.assertFalse(health['payments']);self.assertFalse(health['accounts'])
         self.assertEqual(self.page.locator('a[href^="https://origin-famille.fr"]').count(),0)
 
     def test_reset_from_the_tree_only_resets_the_demo_namespace(self):

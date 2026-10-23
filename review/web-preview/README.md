@@ -1,12 +1,26 @@
 # Aperçu web ORIGIN RÉVOLUTION
 
 Cette démonstration de test est séparée du site public et de ses comptes.
-URL prévue : https://ju83570.github.io/origin-serveur/
+Ouverture dans le navigateur :
+[Aperçu web](https://stackblitz.com/github/ju83570/origin-serveur/tree/origin-preview-demo?view=preview&startScript=start).
+
+StackBlitz importe la branche contenant uniquement les fichiers de la démo et
+démarre le serveur statique dans le navigateur. Aucun package tiers à installer,
+aucune clé API et aucun paiement. L’import et le démarrage automatique suivent
+les paramètres documentés de StackBlitz (`dev`/`start`, `view=preview`).
+
+Limite de vérification : le serveur Node et ses parcours sont testés localement
+dans Chromium. Le proxy du cloud interdit `stackblitz.com`, donc l’ouverture
+complète du service tiers n’a pas pu être vérifiée depuis cette machine. Le
+navigateur du propriétaire utilise sa propre connexion. GitHub Pages n’a pas
+été activé : l’API renvoie `Resource not accessible by integration` ; aucun site
+Pages existant n’a été remplacé. Ne pas annoncer une URL GitHub Pages active.
 
 Le bundle `web-preview/` est construit depuis les sources actuelles de
 `hostinger/vivant/` par `tools/vivant/build_web_preview.py` ; les fonctions du
 Miroir, de l’Arbre, du Carnet et de la Constellation sont réutilisées. Il n’inclut
-aucune source Python/PHP, configuration privée ou base. Aucune nouvelle
+aucune source Python/PHP, configuration privée ou base. Le petit serveur Node
+sert uniquement une liste fermée de fichiers statiques. Aucune nouvelle
 fonctionnalité n’est fusionnée dans `main` ou installée chez Hostinger.
 
 ## Périmètre de la démonstration
@@ -23,7 +37,7 @@ fonctionnalité n’est fusionnée dans `main` ou installée chez Hostinger.
 - Pas de pixel de suivi ni service tiers d’analyse. L’hébergeur statique reçoit
   les requêtes de pages/ressources, pas le contenu du Carnet ou de l’Arbre.
 
-Le site de test utilise uniquement le contenu de `web-preview/`, publié sur une
+L’aperçu utilise uniquement le contenu de `web-preview/`, publié sur une
 branche Git dédiée à ses fichiers statiques. Aucun CNAME, réglage DNS ou site
 `origin-famille.fr` n’est modifié. `.nojekyll` évite de traiter le bundle comme
 un site Ruby et `noindex` le marque comme démonstration non destinée aux recherches.
@@ -34,7 +48,7 @@ Six tests navigateur réussis : quatre expériences disponibles, écriture et
 persistance du Carnet, Arbre → Constellation → Miroir sans ressaisie, aucune
 API/paiement/source serveur, réinitialisation limitée aux essais, largeurs
 320/390/768/1440 px. L’ensemble est testé sous un préfixe `/origin-serveur/`,
-comme le site GitHub Pages. Résultats dans `browser-tests.txt`.
+comme un éventuel site de projet. Résultats dans `browser-tests.txt`.
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 tools/vivant/build_web_preview.py

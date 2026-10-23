@@ -35,7 +35,7 @@ BANNER = '''<aside class="preview-banner" aria-label="Démonstration fictive">
 
 def build(output=OUTPUT):
     output.mkdir(parents=True, exist_ok=True)
-    expected = set(FILES) | {'preview-fixtures.js', 'preview.css', '.nojekyll', 'manifest.json'}
+    expected = set(FILES) | {'preview-fixtures.js', 'preview.css', 'preview-server.cjs', 'package.json', '.nojekyll', 'manifest.json'}
     if any(p.name not in expected or not p.is_file() for p in output.iterdir()):
         raise RuntimeError('La sortie contient des fichiers inconnus : les préserver avant de reconstruire.')
     provenance = {}
@@ -60,7 +60,7 @@ def build(output=OUTPUT):
                 text = text.replace('<body>', '<body>\n'+BANNER, 1)
             data = text.encode('utf-8')
         (output / name).write_bytes(data)
-    for name in ['preview-fixtures.js', 'preview.css']:
+    for name in ['preview-fixtures.js', 'preview.css', 'preview-server.cjs', 'package.json']:
         shutil.copyfile(ROOT / 'tools/vivant/preview' / name, output / name)
     (output / '.nojekyll').write_text('')
     manifest = {
@@ -68,7 +68,8 @@ def build(output=OUTPUT):
         'source_commit_at_build': subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         'source_sha256': provenance, 'storage_keys': KEYS,
         'payments': False, 'accounts': False, 'external_api_calls': False,
-        'personal_client_data': False, 'server_sources_included': False,
+        'personal_client_data': False, 'commercial_server_sources_included': False,
+        'static_preview_server_included': True,
         'files': {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(output.iterdir()) if p.name != 'manifest.json'},
     }
     (output / 'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
