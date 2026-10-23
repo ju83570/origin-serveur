@@ -23,6 +23,7 @@
   <button class="nav-item active" data-go="accueil" aria-current="page">✦ <span>Découvrir</span></button>
   <button class="nav-item" data-go="miroir">◈ <span>Le Miroir</span></button>
   <button class="nav-item" data-go="arbre">♧ <span>Mon Arbre</span></button>
+  <button class="nav-item" data-go="constellation">✧ <span>Constellation</span></button>
   <button class="nav-item" data-go="parcours">◎ <span>Mon Parcours</span></button>
   <button class="nav-item" data-go="carnet">▤ <span>Mon Carnet</span></button>
   <button class="nav-item" data-go="premium">✧ <span>Mes livrets</span></button>
@@ -69,14 +70,15 @@
     <div class="step-title"><span class="small-orb">01</span><p>TOUT COMMENCE PAR UN LIEN</p><h2>Qui aimerais-tu<br><em>mieux comprendre ?</em></h2></div>
     <p class="stage-description">Choisis la relation que tu souhaites éclairer. Aucune réponse n'est bonne ou mauvaise.</p>
     <div class="relationship-grid">
-      <button class="choice-card selected" data-relationship="couple"><span>♡</span><strong>Mon couple</strong><small>Retrouver un langage commun</small></button>
+      <button class="choice-card" data-relationship="couple"><span>♡</span><strong>Mon couple</strong><small>Retrouver un langage commun</small></button>
       <button class="choice-card" data-relationship="enfant"><span>✿</span><strong>Mon enfant</strong><small>Comprendre au lieu de réagir</small></button>
       <button class="choice-card" data-relationship="parent"><span>♧</span><strong>Un parent</strong><small>Éclairer notre histoire</small></button>
-      <button class="choice-card" data-relationship="proche"><span>✧</span><strong>Un proche</strong><small>Prendre soin de notre lien</small></button>
+      <button class="choice-card" data-relationship="fratrie"><span>✦</span><strong>Ma fratrie</strong><small>Frère, sœur ou lien fraternel</small></button>
+      <button class="choice-card selected" data-relationship="proche"><span>✧</span><strong>Autre lien</strong><small>Prendre soin de notre lien</small></button>
     </div>
-    <div class="dual-fields"><label><span>Comment t'appelles-tu ?</span><input id="nameA" maxlength="42" placeholder="Ton prénom" autocomplete="given-name"></label><label><span>Comment s'appelle cette personne ?</span><input id="nameB" maxlength="42" placeholder="Son prénom"></label></div>
+    <div class="dual-fields"><label><span>Comment t'appelles-tu ?</span><input id="nameA" maxlength="46" placeholder="Ton prénom" autocomplete="given-name"></label><label><span>Comment s'appelle cette personne ?</span><input id="nameB" maxlength="46" placeholder="Son prénom"></label></div>
     <div class="optional-toggle"><button id="symbolicToggle" class="text-btn" aria-expanded="false">✧ Ajouter nos dates de naissance <span>facultatif</span> <b>⌄</b></button></div>
-    <div class="symbolic-fields hidden" id="symbolicFields"><div class="dual-fields"><label><span>Ta date de naissance</span><input id="birthA" type="date" min="1900-01-01" max="2100-12-31"></label><label><span>Sa date de naissance</span><input id="birthB" type="date" min="1900-01-01" max="2100-12-31"></label></div><p class="microcopy">Les correspondances numérologiques et astrologiques sont des lectures symboliques, non des diagnostics ou des prédictions. Pour les enfants, utilise les informations uniquement avec l'autorisation du responsable légal.</p></div>
+    <div class="symbolic-fields hidden" id="symbolicFields"><div class="dual-fields"><label><span>Ta date de naissance</span><input id="birthA" type="date" min="1850-01-01" max="2100-12-31"></label><label><span>Sa date de naissance</span><input id="birthB" type="date" min="1850-01-01" max="2100-12-31"></label></div><p class="microcopy">Les correspondances numérologiques et astrologiques sont des lectures symboliques, non des diagnostics ou des prédictions. Pour les enfants, utilise les informations uniquement avec l'autorisation du responsable légal.</p></div>
     <div class="tree-prefill" id="treePrefill" hidden><label for="treePersonA">Personnes de mon Arbre Vivant</label><div class="tree-prefill-options"><select id="treePersonA" aria-label="Choisir la première personne"></select><select id="treePersonB" aria-label="Choisir la seconde personne"></select><button class="btn btn-outline btn-sm" id="useTreePersons">Utiliser</button></div><small>Les informations proviennent du même navigateur sur ce domaine. Rien n'est transmis à un serveur par cette page.</small></div>
     <div class="step-actions"><span>✧ Une expérience à ton rythme</span><button class="btn btn-gold" data-next="1">Continuer <span>→</span></button></div>
   </div>
@@ -129,6 +131,31 @@
   <div class="memory-zone"><div class="section-heading left"><span class="eyebrow">LES TRACES QUI COMPTENT</span><h2>La mémoire des petits instants.</h2><p>Ajoute les souvenirs dont tu es certain(e), ou indique clairement qu'il s'agit d'un récit entendu. Aucun héritage n'est supposé par ORIGIN.</p></div><div class="memory-layout"><form id="memoryForm" class="panel-card"><h3>✧ Déposer un souvenir</h3><div class="dual-fields"><label><span>Personne ou branche familiale</span><input id="memoryPerson" maxlength="80" placeholder="Ex. Ma grand-mère"></label><label><span>Année (facultatif)</span><input id="memoryYear" type="number" min="1800" max="2100" placeholder="Ex. 1998"></label></div><label class="field-block"><span>Quel est ce souvenir ?</span><textarea id="memoryText" required maxlength="1400" rows="3" placeholder="Une phrase qu'elle répétait, un rituel du dimanche, une leçon reçue..."></textarea></label><label class="field-block"><span>Nature de l'information</span><select id="memoryKind"><option value="souvenir">Souvenir vécu</option><option value="recit">Récit transmis</option><option value="hypothese">Piste personnelle à vérifier</option></select></label><button class="btn btn-gold" type="submit">Ajouter à mon héritage ＋</button></form><div class="memories-panel"><h3>Mes éclats de mémoire <span id="memoryCount">0</span></h3><div id="memoryList" class="memory-list"><p class="empty-note">Ton premier souvenir trouvera sa place ici.</p></div></div></div></div>
 </section>
 
+<!-- CONSTELLATION : profils issus de l'Arbre, sans nouvelle base de personnes -->
+<section class="view" id="view-constellation" aria-label="La Constellation des liens">
+  <nav class="journey-links" aria-label="Parcours des liens"><a href="arbre-vivant.html" id="constellationBack">← Retour à mon Arbre</a><button class="text-btn" data-go="carnet">Mon Carnet →</button></nav>
+  <div class="page-heading"><span class="eyebrow">DEUX PERSONNES, UN LIEN À EXPLORER</span><h1>Ma <em>Constellation.</em></h1><p>Choisis deux personnes de ton Arbre, sans ressaisir leurs informations. Leurs dates restent facultatives.</p></div>
+  <div class="panel-card constellation-panel">
+    <p id="constellationSourceStatus" role="status"></p>
+    <div class="commit-actions"><a class="btn btn-outline" href="arbre-vivant.html">Créer ou importer mon Arbre</a><button class="btn btn-quiet" id="constellationDemo">Essayer une démonstration fictive</button></div>
+    <label class="field-block"><span>Choisir les personnes depuis</span><select id="constellationSource"><option value="tree">Mon Arbre personnel</option><option value="manual">Une saisie manuelle</option></select></label>
+    <div class="dual-fields" id="constellationTreeFields">
+      <label><span>Première personne</span><select id="constellationPersonA"></select></label>
+      <label><span>Deuxième personne</span><select id="constellationPersonB"></select></label>
+    </div>
+    <div class="dual-fields" id="constellationManualFields" hidden>
+      <label><span>Prénom de la première personne</span><input id="constellationNameA" maxlength="46" autocomplete="off"></label>
+      <label><span>Prénom de la deuxième personne</span><input id="constellationNameB" maxlength="46" autocomplete="off"></label>
+      <label><span>Première date de naissance (facultative)</span><input id="constellationBirthA" type="date" min="1850-01-01" max="2100-12-31"></label>
+      <label><span>Deuxième date de naissance (facultative)</span><input id="constellationBirthB" type="date" min="1850-01-01" max="2100-12-31"></label>
+    </div>
+    <label class="field-block"><span>Votre lien — tu peux le corriger pour cette exploration</span><select id="constellationRelation"><option value="auto">Selon les liens renseignés dans l’Arbre</option><option value="parent_child">Parent / enfant</option><option value="siblings">Fratrie</option><option value="partners">Partenaires</option><option value="other">Autre lien</option></select></label>
+    <div id="constellationResult" class="constellation-result" aria-live="polite"></div>
+    <div class="commit-actions"><button class="btn btn-gold" id="constellationMirror">Continuer dans le Miroir →</button><button class="btn btn-outline" id="constellationWrite">Écrire dans mon Carnet</button></div>
+    <p class="microcopy">Les lectures numérologiques sont symboliques : elles ne révèlent ni les pensées ni les sentiments de quelqu’un et ne mesurent pas la compatibilité. Pour les mineurs, utilise les données uniquement avec l’autorisation du responsable légal.</p>
+  </div>
+</section>
+
 <!-- PARCOURS -->
 <section class="view" id="view-parcours" aria-label="Mon Parcours de 90 jours">
   <div class="page-heading"><span class="eyebrow">UNE TRANSFORMATION À TON RYTHME</span><h1>Le Chemin <em>des 90 Jours.</em></h1><p>Ni miracle, ni promesse de transformation automatique. Seulement l'espace de pratiquer ce que tu souhaites faire évoluer.</p></div>
@@ -139,8 +166,18 @@
 <!-- CARNET -->
 <section class="view" id="view-carnet" aria-label="Mon Carnet">
   <div class="page-heading"><span class="eyebrow">TON HISTOIRE T'APPARTIENT</span><h1>Mon Carnet <em>d'Évolution.</em></h1><p>Quelques traces de ton chemin. Tu choisis ce que tu gardes et ce que tu effaces.</p></div>
-  <div class="carnet-stats"><div><strong id="statMirrors">0</strong><span>Miroirs conservés</span></div><div><strong id="statCheckins">0</strong><span>Jours de réflexion</span></div><div><strong id="statMemories">0</strong><span>Souvenirs déposés</span></div></div>
-  <div class="carnet-layout"><section class="carnet-history"><h2>Les pages de ton chemin</h2><div id="historyList" class="history-list"><p class="empty-note">Tes prises de conscience apparaîtront ici lorsque tu choisiras de les enregistrer.</p></div></section><aside class="carnet-actions panel-card"><span class="eyebrow">TU GARDES LE CONTRÔLE</span><h3>Ta mémoire,<br>tes choix.</h3><p>Ton carnet reste sur cet appareil. Si tu crées un compte, une sauvegarde en ligne n'est effectuée que lorsque tu la demandes.</p><button class="btn btn-outline btn-full" id="exportJson">↓ Sauvegarder mes données (.json)</button><button class="btn btn-outline btn-full" id="exportText">↓ Exporter un carnet lisible (.txt)</button><label class="btn btn-outline btn-full import-label" for="importJson">↑ Réimporter mes données (.json)</label><input type="file" accept=".json,application/json" id="importJson" hidden><button class="btn btn-danger btn-full" id="clearData">Effacer mes données ORIGIN VIVANT</button><div class="microcopy">Pour garder les souvenirs sur plusieurs appareils, sauvegarde ton fichier et conserve-le dans un emplacement personnel sécurisé. Ce prototype n'est pas un coffre-fort chiffré.</div></aside></div>
+  <nav class="journey-links" aria-label="Retour à mes liens"><a href="arbre-vivant.html">← Retour à mon Arbre</a><button class="text-btn" data-go="constellation">Ma Constellation →</button></nav>
+  <div class="carnet-intro"><button class="btn btn-gold btn-lg" id="writePage">✎ Écrire dans mon Carnet</button><p>Un ressenti, un merci, une question : quelques mots suffisent. Seul le bouton d’enregistrement conserve ta page.</p></div>
+  <form class="panel-card page-editor" id="pageForm" hidden aria-labelledby="pageEditorTitle">
+    <h2 id="pageEditorTitle">Une nouvelle page pour moi</h2>
+    <label class="field-block"><span>Le sujet de ma page</span><select id="pageSubject"><option value="ressenti">Ressenti</option><option value="souvenir">Souvenir</option><option value="gratitude">Gratitude</option><option value="question">Question</option><option value="libre">Réflexion libre</option></select></label>
+    <label class="field-block"><span>Ce que j’ai envie d’écrire</span><textarea id="pageText" required maxlength="4000" rows="6" aria-describedby="pageHelp" placeholder="Aujourd’hui, j’aimerais garder une trace de…"></textarea></label>
+    <p class="microcopy" id="pageHelp">4 000 caractères maximum. Évite les informations très sensibles sur un appareil partagé.</p>
+    <div class="commit-actions"><button class="btn btn-gold" type="submit" id="savePage">Enregistrer ma page</button><button class="btn btn-quiet" type="button" id="cancelPage">Annuler</button></div>
+  </form>
+  <p id="pageStatus" role="status" aria-live="polite"></p>
+  <div class="carnet-stats"><div><strong id="statPages">0</strong><span>Pages rédigées</span></div><div><strong id="statMirrors">0</strong><span>Miroirs conservés</span></div><div><strong id="statCheckins">0</strong><span>Jours de réflexion</span></div><div><strong id="statMemories">0</strong><span>Souvenirs déposés</span></div></div>
+  <div class="carnet-layout"><div><section class="carnet-history"><h2>Mes pages rédigées</h2><div id="pageList" class="history-list"><p class="empty-note">Ta première page peut commencer par une phrase. Appuie sur « Écrire dans mon Carnet ».</p></div></section><section class="carnet-history automatic-history"><h2>Mes explorations conservées</h2><p class="microcopy">Retrouve ici les Miroirs, souvenirs et bilans enregistrés dans les autres espaces.</p><div id="historyList" class="history-list"></div></section></div><aside class="carnet-actions panel-card"><span class="eyebrow">TU GARDES LE CONTRÔLE</span><h3>Ta mémoire,<br>tes choix.</h3><p>Le stockage local ne synchronise pas tes téléphones et ordinateurs. Exporte une sauvegarde avant de changer d’appareil. Avec un compte, la sauvegarde en ligne reste volontaire.</p><button class="btn btn-outline btn-full" id="exportJson">↓ Sauvegarder mes données (.json)</button><button class="btn btn-outline btn-full" id="exportText">↓ Exporter un carnet lisible (.txt)</button><label class="btn btn-outline btn-full import-label" for="importJson">↑ Réimporter mes données (.json)</label><input type="file" accept=".json,application/json" id="importJson" hidden><button class="btn btn-danger btn-full" id="clearData">Effacer mes données ORIGIN VIVANT</button><div class="microcopy">Conserve ton fichier dans un emplacement personnel sécurisé. Le stockage local n’est pas un coffre-fort chiffré.</div></aside></div>
 </section>
 <section class="view" id="view-premium" aria-label="Mes livrets ORIGIN PREMIUM">
   <div class="page-heading"><span class="eyebrow">UNE EXPÉRIENCE, PLUSIEURS FAÇONS D'AVANCER</span><h1>Un regard neuf.<br><em>Un chemin à toi.</em></h1><p>Explore librement, prépare une lecture personnelle et fais vivre ce qui compte.</p></div>
@@ -170,6 +207,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <dialog class="modal" id="privacyDialog" aria-labelledby="privacyTitle"><div class="modal-body"><button class="modal-close" id="privacyClose" aria-label="Fermer">×</button><span class="eyebrow">LA CONFIANCE AVANT TOUT</span><h2 id="privacyTitle">Ton intimité mérite<br><em>du respect.</em></h2><p>Tes réponses, notes et souvenirs restent dans ce navigateur tant que tu ne demandes pas de sauvegarde en ligne. Avec un compte vérifié, tu peux choisir de sauvegarder ton carnet et ton arbre personnel : leur contenu est alors transmis au serveur et chiffré au repos. Cette protection n'est pas un chiffrement de bout en bout.</p><p><strong>Attention :</strong> le stockage du navigateur n'est pas chiffré. Une personne utilisant le même appareil ou du code exécuté sous le même domaine pourrait potentiellement y accéder. Évite d'y enregistrer des informations très sensibles, surtout sur un appareil partagé.</p><p>La participation de l'autre personne fonctionne ici <strong>sur le même appareil</strong> et avec son accord. Les invitations et le partage entre comptes à distance ne sont pas encore disponibles. Un compte personnel permet seulement les fonctions installées et activées sur cet hébergement. La lecture astrologique affichée se limite au signe solaire approximatif ; la numérologie est présentée comme un support symbolique.</p><p>Si une relation te met en danger ou implique de la violence, cet outil n'est pas adapté pour régler la situation : privilégie un soutien professionnel et les ressources de protection.</p><button class="btn btn-gold btn-full" id="privacyAccept">J'ai compris</button></div></dialog>
 <script src="origin-storage.js" defer></script>
+<script src="origin-profiles.js" defer></script>
 <script src="origin-vivant.js" defer></script>
 <script src="origin-integration.js" defer></script>
 <script src="origin-commercial.js" defer></script>

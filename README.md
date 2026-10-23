@@ -1,8 +1,16 @@
 # ORIGIN RÉVOLUTION — serveur et démonstration locale
 
+## Carnet et Constellation — issue #3
+
+La branche `feat/issue-3-carnet-constellation` ajoute l’écriture directe dans le
+Carnet et une Constellation reliée aux profils de l’Arbre dans les sources
+`hostinger/vivant/`. Voir [la validation UX et les captures fictives](review/issue-3/VALIDATION.md).
+Utiliser la façade locale `platform_demo.py` décrite ci-dessous pour les essayer.
+`demo-visual/` reste la démonstration autonome historique, sans ces évolutions.
+
 ## Correctifs après audit Claude
 
-Le dossier courant commence dans
+Le dossier de l'audit du 23 octobre commence dans
 [review/final-2026-10-23/LIRE_EN_PREMIER.md](review/final-2026-10-23/LIRE_EN_PREMIER.md).
 Il détaille le registre des droits, les correctifs Stripe, le worker privé,
 les tests, les limites et la migration 004. Les dossiers antérieurs restent

@@ -14,7 +14,7 @@ from demo import create_app as create_booklet_demo
 
 ROOT = Path(__file__).resolve().parent
 ASSETS = {"index.html", "arbre-vivant.html", "confidentialite.html", "logo-origin-officiel.png",
-          "origin-vivant.js", "origin-commercial.js", "origin-vivant.css", "origin-integration.js", "origin-storage.js"}
+          "origin-vivant.js", "origin-commercial.js", "origin-vivant.css", "origin-integration.js", "origin-storage.js", "origin-profiles.js"}
 
 
 def create_app(api_url=None):

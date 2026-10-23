@@ -1,0 +1,32 @@
+✔ seul un arbre personnel valide fournit des profils, sans écriture (2.644128ms)
+✔ un arbre incompatible ne devient jamais silencieusement un arbre vide (0.473029ms)
+✔ les profils sont minimisés sans photo, souvenir ou données copiées (8.095359ms)
+✔ les dates historiques de l’Arbre et les années bissextiles sont cohérentes (0.174526ms)
+✔ parent enfant dans les deux sens, fratrie et partenariat documentés (0.412319ms)
+✔ fratrie déclarée sans parents et inconnus sans présomption de couple (0.407523ms)
+✔ relations contradictoires ou parents inconnus ne créent pas de conclusion (0.427531ms)
+✔ une nouvelle première personne conserve la seconde quand elle est distincte (0.332357ms)
+✔ une collision échange les profils ou vide la sélection sans doublon (1.089457ms)
+✔ suppression et sélection périmée ne récupèrent pas arbitrairement un profil (0.319992ms)
+✔ le lien contient seulement un identifiant dans le fragment, sans données personnelles (0.307051ms)
+✔ carnet et arbre personnel inclus, sans données fictives par défaut (1.419888ms)
+✔ restauration des deux espaces et compatibilité avec ancien carnet (0.885993ms)
+✔ échec de stockage : restauration des valeurs précédentes (0.553998ms)
+✔ format futur et contenu invalide ne remplacent aucune donnée (1.411715ms)
+✔ une restauration complète sans arbre supprime celui du compte précédent (0.193996ms)
+✔ un export ancien reste importable et conserve l’arbre local (0.208515ms)
+✔ impossibilité de créer le journal : aucune donnée remplacée (0.212199ms)
+✔ récupération après une interruption au milieu de la restauration (0.180186ms)
+✔ une restauration refusée conserve un journal récupérable si le rollback échoue (0.23685ms)
+✔ un arbre personnel corrompu est signalé plutôt qu’omis de la sauvegarde (0.18388ms)
+✔ les pages rédigées survivent à un export et une restauration sans changer les archives (0.221242ms)
+✔ une page invalide ou un format futur bloque la restauration avant toute écriture (0.205235ms)
+✔ une sauvegarde antérieure sans pages reste identique et conserve ses champs (0.143158ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 148.696245
