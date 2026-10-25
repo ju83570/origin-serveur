@@ -3,7 +3,17 @@
 Montage 32 s, 1080 × 1920, 30 fps, H.264 / AAC, généré à partir du pack
 `ORIGIN_TIKTOK_V3_RACINE_PACK_CLAUDE_CODE.zip` (visuels, fonds sans texte, logo officiel, capture RACINE).
 
-## Versions produites
+## V2 « rythmée » (version retenue)
+`render_v2.py` → `ORIGIN_TikTok_32s_v2_rythme.mp4` : **sans musique** (un son tendance est ajouté dans TikTok),
+texte cinétique mot par mot (Open Sans ExtraBold + Cormorant), coupes calées sur un tempo de 120 BPM (un temps = 0,5 s),
+zooms secs, flashs, secousses, poussière dorée. Le texte à l'écran reprend la voix off, la vidéo se suit donc sans le son.
+Police supplémentaire : Open Sans ExtraBold → `OS-ExtraBold.ttf`.
+```
+python3 render_v2.py <pack> <polices> <sortie> [--preview 1,4.5,9.5,24]
+```
+
+## V1 (première proposition)
+### Versions produites
 - `ORIGIN_TikTok_32s_sous-titres.mp4` : habillage sonore + sous-titres incrustés (version principale).
 - `ORIGIN_TikTok_32s_muette.mp4` : sans audio, sous-titres incrustés.
 - `ORIGIN_TikTok_32s_sans-sous-titres.mp4` : habillage sonore, sans sous-titres (pour poser une voix off ou les sous-titres TikTok).
