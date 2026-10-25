@@ -1,0 +1,84 @@
+1
+00:00:00,000 --> 00:00:01,700
+Ta date de naissance cache un nombre.
+
+2
+00:00:01,700 --> 00:00:03,000
+Tu connais le tien ?
+
+3
+00:00:03,000 --> 00:00:04,300
+Additionne tous les chiffres.
+
+4
+00:00:04,300 --> 00:00:05,900
+Exemple : 17 septembre 1988…
+
+5
+00:00:05,900 --> 00:00:08,000
+43, puis 4 + 3 : 7.
+
+6
+00:00:08,000 --> 00:00:09,200
+Et toi ?
+
+7
+00:00:09,200 --> 00:00:11,000
+Mets ton nombre en commentaire.
+
+8
+00:00:11,000 --> 00:00:13,000
+Chaque nombre possède une interprétation
+
+9
+00:00:13,000 --> 00:00:15,000
+symbolique en numérologie.
+
+10
+00:00:15,000 --> 00:00:16,100
+Envoie la vidéo à ton partenaire,
+
+11
+00:00:16,100 --> 00:00:17,200
+à un ami, à quelqu’un de ta famille.
+
+12
+00:00:17,200 --> 00:00:18,000
+Comparez !
+
+13
+00:00:18,400 --> 00:00:19,800
+Mais un nombre ne raconte pas
+
+14
+00:00:19,800 --> 00:00:20,900
+toute une histoire…
+
+15
+00:00:20,900 --> 00:00:22,000
+Et tes racines ?
+
+16
+00:00:22,000 --> 00:00:23,000
+Découvre RACINE :
+
+17
+00:00:23,000 --> 00:00:24,600
+l’arbre généalogique interactif d’ORIGIN.
+
+18
+00:00:24,600 --> 00:00:26,200
+Explore les générations,
+
+19
+00:00:26,200 --> 00:00:28,000
+leurs fiches et leurs liens.
+
+20
+00:00:28,000 --> 00:00:30,000
+Chez ORIGIN, bien d’autres calculs sont réalisés pour toi.
+
+21
+00:00:30,000 --> 00:00:32,000
+Et avec RACINE, découvre ton histoire familiale.
+
