@@ -6700,5 +6700,12 @@ def webhook():
         # Ne jamais exposer le détail technique au navigateur.
         return jsonify({'status': 'error', 'message': 'Erreur interne temporaire'}), 500
 
+# Photos Racine (Famille / Lignée) : route facultative, jamais bloquante pour le reste de l'app.
+try:
+    from photos_racine_route import register_photos_racine
+    register_photos_racine(app)
+except Exception as _photos_ex:
+    print(f"Route photos Racine non chargée : {_photos_ex}")
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
