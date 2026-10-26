@@ -5712,7 +5712,7 @@ def _resume_donnees_formulaire(data):
         'heure', 'minute', 'ville', 'asc', 'filiation', 'fratrie'
     )
 
-    for i in range(1, 11):
+    for i in range(1, 19):
         vals = {k: data.get(f'{k}{i}', '') for k in champs_personne}
         if not any(v not in (None, '') for v in vals.values()):
             continue
@@ -5751,7 +5751,7 @@ def _resume_donnees_formulaire(data):
     # contexte, situation, commentaire...). Cela permet une reprise manuelle même
     # si le nom exact du champ change côté site.
     champs_connus = {'offre', 'type_analyse', 'email'}
-    for i in range(1, 11):
+    for i in range(1, 19):
         for k in champs_personne:
             champs_connus.add(f'{k}{i}')
     extras = []
@@ -6507,7 +6507,7 @@ def webhook():
                 'asc_force': data.get('asc2') or None,
             })
             if offre in ('famille', 'prestige'):
-                for i in range(3, 11):
+                for i in range(3, 19):
                     if data.get(f'prenom{i}'):
                         _hi, _mi = parse_heure_minute(data, i)
                         clients.append({
