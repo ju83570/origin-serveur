@@ -314,9 +314,9 @@ def main():
     bande_son.render(list(starts), TOTAL, wav)
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
            "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-i", wav,
-           "-c:v", "libx264", "-preset", "medium" if PREVIEW else "slow", "-crf", "19",
+           "-c:v", "libx264", "-preset", "medium" if PREVIEW else "slow", "-crf", "21", "-maxrate", "12M", "-bufsize", "24M",
            "-pix_fmt", "yuv420p", "-profile:v", "high", "-c:a", "aac", "-b:a", "192k",
-           "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "44100", "-shortest", "-movflags", "+faststart", OUT]
+           "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "44100", "-t", f"{TOTAL}", "-movflags", "+faststart", OUT]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     nf = int(round(TOTAL * FPS))
     for f in range(nf):
