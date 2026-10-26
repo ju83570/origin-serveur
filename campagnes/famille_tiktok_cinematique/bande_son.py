@@ -75,7 +75,7 @@ CHORDS = {  # notes MIDI
 PROG = ["Am", "F", "C", "G", "Am", "F", "C", "G", "F", "C"]
 
 
-def render(starts, total, path):
+def render(starts, total, path, with_music=True):
     n = int(total * SR)
     music = np.zeros((n, 2))
     fx = np.zeros((n, 2))
@@ -156,7 +156,9 @@ def render(starts, total, path):
     pts_t = [0, starts[3], starts[6], starts[9] - 2.6, starts[9] - 0.3, starts[9], total]
     pts_g = [0.5, 0.65, 0.85, 1.0, 0.35, 1.15, 1.0]
     arc = np.interp(np.arange(n) / SR, pts_t, pts_g)[:, None]
-    mix = reverb(music, wet=0.35) * arc + reverb(fx, secs=1.8, wet=0.2)
+    mix = reverb(fx, secs=1.8, wet=0.2)
+    if with_music:
+        mix = mix + reverb(music, wet=0.35) * arc
     mix = np.tanh(mix * 1.1)
     mix /= np.abs(mix).max() / 0.89
     fade = int(1.8 * SR)

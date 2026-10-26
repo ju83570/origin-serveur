@@ -8,6 +8,8 @@ reflet lumineux sur les titres, impact + pulsation du CTA final,
 bande-son originale synchronisee (bande_son.py).
 
 Usage : python3 montage_cinematique.py   (ou --preview pour un rendu rapide 540x960)
+        Par defaut : effets sonores seuls (musique ajoutee dans TikTok) ;
+        --avec-musique pour inclure la musique originale.
 """
 import os
 import subprocess
@@ -21,6 +23,7 @@ import bande_son  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PREVIEW = "--preview" in sys.argv
+MUSIC = "--avec-musique" in sys.argv
 W, H = (540, 960) if PREVIEW else (1080, 1920)
 FPS = 30
 TR = 0.7  # duree des transitions
@@ -311,12 +314,12 @@ def compose(t):
 
 def main():
     wav = os.path.join(HERE, "bande_son_origin.wav")
-    bande_son.render(list(starts), TOTAL, wav)
+    bande_son.render(list(starts), TOTAL, wav, with_music=MUSIC)
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
            "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-i", wav,
            "-c:v", "libx264", "-preset", "medium" if PREVIEW else "slow", "-crf", "21", "-maxrate", "12M", "-bufsize", "24M",
            "-pix_fmt", "yuv420p", "-profile:v", "high", "-c:a", "aac", "-b:a", "192k",
-           "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "44100", "-t", f"{TOTAL}", "-movflags", "+faststart", OUT]
+           "-ar", "44100", "-t", f"{TOTAL}", "-movflags", "+faststart", OUT]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     nf = int(round(TOTAL * FPS))
     for f in range(nf):

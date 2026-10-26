@@ -1,6 +1,6 @@
 # ORIGIN Famille — TikTok cinématique « Tu sais d'où tu viens ? »
 
-`ORIGIN_FAMILLE_CINEMATIQUE_1080x1920.mp4` : 1080×1920, 30 i/s, H.264 + AAC, 43,6 s, son normalisé à -14 LUFS.
+`ORIGIN_FAMILLE_CINEMATIQUE_1080x1920.mp4` : 1080×1920, 30 i/s, H.264 + AAC, 43,6 s, effets sonores seuls.
 
 ## Déroulé
 | # | Temps | Visuel | Caméra | Transition sortante |
@@ -18,8 +18,10 @@
 
 Effets permanents : poussière dorée et bokeh flottants, light leaks chauds, grain argentique, vignettage, reflet lumineux qui passe sur chaque titre.
 
-## Bande-son
-Composition originale générée par `bande_son.py` (aucun droit à payer) : nappe émotionnelle (La m – Fa – Do – Sol), arpèges de piano qui s'accélèrent, battement de cœur des scènes 7 à 9, whoosh à chaque transition, montée + impact sur le CTA. Vous pouvez la remplacer par un son de la Commercial Music Library de TikTok (les sons « tendance » ne sont pas autorisés pour les comptes professionnels).
+## Son
+Effets sonores seuls (pas de musique) pour ajouter un son TikTok par-dessus : whoosh à chaque transition, petits impacts, battement de cœur des scènes 7 à 9, montée + impact sur le CTA. Niveau volontairement discret (≈ -20 LUFS) pour rester sous la musique.
+Dans TikTok, choisissez la musique dans la Commercial Music Library (obligatoire pour un compte professionnel), puis réglez « Son original » vers 50–70 %.
+La version avec musique originale reste disponible : `python3 montage_cinematique.py --avec-musique`.
 
 ## Régénérer
 ```
