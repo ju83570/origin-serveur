@@ -6362,14 +6362,34 @@ def _chiffrer_texte(txt):
     txt = _RE_ANNEE.sub(lambda m: str(2000 + (_NB_LETTRES[m.group(1).lower()] if m.group(1) else 0)), txt)
     return txt
 
-def _chiffrer_nombres(obj):
-    """Applique _chiffrer_texte à tous les textes d'un narratif (dict/list/str), sans modifier l'original."""
+_RE_TIRET_CHIFFRES = re.compile(r'(?<=\d)\s*(?:[—–]|&mdash;|&ndash;)\s*(?=\d)')
+_RE_TIRET_LONG = re.compile(r'\s*(?:[—–]|&mdash;|&ndash;)\s*')
+
+def _purger_tirets(txt, court=False):
+    """Retire les tirets longs et demi-cadratins (signature typique d'un texte généré) sur TOUT le livret.
+    Fourchettes de chiffres -> trait d'union ; titres/petits titres -> deux-points ; texte courant -> virgule."""
+    if not isinstance(txt, str) or not txt:
+        return txt
+    if not re.search(r'[—–]|&mdash;|&ndash;', txt):
+        return txt
+    t = _RE_TIRET_CHIFFRES.sub('-', txt)
+    t = _RE_TIRET_LONG.sub(' : ' if court else ', ', t)
+    t = re.sub(r',\s*,', ',', t)
+    t = re.sub(r'\s+([,.;:!?])', r'\1', t)
+    t = re.sub(r':\s*:', ':', t)
+    return t
+
+_CLES_TEXTE_COURT = {'titre', 'eyebrow', 'label', 'nom', 'prenom'}
+
+def _chiffrer_nombres(obj, _cle=None):
+    """Applique _chiffrer_texte (nombres en chiffres) puis _purger_tirets à tous les textes d'un narratif
+    (dict/list/str), sans modifier l'original. Dernière passe commune à toutes les offres."""
     if isinstance(obj, str):
-        return _chiffrer_texte(obj)
+        return _purger_tirets(_chiffrer_texte(obj), court=(_cle in _CLES_TEXTE_COURT))
     if isinstance(obj, list):
-        return [_chiffrer_nombres(x) for x in obj]
+        return [_chiffrer_nombres(x, _cle) for x in obj]
     if isinstance(obj, dict):
-        return {k: _chiffrer_nombres(v) for k, v in obj.items()}
+        return {k: _chiffrer_nombres(v, k) for k, v in obj.items()}
     return obj
 
 _RE_CONDITIONNEL = re.compile(
