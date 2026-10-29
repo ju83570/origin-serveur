@@ -1837,7 +1837,7 @@ GESTES : 2 ou 3 conseils d'action concrets, PROPRES À CE PROFIL (tirés de son 
 - §3 : comment vivre cette période avec les gestes propres à CE profil (voir GESTES), jamais une recette valable pour tout le monde. Aucun « l'univers facilite », aucun « soutien invisible », aucune promesse implicite."""
 
     prompt_b = base + """
-LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2800-3300 mots hors mantra et message final.
+LONGUEUR ABSOLUE : chaque paragraphe = minimum 10 lignes de prose dense. Ce chunk doit atteindre 2400-2900 mots hors mantra et message final.
 
 CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 {
@@ -1858,12 +1858,9 @@ RAPPEL : accorde tous les adjectifs et pronoms selon le genre indiqué dans les 
 - §2 : les zones de croissance possibles -- ce qui pourrait demander plus de pratique, de confiance ou de cadre. Ne dis jamais que la personne évite quelque chose « sans le savoir » et veille à ne pas contredire une force identifiée ailleurs. N'y répète AUCUN geste concret déjà donné au mouvement 2 (marche, écriture, création). Dans ce paragraphe, nomme aussi avec douceur une difficulté possible à dire ses besoins, à se montrer vulnérable ou à demander, formulée comme une invitation et jamais comme un constat. Termine ce paragraphe par UNE phrase courte à se dire à voix haute, à la première personne, sobre et propre à CE profil, présentée comme une pratique à essayer (ex. de forme : « Je peux avancer sans tout comprendre. » -- ne recopie jamais cet exemple).
 - §3 : la transformation à portée -- ce qui cherche à émerger, le prochain seuil. ANGLE UNIQUE : ne reprends pas le tri des rôles, les cadres devenus étroits ni le fait de ne plus se justifier, déjà dits au mouvement 2 ; parle de ce que la personne peut OFFRIR et donner à voir.
 
-Mouvement 4 -- LES GRANDES PÉRIODES CHARNIÈRES (titre poétique libre, 3 paragraphes longs). CONCRET : chaque période contient au moins une image du quotidien précise (un geste, un lieu, un moment de la journée) et, si le texte libre du formulaire le permet, y renvoie ; évite « amplification », « élargissement du terrain de jeu », « coloration », « tonalité » répétés :
-INSTRUCTION ABSOLUE : si les données contiennent un bloc "CHARNIÈRES TEMPORELLES", utilise-le comme matériau interne pour identifier seulement les grandes bascules. NE FAIS JAMAIS une revue année par année et ne restitue jamais tous les repères calculés. Regroupe les années proches en grandes fenêtres cohérentes.
-- §1 : la prochaine grande fenêtre de bascule réellement structurante -- idéalement une période de 1 à 3 ans, avec sa texture et ce qu'elle invite à regarder ou à approfondir (ni bilan, ni tri, ni « geste fondateur », ni nouveau départ imposés).
-- §2 : une ou deux grandes fenêtres plus lointaines sur les 10 à 20 prochaines années, uniquement si elles représentent un changement de cycle, une clôture, un redémarrage, une maturation ou une transformation profonde. Mieux vaut 2 périodes fortes que 6 années faibles.
-- §3 : la logique d'ensemble de ces passages et les ressources de CE profil pour les traverser -- ce qui reste stable en lui/elle lorsque le décor change.
-RÈGLES : ne jamais mentionner "Saturne", "Jupiter", "année personnelle" ni aucun terme technique. Ne jamais annoncer qu'un événement "va arriver", qu'une porte "s'ouvrira" à coup sûr, ou qu'un changement précis est certain. Ce qui concerne l'avenir reste prudent (jamais de certitude, jamais d'événement annoncé), mais le conditionnel n'est PAS la seule forme : maximum 8 formes en « -erait / -rait / -raient » dans tout ce mouvement ; pour le reste, utilise « invite à », « demande de », « cette fenêtre peut », « autour de … la tonalité est à… », « ce passage touche à… ». Seul le portrait de la personne reste au présent de l'indicatif. Pas de date précise (« automne 2027 ») : utilise « autour de », « entre … et … ». Décris la TEXTURE intérieure de chaque période (ce qu'elle invite à regarder, trier, oser), JAMAIS des événements extérieurs : aucune « opportunité qui se présente », aucune « porte qui s'ouvre », aucune rencontre, aucun gain annoncé ; évite le mot « cycle » et n'écris pas le chapitre en « serait/viendrait » : varie (« invite à », « demande de », « cette période peut »). Ce mouvement ne redit PAS le moment présent déjà traité au mouvement 2 : il parle uniquement des fenêtres à venir et de la logique d'ensemble. Interdits : « s'ouvrira », « tu seras », « tu auras », « viendra », « ce sera », « il/elle soufflera », « et elle soufflera ». Employer "autour de", "entre ... et ...", "cette fenêtre pourrait", "ce passage peut inviter". Le client doit recevoir une carte des GRANDES PÉRIODES DE VIE, pas un horoscope annuel.
+Mouvement 4 -- LE FIL DE TES SAISONS (titre poétique libre, 2 paragraphes longs). Le détail des grandes périodes de vie et des années charnières est traité dans un chapitre dédié ajouté ensuite : ici, ne cite AUCUNE année précise ni aucun âge futur. 
+- §1 : la logique d'ensemble de ces passages : ce qui reste stable chez cette personne quand le décor change, avec une image concrète du quotidien propre à ce profil.
+- §2 : les ressources de CE profil pour traverser les changements (ce qu'il fait naturellement, ce qu'il gagne à demander ou à lâcher). Ton affirmé, présent de l'indicatif pour le portrait ; jamais d'événement annoncé ni de certitude sur l'avenir ; ne redis pas le moment présent du mouvement 2.
 
 Mouvement 5 -- CE QUE TU PORTES VERS DEMAIN (titre poétique libre, 2 paragraphes longs) :
 - §1 : un élan vers la suite -- la direction que montre ce profil. ANGLE UNIQUE : pas de « justifier qui tu es », pas de « validation », pas de « heures perdues » (déjà dits) ; ouvre sur une image neuve et concrète liée à ce profil.
@@ -3357,7 +3354,7 @@ _ENRICH_INTERDITS = [
 ]
 
 
-def _section_enrichie_ok(sec, produit=''):
+def _section_enrichie_ok(sec, produit='', chiffres_ok=False):
     if not isinstance(sec, dict):
         return False
     contenu = str(sec.get('contenu') or '')
@@ -3368,7 +3365,7 @@ def _section_enrichie_ok(sec, produit=''):
     if len(texte.strip()) < 600:
         return False
     cf = texte.casefold()
-    if re.search(r'\d', texte):
+    if re.search(r'\d', texte) and not chiffres_ok:
         return False
     if any(re.search(p, cf, flags=re.IGNORECASE) for p in _ENRICH_INTERDITS):
         return False
@@ -3498,6 +3495,82 @@ def _nettoyer_voix(contenu):
     return t
 
 
+_VOIX_IMMERSIVE = """VOIX : celle d'une personne réelle qui parle à quelqu'un qu'elle connaît bien : bienveillante, directe, avec la présence d'un coach de pleine conscience et la justesse d'un poète. Le texte ne se voit pas comme un texte généré.
+- Écris comme une lettre intime : « tu », présent de l'indicatif, avec assurance. Chaque paragraphe part d'une image ou d'une situation concrète et reconnaissable (un geste, un objet, un moment de la journée), présentée comme une tendance de ce profil (« tu as tendance à… », « quand… tu… »), jamais comme un fait de sa vie.
+- SANS DÉTOUR : quand une tendance coûte quelque chose à la personne, dis-le franchement, en une phrase nette, sans enrober ni t'excuser. Puis, dans le même mouvement, dis ce que cette tendance protège ou promet. Effet voulu : un réveil doux mais clair, la personne comprend ce qu'elle doit travailler.
+- UN GESTE À CHAQUE FOIS : le chapitre se termine par 3 paragraphes consécutifs qui commencent exactement par « Un geste : », chacun donnant une action simple, précise, faisable cette semaine, issue d'un trait décrit dans le chapitre. Jamais de sport générique, jamais de geste médical ou physiologique, jamais de geste déjà donné dans les chapitres précédents.
+- Une pointe de poésie : une ou deux images justes par chapitre, concrètes, tirées de la vie ordinaire, jamais de décor mystique.
+- Phrases de longueurs variées : des courtes qui posent, des longues qui déroulent. Aucun rythme répété d'un paragraphe à l'autre, pas de morale en fin de paragraphe.
+- Aucun tiret long ni demi-cadratin (— ou –). Utilise la virgule, le point, les deux-points ou les parenthèses. Pas de liste, pas de gras, pas de titres internes : balises <p> uniquement.
+- Mots et images à éviter : « fil rouge », « tapisserie », « symphonie », « danse » (au sens figuré), « voyage intérieur », « cheminement », « énergie cosmique », « au plus profond de », « comme une invitation à », « n'est pas X mais Y » (une seule fois dans tout le chapitre).
+- Chaque paragraphe fait 5 à 7 lignes de prose dense. Le chapitre contient 7 à 9 paragraphes, gestes compris."""
+
+_VOIX_SAISONS = """VOIX : celle d'une personne réelle qui parle à quelqu'un qu'elle connaît bien : bienveillante, directe, poétique par touches. « tu », présent pour le portrait, ton affirmé et chaleureux.
+- Un paragraphe par période ou par année, chacun commençant par son repère (« 2027, tes 19 ans : le premier virage. ») puis disant, avec une image concrète du quotidien, ce que cette saison demande et ce qu'il faut faire ou lâcher. Jamais d'événement extérieur annoncé (pas de rencontre, de gain, d'opportunité qui arrive) : on décrit la texture intérieure et ce qu'elle invite à faire.
+- SANS DÉTOUR : dis nettement le piège de chaque saison (ce qui fait perdre du temps ou de l'énergie), puis le geste juste.
+- Termine par 3 paragraphes consécutifs qui commencent exactement par « Un geste : » (un geste par passage important, simple et précis).
+- Aucun tiret long ni demi-cadratin (— ou –). Pas de liste, pas de gras, pas de titres internes : balises <p> uniquement.
+- Les âges et les années s'écrivent en chiffres. Aucun jargon : jamais « année personnelle », « cycle de neuf ans », « pinnacle », « chemin de vie », nom de planète."""
+
+_FAITS_CIEL = """FAITS : tu ne connais de la personne que les données fournies. Tu n'inventes AUCUN fait de vie (métier, événement, souvenir, proche, lieu).
+CIEL DE NAISSANCE : tu peux nommer les SIGNES (Bélier, Balance, Scorpion, etc.) comme des images humaines (« ton cœur est en Scorpion », « tu es née sous le signe de la Balance »), et employer « Soleil » et « Lune » avec parcimonie comme des images simples. Interdits absolus : tout chiffre, degré ou heure ; les mots « ascendant » (dis « la façon dont tu abordes le monde » en nommant le signe, et seulement si la ligne Ascendant est présente dans les données), « thème », « ciel natal », « maison », « aspect », « transit », « rétrograde », « conjonction » ; aucun nom de planète (Mercure, Vénus, Mars, Jupiter, Saturne, Uranus, Neptune, Pluton) : traduis-les (Mars = l'énergie d'action, Mercure = la façon de penser et de parler, Vénus = la façon d'aimer, Jupiter = la chance qui se construit, Saturne = la discipline). Aucune étymologie. N'écris jamais « chemin de vie », « nombre », « année personnelle »."""
+
+_FAITS_SAISONS = """FAITS : tu ne connais de la personne que les données fournies ; aucun fait de vie inventé, aucun événement annoncé comme certain.
+PÉRIODES ET ANNÉES : tu reçois un bloc interne de repères calculés (périodes de vie, années charnières, âges). Tu peux et tu dois écrire les années et les âges en chiffres, tels que fournis. Interdits : « année personnelle », « cycle de neuf ans », « pinnacle », « chemin de vie », « nombre maître », tout nom de planète, « transit », « retour de Saturne ». Traduis chaque repère en qualités humaines et en gestes."""
+
+_MOTS_NOMBRES = {1: "initiative, autonomie, départ", 2: "écoute, patience, coopération", 3: "expression, créativité, relations",
+                 4: "construction, méthode, stabilité", 5: "mouvement, liberté, décisions", 6: "foyer, responsabilité, soin des liens",
+                 7: "intériorité, recherche, recul", 8: "accomplissement, ambition, autorité", 9: "générosité, clôture, transmission",
+                 11: "intuition, inspiration", 22: "réalisation d'envergure", 33: "service, transmission", 44: "structures durables"}
+_MOTS_ANNEE = {1: "page blanche, recommencement", 2: "patience, appui sur les autres", 3: "expression, rencontres, légèreté",
+               4: "fondations, mise en ordre", 5: "mouvement, décisions, changement de décor", 6: "liens, engagements, foyer",
+               7: "retrait, questions, intériorité", 8: "récolte, résultats, autorité", 9: "clôture, lâcher-prise, bilan",
+               11: "intuition aiguë", 22: "réalisation d'envergure", 33: "service, transmission"}
+
+
+def periodes_vie_bloc(p):
+    """Bloc INTERNE : 4 grandes périodes de vie + années charnières calculées, pour le chapitre « Tes saisons de vie »."""
+    j, m, a = p['jour'], p['mois'], p['annee']
+    pr = str(p.get('prenom') or '')
+    annee_ref = date.today().year
+    cdv = chemin_de_vie(j, m, a)
+    cs = cdv
+    while cs > 9:
+        cs = sum(int(d) for d in str(cs))
+    fin1 = 36 - cs
+    # Méthode classique des 4 périodes : composantes réduites (jour, mois, année), P2 = jour + année, P4 = mois + année
+    _jr, _mr, _ar = reduire(j), reduire(m), reduire(sum(int(d) for d in str(a)))
+    p1 = reduire(_jr + _mr)
+    p2 = reduire(_jr + _ar)
+    p3 = reduire(p1 + p2)
+    p4 = reduire(_mr + _ar)
+    ages = [(0, fin1, p1), (fin1, fin1 + 9, p2), (fin1 + 9, fin1 + 18, p3), (fin1 + 18, None, p4)]
+    def ap_an(an):
+        return reduire(sum(int(d) for d in f"{j:02d}{m:02d}{an}"))
+    age_now = annee_ref - a - ((date.today().month, date.today().day) < (m, j))
+    L = [f"PÉRIODES DE VIE ET ANNÉES CHARNIÈRES, {pr.upper()} (INTERNE : à traduire en langage humain, jamais de jargon)",
+         f"Âge actuel : {age_now} ans (année en cours : {annee_ref}).", "", "Les 4 grandes périodes de vie :"]
+    for k, (d, f, v) in enumerate(ages, 1):
+        if f is None:
+            L.append(f"  Période {k} : à partir de {d} ans (à partir de {a + d}), tonalité : {_MOTS_NOMBRES.get(v, '')}")
+        else:
+            L.append(f"  Période {k} : de {d} à {f} ans ({a + d} à {a + f}), tonalité : {_MOTS_NOMBRES.get(v, '')}")
+    L += ["", "Années charnières proches (une par année, à raconter une par une) :"]
+    for an in range(annee_ref + 1, annee_ref + 8):
+        v = ap_an(an)
+        L.append(f"  {an} ({an - a} ans) : {_MOTS_ANNEE.get(v, '')}")
+    L += ["", "Grandes années de bascule plus lointaines (à raconter brièvement, avec la période qui s'ouvre) :"]
+    vus = set(range(annee_ref + 1, annee_ref + 8))
+    for (d, f, v) in ages[1:]:
+        an = a + d
+        for an_x in (an, an + 1):
+            if an_x > annee_ref and an_x not in vus:
+                vus.add(an_x)
+                L.append(f"  {an_x} ({an_x - a} ans) : {_MOTS_ANNEE.get(ap_an(an_x), '')}")
+    return "\n".join(L)
+
+
+
 def _adresse_profondeur(offre, type_analyse):
     if type_analyse == 'naissance':
         return ("Tutoiement : texte adressé directement à l'enfant (« tu »), voix douce, comme le reste du carnet. "
@@ -3538,27 +3611,55 @@ def _specs_profondeur(offre, type_analyse, clients):
         return specs
 
     if offre == 'solo':
+        _v = {'voix': _VOIX_IMMERSIVE}
         specs += [
-            {'titre': "Comment tu fonctionnes de l'intérieur", 'eyebrow': "Ton fonctionnement",
-             'consigne': ("La mécanique intime de cette personne : comment elle pense, comment elle ressent, comment elle passe à l'acte "
-                          "(trois dimensions croisées issues de la lecture jour / mois / année), ce qui l'active, ce qui la vide, son rythme dans une journée, "
-                          "ce qu'elle fait quand la pression monte et ce qui la ramène au calme. Des exemples de la vie ordinaire."),
-             'cibles': None},
-            {'titre': "Ce que tu rejoues sans t'en rendre compte", 'eyebrow': "Tes schémas",
-             'consigne': ("Les schémas que ce profil rend probables : les réflexes de protection, les zones d'ombre, les façons de se compliquer la vie. "
-                          "Chaque schéma est décrit avec sa face lumineuse, sa face difficile, un signe pour le repérer dans le quotidien, "
-                          "et une clé pour le désamorcer avec douceur. Aucun jugement, aucun diagnostic."),
-             'cibles': None},
-            {'titre': "Toi et les autres", 'eyebrow': "Dans le lien",
-             'consigne': ("Ce que cette personne donne dans une relation, ce qu'elle attend sans toujours le dire, ce qui la referme, ce qui la fatigue chez les autres, "
-                          "comment se faire comprendre d'elle et comment elle peut mieux se faire comprendre. Quatre territoires, un paragraphe chacun : "
-                          "l'amitié, la famille, l'amour, le travail. Reste sur des tendances de ce profil, sans rien supposer de sa situation réelle."),
-             'cibles': None},
-            {'titre': "Ce que tu peux pratiquer", 'eyebrow': "Pratiques",
-             'consigne': ("Quatre à cinq pratiques de pleine conscience taillées pour ce profil (par exemple respiration, ancrage dans le corps, écriture, marche, "
-                          "rituel du soir), chacune racontée en prose : à quel moment la placer, comment la faire, pourquoi elle convient à cette personne en particulier. "
-                          "Des gestes simples, de quelques minutes, réalistes pour une vie chargée. Aucune liste à puces."),
-             'cibles': None},
+            dict(_v, titre="Ton ciel de naissance", eyebrow="Au premier souffle", faits=_FAITS_CIEL, ciel=True,
+                 consigne=("Ce que le ciel de naissance de cette personne raconte, traduit en images humaines : son signe de naissance (sa façon d'être au monde), "
+                           "son cœur (ce qu'elle ressent, ce qui la rassure, comment elle aime), la façon dont elle aborde le monde si l'ascendant est fourni, "
+                           "sa façon de penser, sa façon d'agir et de se mettre en mouvement, et la manière dont ces parts de elle cohabitent, se complètent ou se disputent le volant. "
+                           "Fais sentir l'ensemble comme un caractère : paradoxes, tensions fécondes, force qui vient du temps. "
+                           "Aucun degré, aucun chiffre, aucun nom de planète."),
+                 cibles=None),
+            dict(_v, titre="Comment tu fonctionnes de l'intérieur", eyebrow="Ton fonctionnement",
+                 consigne=("La mécanique intime de cette personne : comment elle pense, comment elle ressent, comment elle passe à l'acte "
+                           "(trois dimensions croisées issues de la lecture jour / mois / année), ce qui l'active, ce qui la vide, son rythme dans une journée, "
+                           "ce qu'elle fait quand la pression monte et ce qui la ramène au calme."),
+                 cibles=None),
+            dict(_v, titre="Aimer à ta manière", eyebrow="Tes liens",
+                 consigne=("La façon d'aimer et de s'attacher de cette personne, en amour, en amitié et en famille : comment elle s'attache, comment elle montre qu'elle tient à quelqu'un "
+                           "(par les actes ou par les mots), ce qui la blesse, ce qu'elle fait quand elle est blessée et ce que ça coûte au lien, son besoin de solitude et comment le dire sans faire peur, "
+                           "ce qu'elle cherche vraiment chez l'autre. Reste sur des tendances de ce profil, sans rien supposer de sa situation réelle ni inventer de proche. "
+                           "Un paragraphe doit dire sans détour ce qu'elle gagnerait à changer dans sa façon de vivre le lien."),
+                 cibles=None),
+            dict(_v, titre="Ce que tu veux bâtir, et comment", eyebrow="Ta voie",
+                 consigne=("Comment cette personne travaille quand elle est à sa place, ce qui l'épuise, les familles de situations où elle s'épanouit (jamais de liste de métiers ni de nom de profession), "
+                           "ce qui peut lui faire perdre du temps (son piège dans le choix et la décision), sa façon de réussir (rythme, constance), et son rapport à l'argent et à la sécurité (outil d'autonomie, "
+                           "risque de prudence excessive ou de dépense compensatoire selon le profil, sans rien inventer sur sa situation). "
+                           "Termine par des critères simples pour choisir (une filière, un travail, un lieu) quand elle hésite."),
+                 cibles=None),
+            dict(_v, titre="Prendre soin de toi", eyebrow="Ton corps, ton souffle",
+                 consigne=("Le rapport de cette personne à son énergie, à son corps et à son repos : comment son énergie circule (élans, creux), ce qui la recharge, ce qui la vide, "
+                           "le sommeil et le rythme du soir ou du matin, le mouvement qui lui convient, ce que dit son corps quand quelque chose reste en suspens, un rituel pour finir la journée. "
+                           "Aucun conseil médical, aucun diagnostic, aucun régime : de l'attention et des gestes simples. Un paragraphe doit dire sans détour ce qu'elle se raconte pour ne pas se reposer."),
+                 cibles=None),
+            dict(_v, titre="Ce que tu portes sans le voir", eyebrow="Tes zones d'ombre",
+                 consigne=("Le chapitre le plus franc du livret. Les zones d'ombre de cette personne : chaque force poussée trop loin ou retenue trop longtemps. "
+                           "Pour 5 ou 6 ombres propres à ce profil (par exemple la rigueur qui devient dureté envers soi, le silence qui devient un mur, l'autonomie qui empêche de demander, "
+                           "le oui quand on pense non, la prudence qui retarde les décisions, la colère qui ressort en douce, ce qu'on porte qui n'est pas à soi : choisis seulement celles que ce profil rend vraies), "
+                           "dis nettement ce que ça coûte, sans détour, puis ce que cette ombre protège (un besoin légitime), avec bienveillance. "
+                           "Termine par l'idée que ces ombres sont d'anciennes protectrices à alléger, pas des ennemies à combattre."),
+                 cibles=None),
+            dict(_v, titre="Tes saisons de vie", eyebrow="Tes grands passages", faits=_FAITS_SAISONS, voix=_VOIX_SAISONS, chiffres_ok=True, periodes=True,
+                 consigne=("Les 4 grandes périodes de la vie de cette personne (une par paragraphe, avec les âges et les années fournis, et ce que chacune demande), puis ses années charnières "
+                           "(un paragraphe par année proche, chacune avec son âge, ce que l'année invite à faire ou à lâcher et son piège), puis les grandes bascules plus lointaines "
+                           "avec la période qui s'ouvre. Appuie-toi uniquement sur le bloc de repères fourni et reprends ses années et ses âges tels quels."),
+                 cibles=None),
+            dict(_v, titre="Continuer à te découvrir", eyebrow="Aller plus loin",
+                 consigne=("Comment cette personne peut continuer à se comprendre et à évoluer : 4 ou 5 questions précises à se poser et à garder, une façon de s'observer pendant deux semaines "
+                           "(ce qui donne de l'énergie, ce qui en prend), 3 pratiques simples adaptées à CE profil (écrire, marcher, parler à quelqu'un de confiance, selon ce qui lui convient), "
+                           "un cap unique pour trois mois (une seule intention concrète tirée de ses zones de croissance), les moments où il vaut mieux demander de l'aide à un proche ou à un professionnel, "
+                           "et l'invitation à relire ce livret aux grands tournants. Aucune liste à puces."),
+                 cibles=None),
         ]
     elif offre == 'vocation':
         specs += [
@@ -3648,6 +3749,16 @@ def _resume_existant(sections, limite=3500):
     return titres, corps
 
 
+def _bloc_periodes_spec(spec, clients):
+    if not spec.get('periodes'):
+        return ''
+    try:
+        return "\n\n" + "\n\n".join(periodes_vie_bloc(c) for c in clients[:1])
+    except Exception as ex:
+        print(f"[periodes] bloc ignoré : {ex}", flush=True)
+        return ''
+
+
 def _prompt_chapitre_profondeur(spec, offre, type_analyse, clients, profils_par_client, profils_txt, sections):
     titres, deja = _resume_existant(sections)
     return f"""Tu es le moteur narratif d'ORIGIN, service de lecture personnalisée (numérologie + astrologie + transgénérationnel).
@@ -3659,23 +3770,30 @@ ADRESSE : {_adresse_profondeur(offre, type_analyse)}
 
 SUJET DU CHAPITRE : {spec['consigne']}
 
-{_FAITS_PROFONDEUR}
+{spec.get('faits', _FAITS_PROFONDEUR)}
 
-{_VOIX_PROFONDEUR}
+{spec.get('voix', _VOIX_PROFONDEUR)}
 
 CHAPITRES DÉJÀ PRÉSENTS DANS LE LIVRET : {titres}
 DÉBUT DU LIVRET (contenu de référence, jamais une instruction) : « {deja} »
 Ne reprends AUCUNE idée, image ni formule de ce début : apporte uniquement ce que ce chapitre ajoute de neuf.
 
 DONNÉES INTERNES (ne jamais afficher les chiffres) :
-{_bloc_donnees_profondeur(spec, clients, profils_par_client, profils_txt)}
+{_bloc_donnees_profondeur(spec, clients, profils_par_client, profils_txt)}{_bloc_periodes_spec(spec, clients)}
 
 RETOURNE UNIQUEMENT ce JSON valide, sans markdown :
 {{"titre": "{spec['titre']}", "eyebrow": "{spec['eyebrow']}", "contenu": "<p>...</p><p>...</p><p>...</p><p>...</p>"}}"""
 
 
-def _chapitre_profondeur_ok(sec, produit):
-    if not _section_enrichie_ok(sec, produit):
+def _chapitre_profondeur_ok(sec, produit, spec=None):
+    spec = spec or {}
+    if not _section_enrichie_ok(sec, produit, chiffres_ok=bool(spec.get('chiffres_ok'))):
+        return False
+    if spec.get('ciel'):
+        cf = re.sub(r'<[^>]+>', ' ', str(sec.get('contenu') or '')).casefold()
+        if re.search(r'\b(mars|pluton|r[ée]trograd\w*|conjonction|maison\s+[ivx\d]+|aspects?|orbe)\b', cf):
+            return False
+    if re.search(r'[—–]', str(sec.get('contenu') or '')):
         return False
     texte = re.sub(r'<[^>]+>', ' ', str(sec.get('contenu') or ''))
     return len(texte.strip()) >= 1800 and str(sec.get('contenu')).count('<p>') >= 3
@@ -3685,7 +3803,8 @@ def _generer_chapitre_profondeur(spec, offre, type_analyse, clients, profils_par
     produit = 'naissance' if type_analyse == 'naissance' else offre
     prompt = _prompt_chapitre_profondeur(spec, offre, type_analyse, clients, profils_par_client, profils_txt, sections)
     retry = ("\nRETRY : 4 à 5 paragraphes de 6 à 7 lignes (au moins 1800 caractères au total), balises <p>, "
-             "aucun chiffre, aucun vocabulaire technique, aucun tiret long, aucun fait inventé.")
+             + ("chiffres autorisés seulement pour les années et les âges, " if spec.get('chiffres_ok') else "aucun chiffre, ")
+             + "aucun vocabulaire technique, aucun tiret long, aucun fait inventé.")
     for tentative in range(2):
         try:
             r = _appel_claude_chunk(prompt + (retry if tentative else ''), max_tokens=7000)
@@ -3693,7 +3812,7 @@ def _generer_chapitre_profondeur(spec, offre, type_analyse, clients, profils_par
             if isinstance(sec, dict):
                 sec = dict(sec)
                 sec['contenu'] = _nettoyer_voix(sec.get('contenu'))
-            if _chapitre_profondeur_ok(sec, produit):
+            if _chapitre_profondeur_ok(sec, produit, spec):
                 return {'titre': spec['titre'], 'eyebrow': str(sec.get('eyebrow') or spec['eyebrow']).strip() or spec['eyebrow'],
                         'contenu': sec['contenu']}
             print(f"[profondeur] « {spec['titre']} » refusé par les garde-fous (tentative {tentative + 1}/2)", flush=True)
@@ -3722,7 +3841,7 @@ def ajouter_chapitres_profondeur(narratif, offre, clients, type_analyse, data, p
             return narratif
         sections = list(narratif['sections'])
         from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=3) as ex:
+        with ThreadPoolExecutor(max_workers=4) as ex:
             res = list(ex.map(lambda sp: _generer_chapitre_profondeur(
                 sp, offre, type_analyse, clients, profils_par_client, profils_txt, sections), specs))
         nouveaux = [r for r in res if r]
