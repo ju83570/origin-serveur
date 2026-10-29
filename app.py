@@ -3838,11 +3838,11 @@ def _photo_vers_uri(valeur, groupe=False):
 
 
 def _indices_formulaire(offre, data):
-    """Numéro de champ du formulaire (1..10) de chaque client, dans l'ordre de la liste clients."""
+    """Numéro de champ du formulaire (1..18) de chaque client, dans l'ordre de la liste clients."""
     if offre in ('couple', 'famille', 'prestige'):
         idx = [1, 2]
         if offre in ('famille', 'prestige'):
-            idx += [i for i in range(3, 11) if data.get(f'prenom{i}')]
+            idx += [i for i in range(3, 19) if data.get(f'prenom{i}')]
         return idx
     return [1]
 
