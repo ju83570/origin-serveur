@@ -2047,12 +2047,9 @@ CHUNK B -- retourne UNIQUEMENT ce JSON valide, sans markdown :
 
 Mouvement 4 -- Ce que vous traversez en ce moment : 3 paragraphes, titre poétique libre. Descriptif du présent des deux profils croisés. JAMAIS prédictif.
 
-Mouvement 5 -- LES GRANDES PÉRIODES CHARNIÈRES DU LIEN (titre poétique libre, 3 paragraphes longs) :
-INSTRUCTION ABSOLUE : si les données contiennent des blocs "CHARNIÈRES TEMPORELLES", ne restitue jamais les années une par une. Croise les deux profils et ne retiens que 2 à 4 grandes fenêtres où leurs dynamiques personnelles se rencontrent, se décalent ou changent de phase.
-- §1 : la prochaine fenêtre structurante du couple -- ce qui peut demander un ajustement, une décision, un nouvel équilibre ou une consolidation.
-- §2 : une ou deux fenêtres plus lointaines sur 10 à 20 ans -- uniquement les bascules majeures, regroupées en périodes lorsque plusieurs repères se suivent.
-- §3 : les ressources du lien pour traverser ces passages et ce qui peut rester stable entre eux malgré les changements.
-RÈGLES : aucun terme technique ("Saturne", "Jupiter", "année personnelle", etc.), aucune prédiction certaine, aucun catalogue annuel. Parler de fenêtres possibles, de seuils et de tendances de fond. Tout futur est au conditionnel : n'écris jamais « s'apprête à traverser », « le lien devra », « tu seras », « vous serez », « s'ouvrira », « ce sera ». Préfère « pourrait traverser », « le lien pourrait avoir besoin », « vous pourriez », « cette fenêtre pourrait ».
+Mouvement 5 -- LE FIL DE VOS SAISONS (titre poétique libre, 2 paragraphes longs). Le détail des grandes périodes de vie et des années charnières est traité dans un chapitre dédié ajouté ensuite : ici, ne cite AUCUNE année précise ni aucun âge futur.
+- §1 : la logique d'ensemble de ces passages pour le couple : ce qui reste stable entre eux quand le décor change, avec une image concrète du quotidien propre à ces deux profils.
+- §2 : les ressources du lien pour traverser les changements (ce que chacun fait naturellement, ce qu'ils gagnent à demander ou à lâcher). Aucun terme technique, aucune prédiction certaine ; ne redis pas le présent du mouvement 4. Jamais « tu » : « vous » pour le couple, prénoms pour chacun.
 
 Mouvement 6 -- Ce que vous portez vers demain : 2 paragraphes, titre poétique libre. Élan et espoir. JAMAIS de prédictions.
 GENRE : le genre de chaque personne est indiqué dans les données (Homme/Femme). Accorde tous les adjectifs, participes et pronoms en conséquence tout au long du texte.
@@ -3528,6 +3525,26 @@ _MOTS_ANNEE = {1: "page blanche, recommencement", 2: "patience, appui sur les au
                11: "intuition aiguë", 22: "réalisation d'envergure", 33: "service, transmission"}
 
 
+_VOIX_IMMERSIVE_COUPLE = """VOIX : celle d'une personne réelle qui parle à un couple qu'elle connaît bien : bienveillante, directe, avec la présence d'un coach de pleine conscience et la justesse d'un poète. Le texte ne se voit pas comme un texte généré.
+- Écris comme une lettre adressée au couple : « vous » pour le couple, chaque personne nommée par son prénom (il/elle), jamais de « tu ». Présent de l'indicatif pour le portrait, avec assurance. Chaque paragraphe part d'une image ou d'une situation concrète et reconnaissable (un geste, un objet, un moment de la journée à deux), présentée comme une tendance de ces deux profils (« quand... il a tendance à... et elle... »), jamais comme un fait de leur vie.
+- SANS DÉTOUR : quand une dynamique coûte quelque chose au couple, dis-le franchement, en une phrase nette, sans enrober. Puis dis ce que cette dynamique protège ou promet. Effet voulu : un réveil doux mais clair, chacun comprend ce qu'il a à travailler.
+- UN GESTE À CHAQUE FOIS : le chapitre se termine par 3 paragraphes consécutifs qui commencent exactement par « Un geste : », chacun donnant une action simple, précise, faisable cette semaine, à deux ou par l'un des deux (nommé), issue d'un trait décrit dans le chapitre. Jamais de geste déjà donné dans les chapitres précédents.
+- Une pointe de poésie : une ou deux images justes par chapitre, tirées de la vie ordinaire, jamais de décor mystique.
+- Phrases de longueurs variées, aucun rythme répété, pas de morale en fin de paragraphe.
+- Aucun tiret long ni demi-cadratin (— ou –). Pas de liste, pas de gras, pas de titres internes : balises <p> uniquement.
+- Mots et images à éviter : « fil rouge », « tapisserie », « symphonie », « danse » (au sens figuré), « voyage intérieur », « cheminement », « énergie cosmique », « comme une invitation à », « n'est pas X mais Y » (une seule fois dans tout le chapitre).
+- Chaque paragraphe fait 5 à 7 lignes de prose dense. Le chapitre contient 7 à 9 paragraphes, gestes compris. Ne prête aucun fait de vie, aucun métier, aucune histoire à l'un ou à l'autre."""
+
+_VOIX_SAISONS_COUPLE = """VOIX : celle d'une personne réelle qui parle à un couple qu'elle connaît bien : bienveillante, directe, poétique par touches. « vous » pour le couple, prénoms pour chacun (il/elle), jamais de « tu ». Ton affirmé et chaleureux.
+- D'abord un paragraphe par grande période de vie de chaque personne (âges et années en chiffres), puis les années charnières proches, un paragraphe par année qui compte (avec l'âge de chacun), en disant ce que l'année demande au couple et son piège. Jamais d'événement extérieur annoncé : on décrit la texture intérieure et ce qu'elle invite à faire. Quand les deux sont en phase ou en décalage une même année, dis-le.
+- SANS DÉTOUR sur le piège de chaque saison, puis le geste juste.
+- Termine par 3 paragraphes consécutifs qui commencent exactement par « Un geste : ».
+- Aucun tiret long ni demi-cadratin. Pas de liste, pas de gras, pas de titres internes : balises <p> uniquement.
+- Âges et années en chiffres. Aucun jargon : jamais « année personnelle », « cycle de neuf ans », « pinnacle », « chemin de vie », nom de planète."""
+
+_FAITS_CIEL_COUPLE = _FAITS_CIEL.replace("(« ton cœur est en Scorpion », « tu es née sous le signe de la Balance »)", "(« son cœur est en Scorpion », « elle est née sous le signe de la Balance »)").replace("dis « la façon dont tu abordes le monde »", "dis « sa façon d'aborder le monde »").replace("N'écris jamais « chemin de vie »", "Écris à la troisième personne pour chacun, « vous » pour le couple, jamais « tu ». N'écris jamais « chemin de vie »")
+
+
 def periodes_vie_bloc(p):
     """Bloc INTERNE : 4 grandes périodes de vie + années charnières calculées, pour le chapitre « Tes saisons de vie »."""
     j, m, a = p['jour'], p['mois'], p['annee']
@@ -3683,21 +3700,43 @@ def _specs_profondeur(offre, type_analyse, clients):
                 'titre': f"{pr[i]} dans le lien", 'eyebrow': "Sa façon d'aimer",
                 'consigne': (f"Comment {pr[i]} aime, ce dont {pr[i]} a besoin pour se sentir en sécurité et reconnu(e) (accorde selon le genre), ce qui la ou le referme, "
                              f"comment {pr[i]} réagit quand ça tend, ce qui la ou le ramène vers l'autre. Lecture approfondie de cette seule personne, avec des situations ordinaires de la vie à deux."),
-                'cibles': [i]})
+                'cibles': [i], 'voix': _VOIX_IMMERSIVE_COUPLE})
         specs += [
             {'titre': "Ce que chacun comprend de travers chez l'autre", 'eyebrow': "Les malentendus",
              'consigne': (f"Les malentendus les plus probables entre {pr[0]} et {autre} : ce que l'un fait par amour et que l'autre reçoit autrement, "
                           "la manière dont chacun traduit les gestes de l'autre. Pour chaque malentendu, la traduction juste, côté de chacun."),
-             'cibles': None},
+             'cibles': None, 'voix': _VOIX_IMMERSIVE_COUPLE},
             {'titre': "Quand ça frotte", 'eyebrow': "Les tensions",
              'consigne': ("La mécanique d'une tension typique entre ces deux profils : ce qui la déclenche, la réaction de chacun, comment elle s'enchaîne, "
                           "à quel moment il est encore possible de s'arrêter, et comment en sortir sans que personne ait à perdre. "
                           "Si le client a décrit une situation qui revient, appuie-toi dessus telle quelle sans rien ajouter."),
-             'cibles': None},
+             'cibles': None, 'voix': _VOIX_IMMERSIVE_COUPLE},
             {'titre': "Se retrouver", 'eyebrow': "Les gestes qui rapprochent",
              'consigne': ("Des gestes, des mots, des rituels concrets et simples, pensés pour ces deux personnes précisément : un moment à deux, une façon de s'excuser, "
                           "une manière de dire merci, un rituel du soir. Chaque pratique est racontée en prose, avec sa raison d'être pour chacun des deux."),
-             'cibles': None},
+             'cibles': None, 'voix': _VOIX_IMMERSIVE_COUPLE},
+        ]
+        _vc = {'voix': _VOIX_IMMERSIVE_COUPLE, 'cibles': None}
+        specs += [
+            dict(_vc, titre="Vos deux ciels", eyebrow="Au premier souffle", faits=_FAITS_CIEL_COUPLE, ciel=True,
+                 consigne=(f"Ce que le ciel de naissance de {pr[0]} et de {autre} raconte, traduit en images humaines : le signe de naissance de chacun (sa façon d'être au monde), son cœur (ce qu'il ou elle ressent, comment il ou elle aime), "
+                           "sa façon d'aborder le monde si l'ascendant est fourni, sa façon de penser et d'agir. Puis comment ces deux ciels se répondent : ce qui les rapproche, ce qui les oppose, ce qui se complète, ce qui frotte. "
+                           "Aucun degré, aucun chiffre, aucun nom de planète.")),
+            dict(_vc, titre="Bâtir ensemble", eyebrow="Votre quotidien",
+                 consigne=(f"Comment {pr[0]} et {autre} construisent à deux : le quotidien, le foyer, l'argent (outil de sécurité ou de liberté pour chacun, ce qui peut les opposer sans rien inventer sur leur situation), "
+                           "les projets, la répartition des rôles, leurs rythmes différents d'énergie et de repos, ce qui les recharge à deux, ce qu'ils se racontent pour ne pas se reposer. "
+                           "Un paragraphe dit sans détour ce que chacun gagnerait à changer dans la façon de partager le quotidien.")),
+            dict(_vc, titre="Ce que vous portez sans le voir", eyebrow="Vos zones d'ombre",
+                 consigne=(f"Le chapitre le plus franc du livret. Les zones d'ombre du couple formé par {pr[0]} et {autre} : ce que chacun apporte au lien de façon trop appuyée ou retient trop longtemps, et comment ces tendances se renforcent entre elles "
+                           "(le silence de l'un face à l'insistance de l'autre, l'autonomie qui empêche de demander, le oui quand on pense non, la décision repoussée, la colère qui ressort en douce : choisis seulement celles que ces deux profils rendent vraies). "
+                           "Pour chaque ombre, dis nettement ce qu'elle coûte au lien, puis ce qu'elle protège (un besoin légitime). Termine par l'idée que ces ombres sont d'anciennes protectrices à alléger, pas des ennemies à combattre.")),
+            dict(_vc, titre="Vos saisons de vie", eyebrow="Vos grands passages", faits=_FAITS_SAISONS, voix=_VOIX_SAISONS_COUPLE, chiffres_ok=True, periodes=True, nb_periodes=2,
+                 consigne=(f"Les grandes périodes de vie de {pr[0]} puis de {autre} (âges et années fournis), puis les années charnières proches de chacun, en disant quand leurs saisons s'accordent ou se décalent et ce que cela demande au couple. "
+                           "Appuie-toi uniquement sur les blocs de repères fournis et reprends leurs années et leurs âges tels quels.")),
+            dict(_vc, titre="Continuer à vous découvrir", eyebrow="Aller plus loin",
+                 consigne=(f"Comment {pr[0]} et {autre} peuvent continuer à se comprendre et à avancer ensemble : 4 ou 5 questions à se poser chacun puis à partager, un rituel d'observation sur deux semaines (ce qui rapproche, ce qui éloigne), "
+                           "3 pratiques simples adaptées à ces deux profils, un cap unique pour trois mois (une seule intention commune), les moments où il vaut mieux demander de l'aide à un tiers (proche ou professionnel), "
+                           "et l'invitation à relire ce livret ensemble aux grands tournants. Aucune liste à puces.")),
         ]
     elif offre in ('famille', 'prestige'):
         for i, c in enumerate(clients):
@@ -3753,7 +3792,7 @@ def _bloc_periodes_spec(spec, clients):
     if not spec.get('periodes'):
         return ''
     try:
-        return "\n\n" + "\n\n".join(periodes_vie_bloc(c) for c in clients[:1])
+        return "\n\n" + "\n\n".join(periodes_vie_bloc(c) for c in clients[:int(spec.get('nb_periodes', 1))])
     except Exception as ex:
         print(f"[periodes] bloc ignoré : {ex}", flush=True)
         return ''
@@ -3841,7 +3880,7 @@ def ajouter_chapitres_profondeur(narratif, offre, clients, type_analyse, data, p
             return narratif
         sections = list(narratif['sections'])
         from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=4) as ex:
+        with ThreadPoolExecutor(max_workers=5) as ex:
             res = list(ex.map(lambda sp: _generer_chapitre_profondeur(
                 sp, offre, type_analyse, clients, profils_par_client, profils_txt, sections), specs))
         nouveaux = [r for r in res if r]
