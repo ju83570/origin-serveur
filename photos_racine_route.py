@@ -19,7 +19,7 @@ from flask import Blueprint, jsonify, request
 
 bp = Blueprint("photos_racine", __name__)
 DEST = os.environ.get("EMAIL_DEST") or "contact@origin-famille.fr"
-MAX_FILES = 12
+MAX_FILES = 20
 MAX_BYTES = 2_500_000  # par photo (le navigateur les réduit déjà à ~900 px)
 
 
