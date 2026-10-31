@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Secrets et configuration locale : ne jamais versionner (le dépôt est public)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+credentials*.json
+
+# Données de clients et sorties de génération : jamais dans le dépôt
+/livrets/
+/clients/
+/sorties/
+/exports/
+/sauvegardes/
+*_imprimable.pdf
+origin_codes_utilises.json
+
+# Données locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Éditeurs / système
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

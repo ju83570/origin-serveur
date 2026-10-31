@@ -1,0 +1,15 @@
+# Configuration des outils de développement uniquement : aucun effet sur le déploiement (Render lit requirements.txt).
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 140
+extend-exclude = ["static"]
+
+[tool.ruff.lint]
+# Volontairement minimal : erreurs de syntaxe et noms indéfinis seulement.
+# app.py est un monolithe historique de 7 000 lignes ; on durcira les règles par étapes, pas d'un coup.
+select = ["E9", "F63", "F7", "F82"]
