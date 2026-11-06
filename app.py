@@ -7217,5 +7217,12 @@ try:
 except Exception as _photos_ex:
     print(f"Route photos Racine non chargée : {_photos_ex}")
 
+# Calculateur chemin de vie (analyse gratuite contre email) : route facultative, jamais bloquante.
+try:
+    from cdv_analyse import register_cdv
+    register_cdv(app)
+except Exception as _cdv_ex:
+    print(f"Route chemin de vie non chargée : {_cdv_ex}")
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=False)
